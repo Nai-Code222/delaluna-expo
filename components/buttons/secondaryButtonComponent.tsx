@@ -1,28 +1,31 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 interface SecondaryButtonProps {
     title: string;
     onPress?: () => void;
-    link?: string;
+    linkString?: string;
 }
 
-const SecondaryButton: React.FC<SecondaryButtonProps> = ({ title, onPress, link }) => {
+const SecondaryButton: React.FC<SecondaryButtonProps> = ({ title, onPress, linkString }) => {
     const handlePress = () => {
-        if (link) {
-            Linking.openURL(link).catch(err => console.error("Failed to open link:", err));
-        } else if (onPress) {
+        if (onPress) {
             onPress();
         }
     };
 
     return (
         <TouchableOpacity
-            style={[styles.button, link ? styles.linkButton : null]}
+            style={[styles.button, linkString ? styles.linkButton : styles.outlineButton]}
             onPress={handlePress}
         >
-            <Text style={[styles.text, link ? styles.linkText : styles.defaultText]}>
+            <Text style={[styles.text, styles.defaultText]}>
                 {title}
+                {linkString && (
+                    <Text style={styles.linkText}>
+                        {` ${linkString}`}
+                    </Text>
+                )}
             </Text>
         </TouchableOpacity>
     );
@@ -36,17 +39,20 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    outlineButton: {
+        backgroundColor: 'transparent',
+    },
     linkButton: {
-        backgroundColor: '#006FFD',
+        backgroundColor: 'transparent',
     },
     text: {
         fontSize: 16,
     },
     defaultText: {
-        color: '#006FFD',
+        color: '#FFFFFF',
     },
     linkText: {
-        color: '#FFFFFF',
+        color: '#0000FF', // Blue color for the linkString effect
     },
 });
 

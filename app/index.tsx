@@ -14,7 +14,7 @@ export default function Welcome() {
     <View style={styles.container}>
       {/* Background */}
       <ImageBackground
-        source={require('../assets/images/backgroundImg.png')}
+        source={require('../assets/images/background.jpg')}
         style={styles.background}
         resizeMode="cover"
       />
@@ -54,7 +54,8 @@ export default function Welcome() {
           />
 
         <SecondaryButton
-          title="Already a member? Log In"
+          title="Already a member?"
+          linkString='Log In'
           onPress={() => router.push('/login')}
         />
         <Button

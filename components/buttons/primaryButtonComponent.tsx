@@ -10,8 +10,8 @@ import {
   TextStyle,
   StyleProp,
 } from 'react-native';
-import { BlurView }          from 'expo-blur';
-import { LinearGradient }    from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface Props extends TouchableOpacityProps {
   title: string;
@@ -31,24 +31,18 @@ export default function PrimaryButton({
       style={[styles.wrapper, style]}
       {...rest}
     >
-      {/* 1px gradient border (Figma stops 0%, 54%, 100%) */}
+      {/* 1px gradient border */}
       <LinearGradient
-        colors={[
-          'rgba(255,255,255)',    // 0% white
-          'rgba(255, 255, 255, 0)'  // 100% 77% white
-        ]}
+        colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0)']}
         style={styles.border}
       >
         {/* Frosted glass panel */}
-        <BlurView intensity={20} tint="dark" style={styles.glass}>
-          {/* Diagonal white→transparent fill (0%→100%) */}
+        <BlurView intensity={50} tint="dark" style={styles.glass}>
+          {/* Top-to-bottom white→transparent fill */}
           <LinearGradient
-            colors={[
-              'rgba(255,255,255)',    // 0% white
-              'rgb(255, 255, 255)'  // 100% 77% white
-            ]}
+            colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
             start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: 0, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
           <Text style={styles.text}>{title.toUpperCase()}</Text>
@@ -60,9 +54,9 @@ export default function PrimaryButton({
 
 const styles = StyleSheet.create<{
   wrapper: ViewStyle;
-  border:  ViewStyle;
-  glass:   ViewStyle;
-  text:    TextStyle;
+  border: ViewStyle;
+  glass: ViewStyle;
+  text: TextStyle;
 }>({
   wrapper: {
     width: 327,
@@ -83,7 +77,7 @@ const styles = StyleSheet.create<{
   border: {
     flex: 1,
     borderRadius: 40,
-    padding: StyleSheet.hairlineWidth, // exactly 1 physical pixel
+    padding: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
   glass: {
@@ -93,13 +87,14 @@ const styles = StyleSheet.create<{
     paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent background
   },
   text: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 1,
-    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowColor: 'rgba(0,0,0,0.3)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
