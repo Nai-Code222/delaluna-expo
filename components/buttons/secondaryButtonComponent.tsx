@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
     },
     linkText: {
-        color: '#0000FF', // Blue color for the linkString effect
+        color: '#5BC0BE',
     },
 });
 

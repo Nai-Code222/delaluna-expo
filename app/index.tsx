@@ -7,7 +7,7 @@ import PrimaryButton from '@/components/buttons/primaryButtonComponent';
 import SecondaryButton from '@/components/buttons/secondaryButtonComponent';
 
 const welcomeJson = require('../assets/animations/Pre comp 4.json');
-const logoJson = require('../assets/animations/logoLayer.json');
+const logoJson = require('../assets/animations/Pre comp 3_1.json');
 export default function Welcome() {
   const router = useRouter();
   return (
@@ -23,14 +23,12 @@ export default function Welcome() {
       <LottieView
           source={welcomeJson}
           autoPlay
-          loop
-          style={{ width: 300, height: 300 }}
+          style={{ width: 400, height: 300 }}
         />
         <LottieView
-          source={welcomeJson}
+          source={logoJson}
           autoPlay
-          loop
-          style={{ width: 300, height: 300 }}
+          style={{ width: 500, height: 500 }}
         />
       </View>
 

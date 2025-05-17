@@ -59,7 +59,7 @@ export default function Login() {
           style={StyleSheet.absoluteFillObject}
         >
           <View style={styles.bodyContainer}>
-            <Text style={styles.welcomeText}>Welcome Back</Text>
+            <Text style={styles.welcomeText}>Welcome!</Text>
             <View style={styles.form}>
               <TextInput
                 placeholder="Email"
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   logo: {
-    width: '90%',
+    width: '70%',
     height: '50%',
   },
   bodyContainer: {
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     color: 'white',
-    fontSize: 48,
+    fontSize: 30,
     fontFamily: 'Poppins',
     fontWeight: '500',
     marginBottom: 24,

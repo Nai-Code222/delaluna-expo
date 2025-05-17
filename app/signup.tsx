@@ -1,104 +1,113 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+// screens/SignUpChatScreen.tsx
+import React from 'react';
+import {
+  View,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  Platform,
+} from 'react-native';
+import { BlurView } from 'expo-blur';
+import { useRouter } from 'expo-router';
+import { ChatFlow, StepConfig, AnswerRecord } from '@/components/sign up/ChatFlow';
 
-const SignUp: React.FC = () => {
-    const navigation = useNavigation();
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        password: '',
-    });
+// Import policy modals and static text if needed
+// import PrivacyText from '../assets/privacy.txt';
+// import TermsText from '../assets/terms.txt';
 
-    const handleChange = (name: string, value: string) => {
-        setFormData({ ...formData, [name]: value });
-    };
+export default function SignUpChatScreen() {
+  const router = useRouter();
 
-    const handleSubmit = () => {
-        console.log('Form submitted:', formData);
-        // Add your sign-up logic here
-    };
+  const steps: StepConfig[] = [
+    {
+      key: 'firstName',
+      renderQuestion: () => `Hey, I’m glad you’re here! I have to ask a few quick questions for astrological reasons. Let’s start with some basic info to get you set up. 
+      \n\ What’s your name?`,
+      inputType: 'text',
+      placeholder: 'First name…',
+    },
+    {
+        key: 'lastName',
+        renderQuestion: () => `Alright, [First Name]! And, what is your last name?`,
+        inputType: 'text',
+        placeholder: 'Last name…',
+      },
+      {
+        key: 'pronouns',
+        renderQuestion: () => `What are your pronouns [First Name]?`,
+        inputType: 'choices',
+        choices: ['She/Her', 'He/Him', 'They/Them', 'Other'],
+        placeholder: 'Pronouns…',
+      },
+      {
+        key: 'birthday',
+        renderQuestion: () => `I need to calculate your birth chart. It’s basically a map of the planets and their coordinates at the time you were born. What is your birthdate?`,
+        inputType: 'date',
+        placeholder: 'Birth date…',
+      },
+      {
+        key: 'birthtime',
+        renderQuestion: () => `Would you happen to know what time you were born?`,
+        inputType: 'time',
+        placeholder: 'Birth time…',
+      },
+      {
+        key: 'placeOfBirth',
+        renderQuestion: () => `…and do you know where you were born?`,
+        inputType: 'location',
+        placeholder: 'Birth place…',
+      },
+      {
+        key: 'email',
+        renderQuestion: () => `What’s your email?`,
+        inputType: 'text',
+        placeholder: 'Email…',
+      },
+      {
+        key: 'password',
+        renderQuestion: () => `Alright, that’s it! The last thing I need you to do is create a password.`,
+        inputType: 'secure',
+        placeholder: 'Password…',
+      },
+    {
+      key: 'final',
+      renderQuestion: () => `Your secrets are safe with us 🔒`,
+      inputType: 'final',
+    },
+  ];
 
-    return (
-        <View style={styles.container}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                <Text style={styles.backButtonText}>← Back</Text>
-            </TouchableOpacity>
-            <Text style={styles.title}>Sign Up</Text>
-            <View style={styles.form}>
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Name</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={formData.name}
-                        onChangeText={(value) => handleChange('name', value)}
-                        placeholder="Enter your name"
-                        autoCapitalize="words"
-                    />
-                </View>
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Email</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={formData.email}
-                        onChangeText={(value) => handleChange('email', value)}
-                        placeholder="Enter your email"
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                    />
-                </View>
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Password</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={formData.password}
-                        onChangeText={(value) => handleChange('password', value)}
-                        placeholder="Enter your password"
-                        secureTextEntry
-                    />
-                </View>
-                <Button title="Sign Up" onPress={handleSubmit} />
-            </View>
+  const handleComplete = (answers: AnswerRecord) => {
+    console.log('Signup answers:', answers);
+    router.replace('/');
+  };
+
+  return (
+    <ImageBackground
+      source={require('../assets/images/background.jpg')}
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <BlurView intensity={80} tint="dark" style={styles.overlay}>
+        {/* Header with Cancel button */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.replace('/')}>
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
         </View>
-    );
-};
+
+        {/* ChatFlow component handles the conversation UI */}
+        <ChatFlow steps={steps} onComplete={handleComplete} />
+      </BlurView>
+    </ImageBackground>
+  );
+}
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: '#fff',
-    },
-    backButton: {
-        marginBottom: 20,
-    },
-    backButtonText: {
-        fontSize: 16,
-        color: '#007BFF',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    form: {
-        marginTop: 10,
-    },
-    inputGroup: {
-        marginBottom: 15,
-    },
-    label: {
-        fontSize: 16,
-        marginBottom: 5,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        padding: 10,
-        fontSize: 16,
-    },
+  background: { flex: 1 },
+  overlay: { flex: 1, paddingTop: Platform.OS === 'ios' ? 60 : 40, },
+  header: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 8 },
+  cancelText: { color: '#6FFFE9', fontSize: 16, fontWeight: '500', marginRight: 16 },  
 });
 
-export default SignUp;
+
