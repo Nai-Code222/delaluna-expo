@@ -5,9 +5,17 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import Constants from 'expo-constants';
 import { getFirestore } from "firebase/firestore";
-const extra = Constants.expoConfig?.extra || Constants.manifest?.extra;
+const extra = Constants.expoConfig?.extra;
 
 // Your Firebase configuration using environment variables
+// Note: Make sure to set these environment variables in your app's configuration
+// or use a .env file for local development.
+// You can use dotenv or similar libraries to load environment variables
+// in a React Native app, or set them directly in your app's configuration.
+// For example, in your app.json or app.config.js, you can set them like this:
+// {
+  //   "extra": {
+  //     "FIREBASE_API_KEY": "your_api
 const firebaseConfig = {
   apiKey: extra?.FIREBASE_API_KEY,
   authDomain: extra?.FIREBASE_AUTH_DOMAIN,
