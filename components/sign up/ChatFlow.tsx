@@ -15,6 +15,7 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import Checkbox from 'expo-checkbox';
 import { BlurView } from 'expo-blur';
 import { LocationAutocomplete } from './LocationAutocomplete';
+import { PolicyModal } from './PolicyModals'; // Import the PolicyModal component
 
 export interface AnswerRecord {
   firstName?: string;
@@ -55,6 +56,17 @@ export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
   const [isFocused, setIsFocused] = useState(false); // Track if the input is focused
   const [error, setError] = useState<string | null>(null); // Track error message
   const scrollRef = useRef<ScrollView>(null);
+  const [isPolicyModalVisible, setIsPolicyModalVisible] = useState(false); // Track modal visibility
+  const [policyModalContent, setPolicyModalContent] = useState<'Privacy Policy' | 'Terms & Conditions'>('Privacy Policy'); // Track which content to display
+
+  const openPolicyModal = (content: 'Privacy Policy' | 'Terms & Conditions') => {
+    setPolicyModalContent(content);
+    setIsPolicyModalVisible(true);
+  };
+
+  const closePolicyModal = () => {
+    setIsPolicyModalVisible(false);
+  };
 
   // auto-scroll when step changes
   const handleContentSizeChange = () => {
@@ -457,22 +469,31 @@ export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
       case 'final':
         return (
           <View style={styles.finalArea}>
-            <View style={styles.row}>
-              <Checkbox value={checkedPolicy} onValueChange={setCheckedPolicy} />
-              <Text style={styles.footerText}>
-                I agree to the <Text style={styles.link}>Privacy Policy</Text>
+            <Text style={styles.footerText}>
+              By signing up, you agree to our{' '}
+              <Text
+                style={styles.link}
+                onPress={() => openPolicyModal('Terms & Conditions')}
+              >
+                Terms & Conditions
+              </Text>{' '}
+              and{' '}
+              <Text
+                style={styles.link}
+                onPress={() => openPolicyModal('Privacy Policy')}
+              >
+                Privacy Policy
               </Text>
-            </View>
-            <View style={styles.row}>
-              <Checkbox value={checkedTerms} onValueChange={setCheckedTerms} />
-              <Text style={styles.footerText}>
-                I agree to the <Text style={styles.link}>Terms & Conditions</Text>
-              </Text>
-            </View>
+            </Text>
             <TouchableOpacity
-              style={[styles.continueButton, { opacity: checkedPolicy && checkedTerms ? 1 : 0.5 }]}
-              disabled={!(checkedPolicy && checkedTerms)}
-              onPress={() => onComplete(answers)}
+              style={styles.continueButton}
+              onPress={() => {
+                if (checkedPolicy && checkedTerms) {
+                  onComplete(answers);
+                } else {
+                  setError('Please accept the terms and privacy policy.');
+                }
+              }}
             >
               <Text style={styles.continueText}>Continue</Text>
             </TouchableOpacity>
@@ -500,6 +521,8 @@ export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
       </ScrollView>
 
       {renderInputArea()}
+      {/* Policy Modal */}
+      
     </>
   );
 }
