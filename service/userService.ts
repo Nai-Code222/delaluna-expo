@@ -1,6 +1,6 @@
 // src/services/userService.ts
 import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
+import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import type { AnswerRecord } from '@/components/sign up/ChatFlow';
 import type { UserRecord } from '@/model/UserRecord';
 

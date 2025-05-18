@@ -12,7 +12,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { ChatFlow, StepConfig, AnswerRecord } from '@/components/sign up/ChatFlow';
-import { signUp } from '@/backend/Auth-service';
+//import { signUp } from '@/backend/Auth-service';
 import { registerNewUser } from '@/service/userService';
 
 // Import policy modals and static text if needed
@@ -93,7 +93,7 @@ export default function SignUpChatScreen() {
   console.log('Signup answers:', answers);
   try {
     // 1) Create the Firebase Auth user
-    await signUp(answers.email!, answers.password!);
+    //await signUp(answers.email!, answers.password!);
 
     // 2) Write the user doc to Firestore
     await registerNewUser(answers);
