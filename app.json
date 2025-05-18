@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.app.delalunaanswers",
+      "bundleIdentifier": "com.delalunaanswers.app",
       "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
@@ -18,7 +18,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.app.delalunaanswers",
+      "package": "com.delalunaanswers.app",
       "googleServicesFile": "./google-services.json"
     },
     "web": {
