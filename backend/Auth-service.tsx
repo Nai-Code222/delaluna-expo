@@ -35,9 +35,11 @@ export async function signUp(email: string, password: string): Promise<void> {
 /**
  * Sign in an existing user with email & password.
  */
+/** */
 export async function signIn(email: string, password: string): Promise<void> {
   await auth().signInWithEmailAndPassword(email, password);
 }
+
 
 /**
  * Sign out the current user.

@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>myapp</string>
-          <string>com.app.delalunaanswers</string>
+          <string>com.delalunaanswers.app</string>
         </array>
       </dict>
       <dict>
