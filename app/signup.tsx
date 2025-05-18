@@ -22,57 +22,66 @@ export default function SignUpChatScreen() {
   const steps: StepConfig[] = [
     {
       key: 'firstName',
-      renderQuestion: () => `Hey, I’m glad you’re here! I have to ask a few quick questions for astrological reasons. Let’s start with some basic info to get you set up. 
+      renderQuestion: () =>
+        `Hey, I’m glad you’re here! I have to ask a few quick questions for astrological reasons. Let’s start with some basic info to get you set up. 
       \n\ What’s your name?`,
       inputType: 'text',
       placeholder: 'First name…',
     },
     {
-        key: 'lastName',
-        renderQuestion: () => `Alright, [First Name]! And, what is your last name?`,
-        inputType: 'text',
-        placeholder: 'Last name…',
-      },
-      {
-        key: 'pronouns',
-        renderQuestion: () => `What are your pronouns [First Name]?`,
-        inputType: 'choices',
-        choices: ['She/Her', 'He/Him', 'They/Them', 'Other'],
-        placeholder: 'Pronouns…',
-      },
-      {
-        key: 'birthday',
-        renderQuestion: () => `I need to calculate your birth chart. It’s basically a map of the planets and their coordinates at the time you were born. What is your birthdate?`,
-        inputType: 'date',
-        placeholder: 'Birth date…',
-      },
-      {
-        key: 'birthtime',
-        renderQuestion: () => `Would you happen to know what time you were born?`,
-        inputType: 'time',
-        placeholder: 'Birth time…',
-      },
-      {
-        key: 'placeOfBirth',
-        renderQuestion: () => `…and do you know where you were born?`,
-        inputType: 'location',
-        placeholder: 'Birth place…',
-      },
-      {
-        key: 'email',
-        renderQuestion: () => `What’s your email?`,
-        inputType: 'text',
-        placeholder: 'Email…',
-      },
-      {
-        key: 'password',
-        renderQuestion: () => `Alright, that’s it! The last thing I need you to do is create a password.`,
-        inputType: 'secure',
-        placeholder: 'Password…',
-      },
+      key: 'lastName',
+      renderQuestion: (answers) =>
+        `Alright, ${answers.firstName || '[First Name]'}! And, what is your last name?`,
+      inputType: 'text',
+      placeholder: 'Last name…',
+    },
+    {
+      key: 'pronouns',
+      renderQuestion: (answers) =>
+        `What are your pronouns, ${answers.firstName || '[First Name]'}?`,
+      inputType: 'choices',
+      choices: ['She/Her', 'He/Him', 'They/Them', 'Other'],
+      placeholder: 'Pronouns…',
+    },
+    {
+      key: 'birthday',
+      renderQuestion: () =>
+        `I need to calculate your birth chart. It’s basically a map of the planets and their coordinates at the time you were born. What is your birthdate?`,
+      inputType: 'date',
+      placeholder: 'Birth date…',
+    },
+    {
+      key: 'birthtime',
+      renderQuestion: () =>
+        `Would you happen to know what time you were born?`,
+      inputType: 'time',
+      placeholder: 'Birth time…',
+    },
+    {
+      key: 'placeOfBirth',
+      renderQuestion: () =>
+        `…and do you know where you were born?`,
+      inputType: 'location',
+      placeholder: 'Birth place…',
+    },
+    {
+      key: 'email',
+      renderQuestion: () =>
+        `What’s your email?`,
+      inputType: 'email',
+      placeholder: 'Email…',
+    },
+    {
+      key: 'password',
+      renderQuestion: () =>
+        `Alright, that’s it! The last thing I need you to do is create a password.`,
+      inputType: 'secure',
+      placeholder: 'Password…',
+    },
     {
       key: 'final',
-      renderQuestion: () => `Your secrets are safe with us 🔒`,
+      renderQuestion: () =>
+        `Your secrets are safe with us 🔒`,
       inputType: 'final',
     },
   ];

@@ -32,7 +32,7 @@ export interface AnswerRecord {
 export type StepConfig = {
   key: keyof AnswerRecord | 'final';
   renderQuestion: (answers: AnswerRecord) => string;
-  inputType: 'text' | 'location' | 'secure' | 'choices' | 'date' | 'time' | 'final';
+  inputType: 'text' | 'location' | 'secure' | 'choices' | 'date' | 'time' | 'email' | 'final';
   placeholder?: string;
   choices?: string[];
   hasUnknownSwitch?: boolean;
@@ -44,7 +44,7 @@ type ChatFlowProps = {
 };
 
 export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
-const [step, setStep] = useState(0);
+  const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<AnswerRecord>({});
   const [textInput, setTextInput] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -52,6 +52,8 @@ const [step, setStep] = useState(0);
   const [checkedPolicy, setCheckedPolicy] = useState(false);
   const [checkedTerms, setCheckedTerms] = useState(false);
   const [showSendButton, setShowSendButton] = useState(true); // Moved here
+  const [isFocused, setIsFocused] = useState(false); // Track if the input is focused
+  const [error, setError] = useState<string | null>(null); // Track error message
   const scrollRef = useRef<ScrollView>(null);
 
   // auto-scroll when step changes
@@ -63,13 +65,31 @@ const [step, setStep] = useState(0);
   const current = steps[step];
   useEffect(() => {
     if (current.inputType === 'location') {
-      setTextInput(answers.placeOfBirth || '');
+      setTextInput(answers.placeOfBirth || ''); // Pre-fill for location
+    } else if (current.inputType === 'email') {
+      setTextInput(answers.email || ''); // Pre-fill for email
+    } else {
+      setTextInput(''); // Clear for other steps
     }
   }, [current.key]);
+
+  const capitalizeName = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize the first letter of each word
+  };
 
   const saveAndNext = (value?: any) => {
     switch (current.inputType) {
       case 'text':
+        if (current.key === 'firstName' || current.key === 'lastName') {
+          // Format the name before saving
+          setAnswers((a) => ({ ...a, [current.key]: capitalizeName(textInput) }));
+        } else {
+          setAnswers((a) => ({ ...a, [current.key]: textInput }));
+        }
+        setTextInput('');
+        break;
       case 'secure':
         setAnswers((a) => ({ ...a, [current.key]: textInput }));
         setTextInput('');
@@ -101,12 +121,36 @@ const [step, setStep] = useState(0);
     if (idx >= step || s.inputType === 'final') return null;
     const raw = (answers as any)[s.key];
     let display = raw;
-    if (s.inputType === 'date' && raw instanceof Date) display = raw.toLocaleDateString();
-    if (s.inputType === 'time') display = answers.birthtimeUnknown
-      ? "I don't know"
-      : raw instanceof Date
-        ? raw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        : raw;
+
+    // Handle undefined value for placeOfBirth
+    if (s.key === 'placeOfBirth' && raw === undefined) {
+      display = "I don't know"; // Show "I don't know" for undefined placeOfBirth
+    }
+
+    // Handle date input type
+    if (s.inputType === 'date' && raw instanceof Date) {
+      display = raw.toLocaleDateString();
+    }
+
+    // Handle time input type
+    if (s.inputType === 'time') {
+      display = answers.birthtimeUnknown
+        ? "I don't know"
+        : raw instanceof Date
+          ? raw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : raw;
+    }
+
+    // Handle secure input type (password)
+    if (s.inputType === 'secure') {
+      display = raw ? '******' : ''; // Display dots or leave blank
+    }
+
+    // Ensure display is not blank
+    if (!display) {
+      display = "I don't know"; // Fallback for any undefined or blank values
+    }
+
     return (
       <View style={styles.answerBubble}>
         <Text style={styles.answerText}>{display}</Text>
@@ -116,15 +160,13 @@ const [step, setStep] = useState(0);
 
   const renderInputArea = () => {
     switch (current.inputType) {
-      case 'text':
-      case 'secure':
+      case 'text': {
         return (
           <View style={styles.inputRow}>
             <TextInput
               style={styles.textInput}
               placeholder={current.placeholder}
               placeholderTextColor="#aaa"
-              secureTextEntry={current.inputType === 'secure'}
               value={textInput}
               onChangeText={setTextInput}
             />
@@ -137,6 +179,51 @@ const [step, setStep] = useState(0);
             </TouchableOpacity>
           </View>
         );
+      }
+
+      case 'secure': {
+          const isValidPassword = (password: string) => {
+          const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/; // At least 8 characters, one uppercase, one number
+          return passwordRegex.test(password);
+        };
+
+        const handleSend = () => {
+          if (!isValidPassword(textInput)) {
+            setError('Password must be at least 8 characters long, contain one uppercase letter, and one number.'); // Set error message
+          } else {
+            setError(null); // Clear error message
+            setAnswers((a) => ({ ...a, password: textInput })); // Save password to answers
+            saveAndNext(textInput); // Proceed to the next step
+          }
+        };
+        return (
+          <View style={styles.inputContainer}>
+            {/* Display error message if password is invalid */}
+
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.textInput}
+                placeholder={current.placeholder}
+                placeholderTextColor="#aaa"
+                secureTextEntry={true} // Hide password input
+                value={textInput}
+                onChangeText={setTextInput}
+              />
+              <TouchableOpacity
+                style={[styles.sendButton, { opacity: 1 }]} // Keep button always enabled
+                onPress={handleSend} // Perform validation on press
+              >
+                <Text style={styles.sendText}>➔</Text>
+              </TouchableOpacity>
+            </View>
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+          </View>
+        );
+      }
 
       case 'choices':
         return (
@@ -169,13 +256,7 @@ const [step, setStep] = useState(0);
         const isFuture = selected ? selected > today : false;
         return (
           <View style={styles.inputContainer}>
-            {isFuture && (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>
-                  Please select a valid date not in the future.
-                </Text>
-              </View>
-            )}
+
             <View style={styles.inputRow}>
               <TouchableOpacity
                 style={styles.datePickerButton}
@@ -205,37 +286,56 @@ const [step, setStep] = useState(0);
               }}
               onCancel={() => setShowDatePicker(false)}
             />
+
+            {isFuture && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>
+                  Please select a valid date not in the future.
+                </Text>
+              </View>
+            )}
           </View>
         );
       }
 
-            case 'location':
-  return (
-    <View style={styles.inputContainer}>
-      <View style={styles.inputRow}>
-        <LocationAutocomplete
-          onSelect={(item) => {
-            const { name, city, state, country } = item.properties;
-            const label = [name, city, state, country].filter(Boolean).join(', ');
-            setTextInput(label);
-            setAnswers((a) => ({ ...a, placeOfBirth: label }));
-          }}
-          onResultsVisibilityChange={(visible) => setShowSendButton(!visible)}
-          onInputChange={(text) => setTextInput(text)} // Update textInput state
-        />
+      case 'location':
+        return (
+          <View style={styles.inputContainer}>
+            <View style={styles.inputRow}>
+              <LocationAutocomplete
+                onSelect={(item) => {
+                  const { name, city, state, country } = item.properties;
+                  const label = [name, city, state, country].filter(Boolean).join(', ');
+                  setTextInput(label);
+                  setAnswers((a) => ({ ...a, placeOfBirth: label }));
+                }}
+                onResultsVisibilityChange={(visible) => setShowSendButton(!visible)}
+                onInputChange={(text) => setTextInput(text)} // Update textInput state
+              />
 
-        {showSendButton && (
-          <TouchableOpacity
-            style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
-            disabled={!textInput}
-            onPress={() => saveAndNext(textInput)}
-          >
-            <Text style={styles.sendText}>➔</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-  );
+              {showSendButton && (
+                <TouchableOpacity
+                  style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
+                  disabled={!textInput}
+                  onPress={() => saveAndNext(textInput)}
+                >
+                  <Text style={styles.sendText}>➔</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+
+            <TouchableOpacity
+              style={[styles.choiceButton, { alignSelf: 'center', marginTop: 16 }]}
+              onPress={() => {
+                setAnswers((a) => ({ ...a, placeOfBirth: undefined })); // Set value as undefined for location
+                saveAndNext('I don’t know'); // Display "I don't know" in the chat
+              }}
+            >
+              <Text style={[styles.choiceText, { color: '#fff' }]}>I don’t know</Text>
+            </TouchableOpacity>
+          </View>
+        );
       case 'time': {
         const now = new Date();
         const birthDate = answers.birthday;
@@ -280,10 +380,10 @@ const [step, setStep] = useState(0);
             <TouchableOpacity
               style={[
                 styles.choiceButton,
-                
+
                 { alignSelf: 'center', marginTop: 16 },
               ]}
-              onPress={() => saveAndNext(defaultTime)}
+              onPress={() => saveAndNext('I don’t know')}
             >
               <Text
                 style={[
@@ -298,7 +398,7 @@ const [step, setStep] = useState(0);
               isVisible={showTimePicker}
               mode="time"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              date={birthTime || defaultTime}
+              date={birthTime || now}
               onConfirm={time => {
                 setAnswers(a => ({ ...a, birthtime: time }));
                 setShowTimePicker(false);
@@ -308,7 +408,52 @@ const [step, setStep] = useState(0);
           </View>
         );
       }
+      case 'email': {
 
+
+        const isValidEmail = (email: string) => {
+          const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+          return emailRegex.test(email);
+        };
+
+        const handleSend = () => {
+          if (!isValidEmail(textInput)) {
+            setError('Please enter a valid email address.'); // Set error message
+          } else {
+            setError(null); // Clear error message
+            setAnswers((a) => ({ ...a, email: textInput })); // Save email to answers
+            saveAndNext(textInput); // Proceed to the next step
+          }
+        };
+
+        return (
+          <View style={styles.inputContainer}>
+            {/* Display error message if email is invalid */}
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.textInput}
+                placeholder={current.placeholder}
+                placeholderTextColor="#aaa"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={textInput}
+                onChangeText={setTextInput}
+              />
+              <TouchableOpacity
+                style={[styles.sendButton, { opacity: 1 }]} // Keep button always enabled
+                onPress={handleSend} // Perform validation on press
+              >
+                <Text style={styles.sendText}>➔</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        );
+      }
       case 'final':
         return (
           <View style={styles.finalArea}>
@@ -338,7 +483,7 @@ const [step, setStep] = useState(0);
 
   return (
     <>
-            <ScrollView
+      <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.container}
         onContentSizeChange={handleContentSizeChange} // Auto-scroll when content changes
@@ -347,7 +492,7 @@ const [step, setStep] = useState(0);
           <View key={i} style={styles.bubbleContainer}>
             {/* Render the question bubble */}
             <Text style={styles.bubbleText}>{s.renderQuestion(answers)}</Text>
-      
+
             {/* Render the user input bubble */}
             {renderAnswerBubble(s, i)}
           </View>
@@ -479,7 +624,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginTop: 8,
-    marginHorizontal: 20,
+    marginHorizontal: 10,
     maxWidth: '75%',
     alignSelf: 'center',
   },
