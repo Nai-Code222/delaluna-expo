@@ -13,7 +13,6 @@ import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { ChatFlow, StepConfig, AnswerRecord } from '@/components/sign up/ChatFlow';
 //import { signUp } from '@/backend/Auth-service';
-import { registerNewUser } from '@/service/userService';
 
 // Import policy modals and static text if needed
 // import PrivacyText from '../assets/privacy.txt';
@@ -96,7 +95,7 @@ export default function SignUpChatScreen() {
     //await signUp(answers.email!, answers.password!);
 
     // 2) Write the user doc to Firestore
-    await registerNewUser(answers);
+    //await registerNewUser(answers);
 
     // 3) Navigate into your authenticated app
     router.replace('/');
