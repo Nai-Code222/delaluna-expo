@@ -7,15 +7,10 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Switch,
   Platform,
-  Button,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import Checkbox from 'expo-checkbox';
-import { BlurView } from 'expo-blur';
 import { LocationAutocomplete } from './LocationAutocomplete';
-import { PolicyModal } from './PolicyModals'; // Import the PolicyModal component
 
 export interface AnswerRecord {
   firstName?: string;
@@ -194,7 +189,7 @@ export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
       }
 
       case 'secure': {
-          const isValidPassword = (password: string) => {
+        const isValidPassword = (password: string) => {
           const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/; // At least 8 characters, one uppercase, one number
           return passwordRegex.test(password);
         };
@@ -522,7 +517,7 @@ export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
 
       {renderInputArea()}
       {/* Policy Modal */}
-      
+
     </>
   );
 }
