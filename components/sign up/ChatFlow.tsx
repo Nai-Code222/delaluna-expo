@@ -14,6 +14,9 @@ import { LocationAutocomplete } from './LocationAutocomplete';
 import { checkEmailExists } from '@/service/Auth.service';
 import { auth } from '../../firebaseConfig'
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
+import { PolicyModal } from './PolicyModals';
+import { termsAndConditions, privacyPolicy } from '../../assets/legal/legalTexts';
+
 
 
 export interface AnswerRecord {
@@ -649,10 +652,56 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
         ))}
       </ScrollView>
       {renderInputArea()}
-      {/* Policy Modal */}
+      <PolicyModal
+  visible={isPolicyModalVisible}
+  onClose={closePolicyModal}
+  title={policyModalContent}
+  textContent={
+    policyModalContent === 'Terms & Conditions'
+      ? termsAndConditions
+      : privacyPolicy
+  }
+/>
+
     </>
   );
 }
+
+const markdownStyles = {
+  body: {
+    color: '#333',
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  heading1: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center', // 👈 center h1
+    marginBottom: 10,
+  },
+  heading2: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center', // 👈 center h2
+    marginTop: 16,
+    marginBottom: 6,
+  },
+  heading3: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center', // 👈 center h3
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  strong: {
+    fontWeight: 'bold',
+  },
+  paragraph: {
+    textAlign: 'left',
+    marginBottom: 12,
+  },
+};
+
 
 const styles = StyleSheet.create({
   container: {

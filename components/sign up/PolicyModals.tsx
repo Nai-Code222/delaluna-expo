@@ -12,51 +12,45 @@ import {
 import { WebView } from 'react-native-webview';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
+import Markdown from 'react-native-markdown-display';
+
 
 interface PolicyModalProps {
   visible: boolean;
   onClose: () => void;
-  uri?: string;
-  localAsset?: any;
+  textContent?: string;
   title: string;
 }
+
 
 export function PolicyModal({
   visible,
   onClose,
-  uri,
-  localAsset,
+  textContent,
   title,
 }: PolicyModalProps) {
   const [content, setContent] = useState<string>('');
-
-  useEffect(() => {
-    if (localAsset) {
-      (async () => {
-        const [loaded] = await Asset.loadAsync(localAsset);
-        const fileUri = loaded.localUri || loaded.uri;
-        const text = await FileSystem.readAsStringAsync(fileUri || '');
-        setContent(text);
-      })();
-    }
-  }, [localAsset]);
 
   return (
     <Modal visible={visible} animationType="slide">
       <View style={styles.modalContainer}>
         <View style={styles.header}>
-          <Text style={styles.title}>{title}</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text style={styles.closeText}>Close</Text>
-          </TouchableOpacity>
-        </View>
-        {localAsset ? (
+  <Text style={styles.title}>{title}</Text>
+  <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+    <Text style={styles.closeText}>Close</Text>
+  </TouchableOpacity>
+</View>
+
+
+        {visible && textContent && (
           <ScrollView contentContainerStyle={styles.textContainer}>
-            <Text style={styles.textContent}>{content}</Text>
+            <Markdown style={markdownStyles}>
+  {textContent}
+</Markdown>
+
           </ScrollView>
-        ) : (
-          <WebView source={{ uri: uri || '' }} style={styles.webView} />
         )}
+
       </View>
     </Modal>
   );
@@ -69,27 +63,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderColor: '#ddd',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
   title: {
     fontSize: 18,
     fontWeight: '600',
+    textAlign: 'center',
   },
   closeButton: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
     padding: 8,
   },
   closeText: {
-    color: '#6FFFE9',
+    color: '#0000EE', // ✅ match link color
     fontSize: 16,
-  },
-  webView: {
-    flex: 1,
+    fontWeight: '500',
   },
   textContainer: {
     padding: 16,
@@ -100,3 +95,15 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+
+import { TextStyle } from 'react-native';
+
+const markdownStyles: { [key: string]: TextStyle } = {
+  body: { color: '#333', fontSize: 15, lineHeight: 22 },
+  heading1: { fontSize: 22, fontWeight: 'bold', marginBottom: 10, alignSelf: 'center', },
+  heading2: { fontSize: 20, fontWeight: 'bold', marginTop: 16, alignSelf: 'center',  },
+  heading3: { fontSize: 18, fontWeight: '600', marginTop: 12, alignSelf: 'center',  },
+  strong: { fontWeight: 'bold' },
+  link: { color: '#1C2541', textDecorationLine: 'underline' },
+};
+
