@@ -157,15 +157,15 @@ export default function SignUpChatScreen() {
     >
       <BlurView intensity={80} tint="dark" style={styles.overlay}>
         <View style={styles.header}>
-          {step > 0 && (
-            <TouchableOpacity onPress={() => setStep(step - 1)}>
-              <Text style={styles.goBackText}>← Go Back</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity onPress={() => router.replace('/')}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
+  {step > 0 && (
+    <TouchableOpacity onPress={() => setStep(step - 1)}>
+      <Text style={styles.goBackText}>← Go Back</Text>
+    </TouchableOpacity>
+  )}
+  <TouchableOpacity onPress={() => router.replace('/')} style={styles.cancelButton}>
+    <Text style={styles.cancelText}>Cancel</Text>
+  </TouchableOpacity>
+</View>
         <ChatFlow
           steps={steps}
           onComplete={handleComplete}
@@ -182,11 +182,16 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, paddingTop: Platform.OS === 'ios' ? 60 : 40 },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-    alignItems: 'center',
-    paddingHorizontal: 16,
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  paddingHorizontal: 16,
+  marginBottom: 8,
+  position: 'relative',
   },
-  goBackText: { color: '#6FFFE9', fontSize: 16, fontWeight: '500' },
-  cancelText: { color: '#6FFFE9', fontSize: 16, fontWeight: '500' },
+  cancelButton: {
+  position: 'absolute',
+  right: 16,
+},
+  goBackText: { color: '#6FFFE9', fontSize: 18, fontWeight: '500' },
+  cancelText: { color: '#6FFFE9', fontSize: 18, fontWeight: '500' },
 });
