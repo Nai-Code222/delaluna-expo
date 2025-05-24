@@ -141,6 +141,12 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
     scrollRef.current?.scrollToEnd({ animated: true });
   };
 
+  const formatTime = (date: unknown) => {
+  return date instanceof Date
+    ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : 'Select birth time';
+};
+
   useEffect(() => {
     if (
       steps[step]?.inputType === 'email' &&
@@ -239,7 +245,7 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
                   <TextInput
                     style={styles.textInput}
                     placeholder={current.placeholder}
-                    placeholderTextColor="#aaa"
+                    placeholderTextColor="#fff"
                     value={textInput}
                     onChangeText={setTextInput}
                   />
@@ -274,7 +280,7 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
                     <TextInput
                       style={styles.textInput}
                       placeholder={current.placeholder}
-                      placeholderTextColor="#aaa"
+                      placeholderTextColor="#fff"
                       secureTextEntry={true}
                       value={textInput}
                       onChangeText={setTextInput}
@@ -401,6 +407,8 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
               );
             case 'time': {
               const now = new Date();
+              const defaultMidnight = new Date();
+defaultMidnight.setHours(0, 0, 0, 0);
               const birthDate = answers.birthday;
               const birthTime = answers.birthtime;
               const isBirthdayToday = birthDate?.toDateString() === now.toDateString();
@@ -422,10 +430,7 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
                       style={styles.datePickerButton}
                       onPress={() => setShowTimePicker(true)}
                     >
-                      <Text style={styles.datePickerText}>
-                        {birthTime
-                          ? birthTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                          : 'Select birth time'}
+                      <Text style={styles.datePickerText}>{formatTime(birthTime)}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -442,16 +447,15 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
                       { alignSelf: 'center', marginTop: 16 },
                     ]}
                     onPress={() => {
-                      const defaultMidnight = new Date();
-                      defaultMidnight.setHours(0, 0, 0, 0);
+                      
+                      saveAndNext('I don’t know');
 
                       setAnswers(a => ({
                         ...a,
                         birthtime: defaultMidnight,
                         birthtimeUnknown: true, 
                       }));
-
-                      saveAndNext('I don’t know');
+                      
                     }}
                   >
                     <Text
@@ -516,7 +520,7 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
                     <TextInput
                       style={styles.textInput}
                       placeholder={current.placeholder}
-                      placeholderTextColor="#aaa"
+                      placeholderTextColor="#fff"
                       keyboardType="email-address"
                       autoCapitalize="none"
                       value={textInput}
@@ -739,15 +743,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C2541',
   },
   textInput: {
-    flex: 1,
-    backgroundColor: '#3A506B',
-    borderRadius: 24,
-    paddingHorizontal: 15,
-    color: '#fff',
-    height: 50,
-    marginBottom: Platform.OS === 'ios' ? 10 : 5,
-    alignSelf: 'center',
-  },
+  flex: 1,
+  backgroundColor: '#3A506B',
+  borderRadius: 24,
+  paddingHorizontal: 15,
+  color: '#fff', // ✅ white input text
+  height: 50,
+  marginBottom: Platform.OS === 'ios' ? 10 : 5,
+  alignSelf: 'center',
+},
+
   sendButton: {
     marginLeft: 12,
     alignSelf: 'center',

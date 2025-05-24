@@ -64,6 +64,7 @@ export function LocationAutocomplete({
         <TextInput
           style={styles.input}
           placeholder="Type your birth city…"
+          placeholderTextColor="#fff"
           value={query}
           onChangeText={(text) => {
             setQuery(text);
