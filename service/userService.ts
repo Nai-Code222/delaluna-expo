@@ -1,40 +1,52 @@
-// src/services/userService.ts
-import firestore from '@react-native-firebase/firestore';
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
-import type { AnswerRecord } from '@/components/sign up/ChatFlow';
-import type { UserRecord } from '@/model/UserRecord';
+import { auth } from '../firebaseConfig';
+import { doc, setDoc } from 'firebase/firestore';
+import { User } from 'firebase/auth';
+import { db } from '../firebaseConfig';
+import { UserCredential } from 'firebase/auth';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged as fbOnAuthStateChanged,
+  signOut as fbSignOut,
+} from 'firebase/auth';
+import { AnswerRecord } from '@/components/sign up/ChatFlow';
+import { UserRecord } from '@/model/UserRecord';
 
-export async function registerNewUser(
-  answers: AnswerRecord
+export function signUp(email: string, password: string) {
+  return createUserWithEmailAndPassword(auth, email, password);
+}
+
+/** 
+ * Create newUser doc to the Firestore Datbase users collection
+ *  with the userId as the document id.
+ * @param userId - The user ID to use as the document ID.
+ * @param userData - a user record object to store in the document passed in from where its called.
+ * @returns A promise that resolves when the document is created.
+ * @throws An error if the document could not be created.
+ */
+export async function createUserDoc(
+  userId: string,
+  userData: UserRecord
 ): Promise<void> {
-  if (!answers.email || !answers.password) {
-    throw new Error('Email and password are required');
+  try {
+    // Create a new document in the "users" collection with the userId as the document ID
+    const userDocRef = doc(db, 'users', userId);
+    await setDoc(userDocRef, userData);
+    console.log('User document created successfully:', userId);
+  } catch (error) {
+    console.error('Error creating user document:', error);
+    throw new Error('Error creating user document');
   }
+}
 
-  // 1) Create the Auth user
-  const cred = await auth().createUserWithEmailAndPassword(
-    answers.email,
-    answers.password
-  );
-  const uid = cred.user.uid;
+export function signIn(email: string, password: string) {
+  return signInWithEmailAndPassword(auth, email, password);
+}
 
-  // 2) Build the user document
-  const userDoc: UserRecord = {
-    id: uid,
-    firstName: answers.firstName!,
-    lastName: answers.lastName,
-    pronouns: answers.pronouns,
-    birthday: answers.birthday?.toISOString(),
-    birthtime: answers.birthtime?.toISOString(),
-    placeOfBirth: answers.placeOfBirth,
-    location: answers.location,
-    email: answers.email,
-    isPaidMember: false,
-  };
+export function signOut() {
+  return fbSignOut(auth);
+}
 
-  // 3) Write it under `users/{uid}` — **no parentheses** on `firestore`
-  await firestore()
-    .collection('users')
-    .doc(uid)
-    .set(userDoc);
+export function onAuthStateChanged(cb: any) {
+  return fbOnAuthStateChanged(auth, cb);
 }

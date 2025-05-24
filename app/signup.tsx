@@ -1,5 +1,5 @@
 // screens/SignUpChatScreen.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -12,7 +12,10 @@ import {
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { ChatFlow, StepConfig, AnswerRecord } from '@/components/sign up/ChatFlow';
-//import { signUp } from '@/backend/Auth-service';
+import { signUp } from '../service/Auth.service';
+import { UserCredential } from 'firebase/auth';
+import { UserRecord } from '@/model/UserRecord';
+import { createUserDoc } from '@/service/userService';
 
 // Import policy modals and static text if needed
 // import PrivacyText from '../assets/privacy.txt';
@@ -20,6 +23,7 @@ import { ChatFlow, StepConfig, AnswerRecord } from '@/components/sign up/ChatFlo
 
 export default function SignUpChatScreen() {
   const router = useRouter();
+  const [step, setStep] = useState(0);
 
   const steps: StepConfig[] = [
     {
@@ -88,23 +92,63 @@ export default function SignUpChatScreen() {
     },
   ];
 
+  const setStepToKey = (key: keyof AnswerRecord) => {
+    const index = steps.findIndex(s => s.key === key);
+    if (index !== -1) {
+      setStep(index);
+    }
+  };
+
+
   const handleComplete = async (answers: AnswerRecord) => {
-  console.log('Signup answers:', answers);
-  try {
-    // 1) Create the Firebase Auth user
-    //await signUp(answers.email!, answers.password!);
+    console.log('Signup answers:', answers);
+    try {
+      // 1) Create the Firebase Auth user
+      let userCred: UserCredential = await signUp(answers.email!, answers.password!);
+      const uid = userCred.user.uid;
+      console.log('User created:', uid);
+      
+      const userRecord: UserRecord = {
+        id: uid,
+        firstName: answers.firstName!,
+        lastName: answers.lastName,
+        pronouns: answers.pronouns!,
+        birthday: answers.birthday!.toISOString().slice(0, 10),
+        birthtime: answers.birthtime instanceof Date
+          ? new Intl.DateTimeFormat('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }).format(answers.birthtime)
+          : typeof answers.birthtime === 'string'
+            ? answers.birthtime
+            : '',
 
-    // 2) Write the user doc to Firestore
-    //await registerNewUser(answers);
+        placeOfBirth: answers.placeOfBirth!,
+        zodiacSign: null,
+        risingSign: null,
+        moonSign: null,
+        email: answers.email,
+        emailVerified: false,
+        isPaidMember: false,
+        signUpDate: new Date().toISOString(),
+        lastLoginDate: new Date().toISOString(),
+      };
 
-    // 3) Navigate into your authenticated app
-    router.replace('/');
-  } catch (e: any) {
-    console.error('Signup failed', e);
-    Alert.alert('Signup Error', e.message);
-  }
-};
-
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await createUserDoc(uid, userRecord);
+      router.replace('/');
+    } catch (e: any) {
+      if (e.code === 'auth/email-already-in-use') {
+        Alert.alert('Email already in use', 'Please go back and use a different email.');
+        setStepToKey('email');
+        return;
+      }
+      else {
+        Alert.alert('Signup Error', e.message);
+      }
+    }
+  };
   return (
     <ImageBackground
       source={require('../assets/images/background.jpg')}
@@ -112,15 +156,22 @@ export default function SignUpChatScreen() {
       resizeMode="cover"
     >
       <BlurView intensity={80} tint="dark" style={styles.overlay}>
-        {/* Header with Cancel button */}
         <View style={styles.header}>
+          {step > 0 && (
+            <TouchableOpacity onPress={() => setStep(step - 1)}>
+              <Text style={styles.goBackText}>← Go Back</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity onPress={() => router.replace('/')}>
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
         </View>
-
-        {/* ChatFlow component handles the conversation UI */}
-        <ChatFlow steps={steps} onComplete={handleComplete} />
+        <ChatFlow
+          steps={steps}
+          onComplete={handleComplete}
+          step={step}
+          setStep={setStep}
+        />
       </BlurView>
     </ImageBackground>
   );
@@ -128,9 +179,14 @@ export default function SignUpChatScreen() {
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  overlay: { flex: 1, paddingTop: Platform.OS === 'ios' ? 60 : 40, },
-  header: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 8 },
-  cancelText: { color: '#6FFFE9', fontSize: 16, fontWeight: '500', marginRight: 16 },  
+  overlay: { flex: 1, paddingTop: Platform.OS === 'ios' ? 60 : 40 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  goBackText: { color: '#6FFFE9', fontSize: 16, fontWeight: '500' },
+  cancelText: { color: '#6FFFE9', fontSize: 16, fontWeight: '500' },
 });
-
-

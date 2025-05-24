@@ -1,4 +1,3 @@
-// components/ChatFlow.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import {
   ScrollView,
@@ -8,21 +7,26 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { LocationAutocomplete } from './LocationAutocomplete';
+import { checkEmailExists } from '@/service/Auth.service';
+import { auth } from '../../firebaseConfig'
+import { fetchSignInMethodsForEmail } from 'firebase/auth';
+
 
 export interface AnswerRecord {
-  firstName?: string;
-  lastName?: string;
-  pronouns?: string;
-  birthday?: Date;
-  birthtime?: Date;
-  birthtimeUnknown?: boolean;
-  placeOfBirth?: string;
-  location?: string;
-  password?: string;
-  email?: string;
+  firstName: string;
+  lastName: string;
+  pronouns: string;
+  birthday: Date | null;
+  birthtime: Date | null;
+  birthtimeUnknown: boolean;
+  placeOfBirth?: string | null;
+  placeOfBirthUnknown?: boolean;
+  email: string;
+  password: string;
 }
 
 export type StepConfig = {
@@ -37,22 +41,89 @@ export type StepConfig = {
 type ChatFlowProps = {
   steps: StepConfig[];
   onComplete: (answers: AnswerRecord) => void;
+  step: number;
+  setStep: React.Dispatch<React.SetStateAction<number>>;
 };
 
-export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<AnswerRecord>({});
+export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
+  const [answers, setAnswers] = useState<AnswerRecord>({
+    firstName: '',
+    lastName: '',
+    pronouns: '',
+    birthday: null,
+    birthtime: null,
+    birthtimeUnknown: false,
+    placeOfBirth: '',
+    placeOfBirthUnknown: false,
+    email: '',
+    password: '',
+  });
+  const emailInputRef = useRef<TextInput>(null);
   const [textInput, setTextInput] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [checkedPolicy, setCheckedPolicy] = useState(false);
   const [checkedTerms, setCheckedTerms] = useState(false);
-  const [showSendButton, setShowSendButton] = useState(true); // Moved here
-  const [isFocused, setIsFocused] = useState(false); // Track if the input is focused
-  const [error, setError] = useState<string | null>(null); // Track error message
+  const [showSendButton, setShowSendButton] = useState(true);
+  const [isFocused, setIsFocused] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
-  const [isPolicyModalVisible, setIsPolicyModalVisible] = useState(false); // Track modal visibility
-  const [policyModalContent, setPolicyModalContent] = useState<'Privacy Policy' | 'Terms & Conditions'>('Privacy Policy'); // Track which content to display
+  const [isPolicyModalVisible, setIsPolicyModalVisible] = useState(false);
+  const [policyModalContent, setPolicyModalContent] = useState<'Privacy Policy' | 'Terms & Conditions'>('Privacy Policy');
+  const [emailValidating, setEmailValidating] = useState(false);
+  const isValidEmail = (e: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+  const current = steps[step];
+
+  useEffect(() => {
+    if (current.inputType === 'location') {
+      setTextInput(answers.placeOfBirth || '');
+    } else if (current.inputType === 'email') {
+      setTextInput(answers.email || '');
+    } else {
+      setTextInput('');
+    }
+  }, [current.key]);
+
+  useEffect(() => {
+    if (current.inputType !== 'email') {
+      setError(null);
+      setEmailValidating(false);
+      return;
+    }
+
+    if (!textInput) {
+      setError(null);
+      setEmailValidating(false);
+      return;
+    }
+    if (!isValidEmail(textInput)) {
+      setError('Invalid email address');
+      setEmailValidating(false);
+      return;
+    }
+
+    let active = true;
+    setEmailValidating(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const exists = await checkEmailExists(textInput);
+        if (!active) return;
+        setError(exists ? 'Email already in use' : null);
+      } catch {
+        if (active) setError('Error checking email');
+      } finally {
+        if (active) setEmailValidating(false);
+      }
+    }, 500);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [textInput, current.inputType]);
 
   const openPolicyModal = (content: 'Privacy Policy' | 'Terms & Conditions') => {
     setPolicyModalContent(content);
@@ -63,34 +134,30 @@ export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
     setIsPolicyModalVisible(false);
   };
 
-  // auto-scroll when step changes
   const handleContentSizeChange = () => {
     scrollRef.current?.scrollToEnd({ animated: true });
   };
 
-  // sync textInput when entering location step
-  const current = steps[step];
   useEffect(() => {
-    if (current.inputType === 'location') {
-      setTextInput(answers.placeOfBirth || ''); // Pre-fill for location
-    } else if (current.inputType === 'email') {
-      setTextInput(answers.email || ''); // Pre-fill for email
-    } else {
-      setTextInput(''); // Clear for other steps
+    if (
+      steps[step]?.inputType === 'email' &&
+      error &&
+      emailInputRef.current
+    ) {
+      emailInputRef.current.focus();
     }
-  }, [current.key]);
+  }, [error, step]);
 
   const capitalizeName = (name: string) => {
     return name
       .toLowerCase()
-      .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize the first letter of each word
+      .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
   const saveAndNext = (value?: any) => {
     switch (current.inputType) {
       case 'text':
         if (current.key === 'firstName' || current.key === 'lastName') {
-          // Format the name before saving
           setAnswers((a) => ({ ...a, [current.key]: capitalizeName(textInput) }));
         } else {
           setAnswers((a) => ({ ...a, [current.key]: textInput }));
@@ -129,17 +196,12 @@ export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
     const raw = (answers as any)[s.key];
     let display = raw;
 
-    // Handle undefined value for placeOfBirth
-    if (s.key === 'placeOfBirth' && raw === undefined) {
-      display = "I don't know"; // Show "I don't know" for undefined placeOfBirth
+    if (s.key === 'placeOfBirth' && raw === null) {
+      display = "I don't know";
     }
-
-    // Handle date input type
     if (s.inputType === 'date' && raw instanceof Date) {
       display = raw.toLocaleDateString();
     }
-
-    // Handle time input type
     if (s.inputType === 'time') {
       display = answers.birthtimeUnknown
         ? "I don't know"
@@ -148,14 +210,11 @@ export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
           : raw;
     }
 
-    // Handle secure input type (password)
     if (s.inputType === 'secure') {
-      display = raw ? '******' : ''; // Display dots or leave blank
+      display = raw ? '******' : '';
     }
-
-    // Ensure display is not blank
     if (!display) {
-      display = "I don't know"; // Fallback for any undefined or blank values
+      display = "I don't know";
     }
 
     return (
@@ -166,335 +225,413 @@ export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
   };
 
   const renderInputArea = () => {
-    switch (current.inputType) {
-      case 'text': {
-        return (
-          <View style={styles.inputRow}>
-            <TextInput
-              style={styles.textInput}
-              placeholder={current.placeholder}
-              placeholderTextColor="#aaa"
-              value={textInput}
-              onChangeText={setTextInput}
-            />
-            <TouchableOpacity
-              style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
-              disabled={!textInput}
-              onPress={() => saveAndNext(textInput)}
-            >
-              <Text style={styles.sendText}>➔</Text>
-            </TouchableOpacity>
-          </View>
-        );
-      }
-
-      case 'secure': {
-        const isValidPassword = (password: string) => {
-          const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/; // At least 8 characters, one uppercase, one number
-          return passwordRegex.test(password);
-        };
-
-        const handleSend = () => {
-          if (!isValidPassword(textInput)) {
-            setError('Password must be at least 8 characters long, contain one uppercase letter, and one number.'); // Set error message
-          } else {
-            setError(null); // Clear error message
-            setAnswers((a) => ({ ...a, password: textInput })); // Save password to answers
-            saveAndNext(textInput); // Proceed to the next step
-          }
-        };
-        return (
-          <View style={styles.inputContainer}>
-            {/* Display error message if password is invalid */}
-
-            <View style={styles.inputRow}>
-              <TextInput
-                style={styles.textInput}
-                placeholder={current.placeholder}
-                placeholderTextColor="#aaa"
-                secureTextEntry={true} // Hide password input
-                value={textInput}
-                onChangeText={setTextInput}
-              />
-              <TouchableOpacity
-                style={[styles.sendButton, { opacity: 1 }]} // Keep button always enabled
-                onPress={handleSend} // Perform validation on press
-              >
-                <Text style={styles.sendText}>➔</Text>
-              </TouchableOpacity>
-            </View>
-            {error && (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            )}
-          </View>
-        );
-      }
-
-      case 'choices':
-        return (
-          <View style={styles.choiceRow}>
-            {current.choices!.map(opt => (
-              <TouchableOpacity
-                key={opt}
-                style={[
-                  styles.choiceButton,
-                  (answers as any)[current.key] === opt && styles.choiceSelected,
-                ]}
-                onPress={() => saveAndNext(opt)}
-              >
-                <Text
-                  style={[
-                    styles.choiceText,
-                    (answers as any)[current.key] === opt && { color: '#fff' },
-                  ]}
-                >
-                  {opt}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        );
-
-      case 'date': {
-        const today = new Date();
-        const selected = answers.birthday;
-        const isFuture = selected ? selected > today : false;
-        return (
-          <View style={styles.inputContainer}>
-
-            <View style={styles.inputRow}>
-              <TouchableOpacity
-                style={styles.datePickerButton}
-                onPress={() => setShowDatePicker(true)}
-              >
-                <Text style={styles.datePickerText}>
-                  {selected
-                    ? selected.toLocaleDateString()
-                    : 'Select date…'}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.sendButton, { opacity: selected && !isFuture ? 1 : 0.5 }]}
-                disabled={!selected || isFuture}
-                onPress={() => saveAndNext(selected!)}
-              >
-                <Text style={styles.sendText}>➔</Text>
-              </TouchableOpacity>
-            </View>
-            <DateTimePickerModal
-              isVisible={showDatePicker}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onConfirm={date => {
-                setAnswers(a => ({ ...a, birthday: date }));
-                setShowDatePicker(false);
-              }}
-              onCancel={() => setShowDatePicker(false)}
-            />
-
-            {isFuture && (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>
-                  Please select a valid date not in the future.
-                </Text>
-              </View>
-            )}
-          </View>
-        );
-      }
-
-      case 'location':
-        return (
-          <View style={styles.inputContainer}>
-            <View style={styles.inputRow}>
-              <LocationAutocomplete
-                onSelect={(item) => {
-                  const { name, city, state, country } = item.properties;
-                  const label = [name, city, state, country].filter(Boolean).join(', ');
-                  setTextInput(label);
-                  setAnswers((a) => ({ ...a, placeOfBirth: label }));
-                }}
-                onResultsVisibilityChange={(visible) => setShowSendButton(!visible)}
-                onInputChange={(text) => setTextInput(text)} // Update textInput state
-              />
-
-              {showSendButton && (
-                <TouchableOpacity
-                  style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
-                  disabled={!textInput}
-                  onPress={() => saveAndNext(textInput)}
-                >
-                  <Text style={styles.sendText}>➔</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
-
-            <TouchableOpacity
-              style={[styles.choiceButton, { alignSelf: 'center', marginTop: 16 }]}
-              onPress={() => {
-                setAnswers((a) => ({ ...a, placeOfBirth: undefined })); // Set value as undefined for location
-                saveAndNext('I don’t know'); // Display "I don't know" in the chat
-              }}
-            >
-              <Text style={[styles.choiceText, { color: '#fff' }]}>I don’t know</Text>
-            </TouchableOpacity>
-          </View>
-        );
-      case 'time': {
-        const now = new Date();
-        const birthDate = answers.birthday;
-        const birthTime = answers.birthtime;
-        const isBirthdayToday = birthDate?.toDateString() === now.toDateString();
-        const isFutureTime = birthTime != null && isBirthdayToday &&
-          (birthTime.getHours() > now.getHours() ||
-            (birthTime.getHours() === now.getHours() && birthTime.getMinutes() > now.getMinutes()));
-
-        // default 00:00
-        const defaultTime = new Date(birthDate || now);
-        defaultTime.setHours(0, 0, 0, 0);
-
-        return (
-          <View style={styles.inputContainer}>
-            {isFutureTime && (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>
-                  Please select a valid time not in the future.
-                </Text>
-              </View>
-            )}
-            <View style={styles.inputRow}>
-              <TouchableOpacity
-                style={styles.datePickerButton}
-                onPress={() => setShowTimePicker(true)}
-              >
-                <Text style={styles.datePickerText}>
-                  {birthTime
-                    ? birthTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    : 'Select time…'}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.sendButton, { opacity: birthTime && !isFutureTime ? 1 : 0.5 }]}
-                disabled={!birthTime || isFutureTime}
-                onPress={() => saveAndNext(birthTime!)}
-              >
-                <Text style={styles.sendText}>➔</Text>
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity
-              style={[
-                styles.choiceButton,
-
-                { alignSelf: 'center', marginTop: 16 },
-              ]}
-              onPress={() => saveAndNext('I don’t know')}
-            >
-              <Text
-                style={[
-                  styles.choiceText,
-                  birthTime === undefined && { color: '#fff' },
-                ]}
-              >
-                I don’t know
-              </Text>
-            </TouchableOpacity>
-            <DateTimePickerModal
-              isVisible={showTimePicker}
-              mode="time"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              date={birthTime || now}
-              onConfirm={time => {
-                setAnswers(a => ({ ...a, birthtime: time }));
-                setShowTimePicker(false);
-              }}
-              onCancel={() => setShowTimePicker(false)}
-            />
-          </View>
-        );
-      }
-      case 'email': {
-
-
-        const isValidEmail = (email: string) => {
-          const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-          return emailRegex.test(email);
-        };
-
-        const handleSend = () => {
-          if (!isValidEmail(textInput)) {
-            setError('Please enter a valid email address.'); // Set error message
-          } else {
-            setError(null); // Clear error message
-            setAnswers((a) => ({ ...a, email: textInput })); // Save email to answers
-            saveAndNext(textInput); // Proceed to the next step
-          }
-        };
-
-        return (
-          <View style={styles.inputContainer}>
-            {/* Display error message if email is invalid */}
-            {error && (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            )}
-            <View style={styles.inputRow}>
-              <TextInput
-                style={styles.textInput}
-                placeholder={current.placeholder}
-                placeholderTextColor="#aaa"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={textInput}
-                onChangeText={setTextInput}
-              />
-              <TouchableOpacity
-                style={[styles.sendButton, { opacity: 1 }]} // Keep button always enabled
-                onPress={handleSend} // Perform validation on press
-              >
-                <Text style={styles.sendText}>➔</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        );
-      }
-      case 'final':
-        return (
-          <View style={styles.finalArea}>
-            <Text style={styles.footerText}>
-              By signing up, you agree to our{' '}
-              <Text
-                style={styles.link}
-                onPress={() => openPolicyModal('Terms & Conditions')}
-              >
-                Terms & Conditions
-              </Text>{' '}
-              and{' '}
-              <Text
-                style={styles.link}
-                onPress={() => openPolicyModal('Privacy Policy')}
-              >
-                Privacy Policy
-              </Text>
-            </Text>
-            <TouchableOpacity
-              style={styles.continueButton}
-              onPress={() => {
-                if (checkedPolicy && checkedTerms) {
-                  onComplete(answers);
+    // Go Back button removed from here!
+    return (
+      <View>
+        {(() => {
+          switch (current.inputType) {
+            case 'text':
+              return (
+                <View style={styles.inputRow}>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder={current.placeholder}
+                    placeholderTextColor="#aaa"
+                    value={textInput}
+                    onChangeText={setTextInput}
+                  />
+                  <TouchableOpacity
+                    style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
+                    disabled={!textInput}
+                    onPress={() => saveAndNext(textInput)}
+                  >
+                    <Text style={styles.sendText}>➔</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            case 'secure': {
+              const handleSend = () => {
+                if (!textInput) {
+                  setError('Please enter a valid password.');
+                } else if (textInput.length < 8 && /[A-Z]/.test(textInput)) {
+                  setError('Password must be at least 8 characters.');
+                } else if (textInput.length >= 8 && !/[A-Z]/.test(textInput)) {
+                  setError('Password must contain at least one capital letter.');
+                } else if (textInput.length < 8) {
+                  setError('Password must be at least 8 characters.');
                 } else {
-                  setError('Please accept the terms and privacy policy.');
+                  setError(null);
+                  setAnswers((a) => ({ ...a, password: textInput }));
+                  saveAndNext(textInput);
                 }
-              }}
-            >
-              <Text style={styles.continueText}>Continue</Text>
-            </TouchableOpacity>
-          </View>
-        );
-    }
+              };
+              return (
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder={current.placeholder}
+                      placeholderTextColor="#aaa"
+                      secureTextEntry={true}
+                      value={textInput}
+                      onChangeText={setTextInput}
+                    />
+                    <TouchableOpacity
+                      style={[styles.sendButton, { opacity: 1 }]}
+                      onPress={handleSend}
+                    >
+                      <Text style={styles.sendText}>➔</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {error && (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorText}>{error}</Text>
+                    </View>
+                  )}
+                </View>
+              );
+            }
+            case 'choices':
+              return (
+                <View style={styles.choiceRow}>
+                  {current.choices!.map(opt => (
+                    <TouchableOpacity
+                      key={opt}
+                      style={[
+                        styles.choiceButton,
+                        (answers as any)[current.key] === opt && styles.choiceSelected,
+                      ]}
+                      onPress={() => saveAndNext(opt)}
+                    >
+                      <Text
+                        style={[
+                          styles.choiceText,
+                          (answers as any)[current.key] === opt && { color: '#fff' },
+                        ]}
+                      >
+                        {opt}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              );
+            case 'date': {
+              const today = new Date();
+              const selected: Date | null = answers.birthday;
+              const isFuture = selected ? selected > today : false;
+              return (
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputRow}>
+                    <TouchableOpacity
+                      style={styles.datePickerButton}
+                      onPress={() => setShowDatePicker(true)}
+                    >
+                      <Text style={styles.datePickerText}>
+                        {answers.birthday
+                          ? answers.birthday.toLocaleDateString()
+                          : 'Select your birthdate'}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.sendButton, { opacity: selected && !isFuture ? 1 : 0.5 }]}
+                      disabled={!selected || isFuture}
+                      onPress={() => saveAndNext(selected!)}
+                    >
+                      <Text style={styles.sendText}>➔</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <DateTimePickerModal
+                    isVisible={showDatePicker}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    date={answers.birthday || today}
+                    onConfirm={date => {
+                      setAnswers(a => ({ ...a, birthday: date }));
+                      setShowDatePicker(false);
+                    }}
+                    onCancel={() => setShowDatePicker(false)}
+                  />
+                  {isFuture && (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorText}>
+                        Please select a valid date not in the future.
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              );
+            }
+            case 'location':
+              return (
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputRow}>
+                    <LocationAutocomplete
+                      onSelect={(item) => {
+                        const { name, city, state, country } = item.properties;
+                        const label = [name, city, state, country].filter(Boolean).join(', ');
+                        setTextInput(label);
+                        setAnswers((a) => ({ ...a, placeOfBirth: label }));
+                      }}
+                      onResultsVisibilityChange={(visible) => setShowSendButton(!visible)}
+                      onInputChange={(text) => setTextInput(text)}
+                    />
+                    {showSendButton && (
+                      <TouchableOpacity
+                        style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
+                        disabled={!textInput}
+                        onPress={() => saveAndNext(textInput)}
+                      >
+                        <Text style={styles.sendText}>➔</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.choiceButton, { alignSelf: 'center', marginTop: 16 }]}
+                    onPress={() => {
+                      setAnswers((a) => ({ ...a, placeOfBirth: null, placeOfBirthUnknown: true }));
+                      saveAndNext('I don’t know');
+                    }}
+                  >
+                    <Text style={[styles.choiceText, { color: '#fff' }]}>I don’t know</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            case 'time': {
+              const now = new Date();
+              const birthDate = answers.birthday;
+              const birthTime = answers.birthtime;
+              const isBirthdayToday = birthDate?.toDateString() === now.toDateString();
+              const isFutureTime = birthTime != null && isBirthdayToday &&
+                (birthTime.getHours() > now.getHours() ||
+                  (birthTime.getHours() === now.getHours() && birthTime.getMinutes() > now.getMinutes()));
+
+              return (
+                <View style={styles.inputContainer}>
+                  {isFutureTime && (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorText}>
+                        Please select a valid time not in the future.
+                      </Text>
+                    </View>
+                  )}
+                  <View style={styles.inputRow}>
+                    <TouchableOpacity
+                      style={styles.datePickerButton}
+                      onPress={() => setShowTimePicker(true)}
+                    >
+                      <Text style={styles.datePickerText}>
+                        {birthTime
+                          ? birthTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                          : 'Select birth time'}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.sendButton, { opacity: birthTime && !isFutureTime ? 1 : 0.5 }]}
+                      disabled={!birthTime || isFutureTime}
+                      onPress={() => saveAndNext(birthTime!)}
+                    >
+                      <Text style={styles.sendText}>➔</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <TouchableOpacity
+                    style={[
+                      styles.choiceButton,
+                      { alignSelf: 'center', marginTop: 16 },
+                    ]}
+                    onPress={() => {
+                      const defaultMidnight = new Date();
+                      defaultMidnight.setHours(0, 0, 0, 0);
+
+                      setAnswers(a => ({
+                        ...a,
+                        birthtime: defaultMidnight,
+                        birthtimeUnknown: true, 
+                      }));
+
+                      saveAndNext('I don’t know');
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.choiceText,
+                        birthTime === undefined && { color: '#fff' },
+                      ]}
+                    >
+                      I don’t know
+                    </Text>
+                  </TouchableOpacity>
+                  <DateTimePickerModal
+                    isVisible={showTimePicker}
+                    mode="time"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    date={birthTime || new Date()}
+                    onConfirm={time => {
+                      setAnswers(a => ({ ...a, birthtime: time }));
+                      setShowTimePicker(false);
+                    }}
+                    onCancel={() => setShowTimePicker(false)}
+                  />
+                </View>
+              );
+            }
+            case 'email': {
+              const isValidEmail = (email: string) =>
+                /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/.test(email);
+
+              const handleSend = async () => {
+                if (!isValidEmail(textInput)) {
+                  setError('Please enter a valid email address.');
+                  return;
+                }
+
+                setError(null);
+                try {
+                  const methods = await fetchSignInMethodsForEmail(auth, textInput);
+                  if (methods.length > 0) {
+                    setError(
+                      'That email is already registered. Please sign in or use a different address.'
+                    );
+                    return;
+                  }
+                  setAnswers(a => ({ ...a, email: textInput }));
+                  saveAndNext(textInput);
+                } catch (firebaseErr: any) {
+                  console.error(firebaseErr);
+                  setError('Network error—please try again.');
+                }
+              };
+
+              return (
+                <View style={styles.inputContainer}>
+                  {error && (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorText}>{error}</Text>
+                    </View>
+                  )}
+
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder={current.placeholder}
+                      placeholderTextColor="#aaa"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      value={textInput}
+                      onChangeText={setTextInput}
+                    />
+                    <TouchableOpacity
+                      style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
+                      disabled={!textInput}
+                      onPress={handleSend}
+                    >
+                      <Text style={styles.sendText}>➔</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            }
+            case 'final': {
+              const isDisabled = !checkedPolicy || !checkedTerms;
+              return (
+                <View style={styles.finalArea}>
+                  <View style={styles.row}>
+                    <TouchableOpacity
+                      style={{ marginRight: 8 }}
+                      onPress={() => setCheckedTerms(!checkedTerms)}
+                    >
+                      <View
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: 4,
+                          borderWidth: 2,
+                          borderColor: '#6FFFE9',
+                          backgroundColor: checkedTerms ? '#6FFFE9' : 'transparent',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {checkedTerms && (
+                          <Text style={{ color: '#1C2541', fontWeight: 'bold' }}>✓</Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                    <Text style={styles.footerText}>
+                      I agree to the{' '}
+                      <Text
+                        style={styles.link}
+                        onPress={() => openPolicyModal('Terms & Conditions')}
+                      >
+                        Terms & Conditions
+                      </Text>
+                    </Text>
+                  </View>
+                  <View style={styles.row}>
+                    <TouchableOpacity
+                      style={{ marginRight: 8 }}
+                      onPress={() => setCheckedPolicy(!checkedPolicy)}
+                    >
+                      <View
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: 4,
+                          borderWidth: 2,
+                          borderColor: '#6FFFE9',
+                          backgroundColor: checkedPolicy ? '#6FFFE9' : 'transparent',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {checkedPolicy && (
+                          <Text style={{ color: '#1C2541', fontWeight: 'bold' }}>✓</Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                    <Text style={styles.footerText}>
+                      I agree to the{' '}
+                      <Text
+                        style={styles.link}
+                        onPress={() => openPolicyModal('Privacy Policy')}
+                      >
+                        Privacy Policy
+                      </Text>
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      onComplete(answers);
+                    }}
+                    disabled={isDisabled}
+                    activeOpacity={0.7}
+                    style={[
+                      styles.continueButton,
+                      isDisabled && styles.continueButtonDisabled,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.continueText,
+                        isDisabled && styles.continueTextDisabled,
+                      ]}
+                    >
+                      Continue
+                    </Text>
+                  </TouchableOpacity>
+                  {error && (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorText}>{error}</Text>
+                    </View>
+                  )}
+                </View>
+              );
+            }
+            default:
+              return null;
+          }
+        })()}
+      </View>
+    );
   };
 
   return (
@@ -502,35 +639,30 @@ export function ChatFlow({ steps, onComplete }: ChatFlowProps) {
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.container}
-        onContentSizeChange={handleContentSizeChange} // Auto-scroll when content changes
+        onContentSizeChange={handleContentSizeChange}
       >
         {steps.slice(0, step + 1).map((s, i) => (
           <View key={i} style={styles.bubbleContainer}>
-            {/* Render the question bubble */}
             <Text style={styles.bubbleText}>{s.renderQuestion(answers)}</Text>
-
-            {/* Render the user input bubble */}
             {renderAnswerBubble(s, i)}
           </View>
         ))}
       </ScrollView>
-
       {renderInputArea()}
       {/* Policy Modal */}
-
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { // chat container
+  container: {
     paddingHorizontal: 20,
     paddingBottom: 20
   },
   bubbleContainer: {
     marginBottom: 16,
   },
-  bubbleText: { // Delaluna bubble
+  bubbleText: {
     alignSelf: 'flex-start',
     backgroundColor: '#3A506B',
     color: '#fff',
@@ -538,7 +670,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     maxWidth: '75%',
   },
-  answerBubble: { // user input bubble
+  answerBubble: {
     alignSelf: 'flex-end',
     backgroundColor: '#5BC0BE',
     padding: 12,
@@ -547,13 +679,11 @@ const styles = StyleSheet.create({
     maxWidth: '75%',
   },
   answerText: { color: '#000' },
-  // input container
   inputContainer: {
     flexDirection: 'column',
     padding: 15,
     backgroundColor: '#1C2541',
   },
-  // user input container
   inputRow: {
     flexDirection: 'row',
     padding: 15,
@@ -563,9 +693,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#3A506B',
     borderRadius: 24,
-    paddingHorizontal: 16,
+    paddingHorizontal: 15,
     color: '#fff',
     height: 50,
+    marginBottom: Platform.OS === 'ios' ? 10 : 5,
+    alignSelf: 'center',
   },
   sendButton: {
     marginLeft: 12,
@@ -615,11 +747,18 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 24,
     alignItems: 'center',
+    marginBottom: Platform.OS === 'ios' ? 30 : 12,
   },
   continueText: {
     color: '#000',
     fontWeight: '600',
     fontSize: 16,
+  },
+  continueButtonDisabled: {
+    backgroundColor: '#A0A0A0',
+  },
+  continueTextDisabled: {
+    color: '#666',
   },
   blurContainer: {
     position: 'absolute',
@@ -632,12 +771,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    // height: Platform.OS === 'ios' ? 260 : 100,
   },
   picker: {
     flex: 1,
   },
-  // error container
   errorContainer: {
     borderRadius: 12,
     padding: 12,
@@ -652,6 +789,19 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     textAlign: 'center',
     fontSize: 15,
+    fontWeight: 'bold',
+  },
+  backButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 0,
+    marginLeft: 8,
+    justifyContent: 'center',
+  },
+  backText: {
+    fontSize: 18,
+    color: '#fff',
     fontWeight: 'bold',
   },
 });
