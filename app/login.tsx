@@ -11,23 +11,62 @@ import {
   ImageBackground,
   Image,
   Alert,
+  Platform,
 } from 'react-native'
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
 import '../firebaseConfig' // Ensure you have initialized Firebase in this file
 import SecondaryButtonComponent from '@/components/buttons/secondaryButtonComponent'
 import { router } from 'expo-router'
+import AlertModal from '@/components/alerts/AlertModal'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  // track incorrect login attempts
+  const [loginAttempts, setLoginAttempts] = useState(0);
 
   const handleLogin = async () => {
     const auth = getAuth()
+
     try {
       await signInWithEmailAndPassword(auth, email, password)
       Alert.alert('Success', 'You are logged in!')
+      // Reset login attempts on successful login
+      setLoginAttempts(0);
+      // Navigate to the home screen or wherever you want after login
+      router.push('/home')
     } catch (error: any) {
-      Alert.alert('Error', error.message)
+      const msg = 
+      error.code === 'auth/invalid-email'   ? 'That email looks wrong.'
+    : error.code === 'auth/user-not-found'   ? 'No account for that email.'
+    : error.code === 'auth/wrong-password'   ? 'Password incorrect.'
+    : /* fallback */                      'Something went wrong—please try again.';
+
+      
+      setLoginAttempts(prev => prev + 1);
+      // if less than 3 tries display the error message
+      if (loginAttempts < 2) {
+        setErrorMessage(error.message);
+        setShowErrorModal(true);
+      } 
+      else  if (loginAttempts >= 2) {
+        Alert.alert(
+          'Forgot Password?',
+          'It seems you are having trouble logging in. Would you like to reset your password?',
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            {
+              text: 'Reset Password',
+              //onPress: () => router.push('/reset-password'),
+            },
+          ]
+        )
+      }
     }
   }
 
@@ -37,6 +76,13 @@ export default function Login() {
       style={styles.background}
       resizeMode="cover"
     >
+
+      <AlertModal
+        visible={showErrorModal}
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
+
       {/* 1) Logo Container */}
       <View style={styles.logoContainer}>
         <Image
@@ -46,7 +92,7 @@ export default function Login() {
         />
       </View>
 
-      <BlurView intensity={80} tint="dark" style={styles.card}>
+      <BlurView intensity={90} tint="dark" style={styles.card}>
         <LinearGradient
           colors={[
             'rgba(255,255,255,0.05)',
@@ -85,7 +131,7 @@ export default function Login() {
             </TouchableOpacity>
             <SecondaryButtonComponent
               title="Not a member? "
-              linkString='Signup'
+              linkString='Sign up'
               onPress={() => router.push('/signup')}
             />
           </View>
@@ -96,7 +142,6 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  // Styles remain unchanged
   background: {
     flex: 2,
     alignItems: 'center',
@@ -114,8 +159,16 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     height: '45%',
-    backgroundColor: 'rgba(255, 255, 255, 0.44)',
-    borderRadius: 25,
+    ...Platform.select({
+      ios: {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: 25,
+      },
+      android: {
+        backgroundColor: 'rgba(255, 255, 255, 0.24)',
+        borderRadius: 20,
+      },
+    }),
     gap: 25,
     paddingHorizontal: 20,
     paddingVertical: 24,
@@ -143,14 +196,21 @@ const styles = StyleSheet.create({
     width: '90%',
   },
   textField: {
-    width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    ...Platform.select({
+      ios: {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      },
+      android: {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      },
+    }),
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(142, 68, 173, 0.6)',
     marginBottom: 16,
     paddingHorizontal: 16,
     height: 48,
+    color: 'white',
   },
   input: {
     color: 'white',
@@ -159,10 +219,11 @@ const styles = StyleSheet.create({
   },
   forgotPassword: {
     color: 'white',
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: 'Inter',
     fontWeight: '600',
     textAlign: 'right',
+    margin: 8,
   },
   loginButton: {
     width: '80%',
@@ -171,6 +232,16 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
     marginBottom: 16,
+    justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        marginTop: 10,
+      },
+      android: {
+        marginTop: 20,
+      },
+    }),
+
   },
   loginButtonText: {
     color: 'white',

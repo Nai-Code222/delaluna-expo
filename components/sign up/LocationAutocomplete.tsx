@@ -22,12 +22,22 @@ type PhotonFeature = {
 };
 
 interface LocationAutocompleteProps {
-  onSelect: (item: PhotonFeature) => void;
+  /** Controlled text value */
+  value: string;
+
+  /** Called as the user types or the parent forces a new value */
+  onInputChange: (text: string) => void;
+
+  /** Emits true when the results list is visible, false when hidden */
   onResultsVisibilityChange?: (visible: boolean) => void; 
-  onInputChange?: (text: string) => void;
+
+  /** Called when an item is tapped */
+  onSelect: (item: PhotonFeature) => void;
 }
 
+
 export function LocationAutocomplete({
+  value,
   onSelect,
   onResultsVisibilityChange,
   onInputChange, // New prop

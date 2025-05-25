@@ -76,6 +76,8 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
   const [emailValidating, setEmailValidating] = useState(false);
   const isValidEmail = (e: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   const current = steps[step];
 
@@ -142,10 +144,10 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
   };
 
   const formatTime = (date: unknown) => {
-  return date instanceof Date
-    ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : 'Select birth time';
-};
+    return date instanceof Date
+      ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : 'Select birth time';
+  };
 
   useEffect(() => {
     if (
@@ -189,7 +191,11 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
         setShowTimePicker(false);
         break;
       case 'location':
-        setAnswers((a) => ({ ...a, placeOfBirth: textInput }));
+        setAnswers(a => ({
+          ...a,
+          placeOfBirth: value === 'I don’t know' ? undefined : value,
+          placeOfBirthUnknown: value === 'I don’t know',
+        }));
         setTextInput('');
         break;
     }
@@ -370,45 +376,100 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
                 </View>
               );
             }
-            case 'location':
+            case 'location': {
+              const canSendLocation =
+                !answers.placeOfBirthUnknown &&
+                suggestions.includes(textInput.trim());
+
+              const handleSend = () => {
+                if (!canSendLocation) {
+                  setLocationError('Please pick a location from the list or tap “I don’t know.”');
+                  return;
+                }
+                setLocationError(null);
+                setAnswers(a => ({
+                  ...a,
+                  placeOfBirth: textInput.trim(),
+                  placeOfBirthUnknown: false,
+                }));
+                saveAndNext(textInput.trim());
+              };
+
+              const handleUnknown = () => {
+                setTextInput('');
+                setSuggestions([]);
+                setLocationError(null);
+                setAnswers(a => ({
+                  ...a,
+                  placeOfBirth: undefined,
+                  placeOfBirthUnknown: true,
+                }));
+                saveAndNext('I don’t know');
+              };
               return (
                 <View style={styles.inputContainer}>
+                  {!!locationError && (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorText}>{locationError}</Text>
+                    </View>
+                  )}
+
                   <View style={styles.inputRow}>
                     <LocationAutocomplete
-                      onSelect={(item) => {
-                        const { name, city, state, country } = item.properties;
-                        const label = [name, city, state, country].filter(Boolean).join(', ');
-                        setTextInput(label);
-                        setAnswers((a) => ({ ...a, placeOfBirth: label }));
+                      value={textInput}
+                      onInputChange={text => {
+                        setTextInput(text);
+                        setAnswers(a => ({ ...a, placeOfBirthUnknown: false }));
+                        setLocationError(null);
                       }}
-                      onResultsVisibilityChange={(visible) => setShowSendButton(!visible)}
-                      onInputChange={(text) => setTextInput(text)}
+                      onResultsVisibilityChange={visible =>
+                        setShowSendButton(!visible && !!textInput.trim())
+                      }
+                      onSelect={item => {
+                        const { name, city, state, country } = item.properties;
+                        const label = [name, city, state, country]
+                          .filter(Boolean)
+                          .join(', ');
+                        setTextInput(label);
+                        setSuggestions([label]);
+                        setLocationError(null);
+                        setAnswers(a => ({
+                          ...a,
+                          placeOfBirth: label,
+                          placeOfBirthUnknown: false,
+                        }));
+                      }}
                     />
-                    {showSendButton && (
-                      <TouchableOpacity
-                        style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
-                        disabled={!textInput}
-                        onPress={() => saveAndNext(textInput)}
-                      >
-                        <Text style={styles.sendText}>➔</Text>
-                      </TouchableOpacity>
-                    )}
+
+                    {/* Always render the arrow, but disable it when !canSendLocation */}
+                    <TouchableOpacity
+                      style={[
+                        styles.sendButton,
+                        { opacity: canSendLocation ? 1 : 0.5 },
+                      ]}
+                      disabled={!canSendLocation || !textInput.trim()}
+                      onPress={handleSend}
+                    >
+                      <Text style={styles.sendText}>➔</Text>
+                    </TouchableOpacity>
                   </View>
+
                   <TouchableOpacity
                     style={[styles.choiceButton, { alignSelf: 'center', marginTop: 16 }]}
-                    onPress={() => {
-                      setAnswers((a) => ({ ...a, placeOfBirth: null, placeOfBirthUnknown: true }));
-                      saveAndNext('I don’t know');
-                    }}
+                    onPress={handleUnknown}
                   >
-                    <Text style={[styles.choiceText, { color: '#fff' }]}>I don’t know</Text>
+                    <Text style={[styles.choiceText, { color: '#fff' }]}>
+                      I don’t know
+                    </Text>
                   </TouchableOpacity>
                 </View>
               );
+            }
+
             case 'time': {
               const now = new Date();
               const defaultMidnight = new Date();
-defaultMidnight.setHours(0, 0, 0, 0);
+              defaultMidnight.setHours(0, 0, 0, 0);
               const birthDate = answers.birthday;
               const birthTime = answers.birthtime;
               const isBirthdayToday = birthDate?.toDateString() === now.toDateString();
@@ -447,15 +508,15 @@ defaultMidnight.setHours(0, 0, 0, 0);
                       { alignSelf: 'center', marginTop: 16 },
                     ]}
                     onPress={() => {
-                      
+
                       saveAndNext('I don’t know');
 
                       setAnswers(a => ({
                         ...a,
                         birthtime: defaultMidnight,
-                        birthtimeUnknown: true, 
+                        birthtimeUnknown: true,
                       }));
-                      
+
                     }}
                   >
                     <Text
@@ -657,15 +718,15 @@ defaultMidnight.setHours(0, 0, 0, 0);
       </ScrollView>
       {renderInputArea()}
       <PolicyModal
-  visible={isPolicyModalVisible}
-  onClose={closePolicyModal}
-  title={policyModalContent}
-  textContent={
-    policyModalContent === 'Terms & Conditions'
-      ? termsAndConditions
-      : privacyPolicy
-  }
-/>
+        visible={isPolicyModalVisible}
+        onClose={closePolicyModal}
+        title={policyModalContent}
+        textContent={
+          policyModalContent === 'Terms & Conditions'
+            ? termsAndConditions
+            : privacyPolicy
+        }
+      />
 
     </>
   );
@@ -743,15 +804,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C2541',
   },
   textInput: {
-  flex: 1,
-  backgroundColor: '#3A506B',
-  borderRadius: 24,
-  paddingHorizontal: 15,
-  color: '#fff', // ✅ white input text
-  height: 50,
-  marginBottom: Platform.OS === 'ios' ? 10 : 5,
-  alignSelf: 'center',
-},
+    flex: 1,
+    backgroundColor: '#3A506B',
+    borderRadius: 24,
+    paddingHorizontal: 15,
+    color: '#fff', // ✅ white input text
+    height: 50,
+    marginBottom: Platform.OS === 'ios' ? 10 : 5,
+    alignSelf: 'center',
+  },
 
   sendButton: {
     marginLeft: 12,
