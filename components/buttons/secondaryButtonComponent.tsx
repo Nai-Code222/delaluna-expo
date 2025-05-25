@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     text: {
-        fontSize: 16,
+        fontSize: 18,
     },
     defaultText: {
         color: '#FFFFFF',

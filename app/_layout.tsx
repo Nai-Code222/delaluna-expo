@@ -1,10 +1,15 @@
 // app/_layout.tsx
 import React from 'react';
-import { Stack } from 'expo-router';
+import { Stack, Slot } from 'expo-router';
+import { AuthProvider } from '@/backend/AuthContext';
 
 export default function RootLayout() {
   return (
-    // One-line, no children: router auto-wires index/login/signup/home
-    <Stack screenOptions={{ headerShown: false }} />
+    <AuthProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* This is where all child routes like /home, /login appear */}
+        <Slot />
+      </Stack>
+    </AuthProvider>
   );
 }

@@ -189,6 +189,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 8,
     position: 'relative',
+    fontFamily: 'Futura-Generic',
   },
   cancelButton: {
     position: 'absolute',

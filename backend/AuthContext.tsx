@@ -1,34 +1,36 @@
-// src/contexts/AuthContext.tsx
+// src/backend/AuthContext.tsx
 import React, {
   createContext,
   useState,
   useEffect,
+  useContext,
   ReactNode,
 } from 'react';
-import { onAuthStateChanged } from '../service/Auth.service';
-import type { User } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth } from '../firebaseConfig'; // make sure this is correct
 
 type AuthContextType = {
   user: User | null;
   initializing: boolean;
 };
 
-export const AuthContext = createContext<AuthContextType>({
+const AuthContext = createContext<AuthContextType>({
   user: null,
   initializing: true,
 });
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged((u) => {
-      setUser(u);
-      if (initializing) {
-        setInitializing(false);
-      }
+    console.log('🟣 AuthContext mounted');
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      console.log('👤 Firebase user changed:', firebaseUser);
+      setUser(firebaseUser);
+      setInitializing(false);
     });
+
     return unsubscribe;
   }, []);
 
@@ -37,4 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
+};
+
+export const useAuth = () => useContext(AuthContext);
+export { AuthContext };

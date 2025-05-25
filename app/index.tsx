@@ -5,6 +5,9 @@ import LottieView from 'lottie-react-native';
 import { useRouter } from 'expo-router';
 import PrimaryButton from '@/components/buttons/primaryButtonComponent';
 import SecondaryButton from '@/components/buttons/secondaryButtonComponent';
+import { TitleText } from '@/components/typography/TitleText';
+import { BodyText } from '@/components/typography/BodyText';
+import ButtonText from '@/components/typography/ButtonText';
 
 const welcomeJson = require('../assets/animations/Pre comp 4.json');
 const logoJson = require('../assets/animations/Pre comp 3_1.json');
@@ -34,13 +37,16 @@ export default function Welcome() {
 
       {/* Buttons */}
       <View style={styles.bottomContainer}>
-        <PrimaryButton
+        <TitleText>
+          <PrimaryButton
           title="Get Started"
           onPress={() => router.push('/signup')}
           style={{ marginBottom: 10 }}
           accessibilityLabel="Get Started"
           accessibilityHint="Navigate to the sign up screen"
           />
+        </TitleText>
+        
 
           <View
             style={{
@@ -51,11 +57,14 @@ export default function Welcome() {
             }}
           />
 
+<ButtonText>
         <SecondaryButton
           title="Already a member?"
           linkString='Log In'
           onPress={() => router.push('/login')}
         />
+        
+        </ButtonText>
         <Button
           title="Continue as Guest"
           color="#FF9800"

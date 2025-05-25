@@ -1,34 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { View, Text, Button, StyleSheet, ActivityIndicator } from 'react-native';
 import { auth } from '../../firebaseConfig';
-import { signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { router } from 'expo-router'
-
+import { signOut } from 'firebase/auth';
+import { router } from 'expo-router';
+import { AuthContext } from '@/backend/AuthContext'; // Adjust if needed
 
 const HomeScreen: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return unsubscribe;
-  }, []);
+  const { user, initializing } = useContext(AuthContext);
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       console.log('User signed out successfully');
-      // naigate back to login or welcome screen
       router.push('/login');
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
 
-  if (loading) {
+  if (initializing) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" />

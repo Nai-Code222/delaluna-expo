@@ -186,8 +186,15 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     color: 'white',
-    fontSize: 30,
     fontFamily: 'Poppins',
+    ...Platform.select({
+      ios: {
+        fontSize: 40,
+      },
+      android: {
+        fontSize: 30,
+      },
+    }),
     fontWeight: '500',
     marginBottom: 24,
   },
