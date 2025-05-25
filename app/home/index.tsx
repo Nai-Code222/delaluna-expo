@@ -12,7 +12,7 @@ const HomeScreen: React.FC = () => {
     try {
       await signOut(auth);
       console.log('User signed out successfully');
-      router.push('/login');
+      router.push('/welcome');
     } catch (error) {
       console.error('Logout error:', error);
     }

@@ -193,7 +193,7 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
       case 'location':
         setAnswers(a => ({
           ...a,
-          placeOfBirth: value === 'I don’t know' ? undefined : value,
+          placeOfBirth: value === 'I don’t know' ? null : value,
           placeOfBirthUnknown: value === 'I don’t know',
         }));
         setTextInput('');
@@ -401,7 +401,7 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
                 setLocationError(null);
                 setAnswers(a => ({
                   ...a,
-                  placeOfBirth: undefined,
+                  placeOfBirth: '',
                   placeOfBirthUnknown: true,
                 }));
                 saveAndNext('I don’t know');

@@ -16,6 +16,8 @@ import { signUp } from '../service/Auth.service';
 import { UserCredential } from 'firebase/auth';
 import { UserRecord } from '@/model/UserRecord';
 import { createUserDoc } from '@/service/userService';
+import LoadingScreen from '@/components/utils/LoadingScreen';
+
 
 // Import policy modals and static text if needed
 // import PrivacyText from '../assets/privacy.txt';
@@ -24,6 +26,8 @@ import { createUserDoc } from '@/service/userService';
 export default function SignUpChatScreen() {
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const steps: StepConfig[] = [
     {
@@ -137,9 +141,18 @@ export default function SignUpChatScreen() {
 
       await new Promise(resolve => setTimeout(resolve, 1000));
       await createUserDoc(uid, userRecord);
-      setTimeout(() => {
-        router.replace('/');
-      }, 500);
+      setIsLoading(true);
+      let currentProgress = 0;
+
+      // fake loading progress animation
+      const interval = setInterval(() => {
+        currentProgress += 0.2;
+        setProgress(currentProgress);
+        if (currentProgress >= 1) {
+          clearInterval(interval);
+          router.replace('/home');
+        }
+      }, 200);
     } catch (e: any) {
       if (e.code === 'auth/email-already-in-use') {
         Alert.alert('Email already in use', 'Please go back and use a different email.');
@@ -151,6 +164,9 @@ export default function SignUpChatScreen() {
       }
     }
   };
+  if (isLoading) {
+  return <LoadingScreen progress={progress} message="Reading your stars..." />;
+}
   return (
     <ImageBackground
       source={require('../assets/images/background.jpg')}
