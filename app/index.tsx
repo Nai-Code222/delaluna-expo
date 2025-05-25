@@ -1,101 +1,55 @@
-// app/index.tsx
-import React from 'react';
-import { View, Button, StyleSheet, ImageBackground } from 'react-native';
+// app/splash.tsx
+import React, { useEffect, useRef } from 'react';
+import { View, StyleSheet, ImageBackground } from 'react-native';
 import LottieView from 'lottie-react-native';
-import { useRouter } from 'expo-router';
-import PrimaryButton from '@/components/buttons/primaryButtonComponent';
-import SecondaryButton from '@/components/buttons/secondaryButtonComponent';
+import { router } from 'expo-router';
 import { TitleText } from '@/components/typography/TitleText';
-import { BodyText } from '@/components/typography/BodyText';
-import ButtonText from '@/components/typography/ButtonText';
 
-const welcomeJson = require('../assets/animations/Pre comp 4.json');
-const logoJson = require('../assets/animations/Pre comp 3_1.json');
-export default function Welcome() {
-  const router = useRouter();
+export default function SplashScreen() {
+  const animationRef = useRef<LottieView>(null);
+
+  useEffect(() => {
+    animationRef.current?.play();
+
+    const timer = setTimeout(() => {
+      router.replace('/welcome'); // back to welcome screen
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <View style={styles.container}>
-      {/* Background */}
-      <ImageBackground
-        source={require('../assets/images/background.jpg')}
-        style={styles.background}
-        resizeMode="cover"
-      />
-      {/* Animations */}
-      <View style={styles.topContainer}>
-      <LottieView
-          source={welcomeJson}
-          autoPlay
-          style={{ width: 400, height: 300 }}
-        />
+    <ImageBackground
+      source={require('../assets/images/background.jpg')}
+      style={styles.background}
+
+      resizeMode="cover"
+    >
+      <View style={styles.overlay}>
         <LottieView
-          source={logoJson}
+          ref={animationRef}
+          source={require('../assets/animations/splash-animation.json')}
           autoPlay
-          style={{ width: 500, height: 500 }}
+          loop={true}
+          style={styles.animation}
         />
       </View>
-
-      {/* Buttons */}
-      <View style={styles.bottomContainer}>
-        <TitleText>
-          <PrimaryButton
-          title="Get Started"
-          onPress={() => router.push('/signup')}
-          style={{ marginBottom: 10 }}
-          accessibilityLabel="Get Started"
-          accessibilityHint="Navigate to the sign up screen"
-          />
-        </TitleText>
-        
-
-          <View
-            style={{
-              width: '80%',
-              height: 1,
-              backgroundColor: '#D4D6DD',
-              marginVertical: 20,
-            }}
-          />
-
-<ButtonText>
-        <SecondaryButton
-          title="Already a member?"
-          linkString='Log In'
-          onPress={() => router.push('/login')}
-        />
-        
-        </ButtonText>
-        <Button
-          title="Continue as Guest"
-          color="#FF9800"
-          onPress={() => {
-            // Handle guest login logic here
-            console.log('Continue as Guest');
-            router.push('/home');
-          }}
-        />
-      </View>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   background: {
     ...StyleSheet.absoluteFillObject,
   },
-  topContainer: {
-    flex: 2,
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(4, 4, 4, 0.45)', // optional tint
     justifyContent: 'center',
     alignItems: 'center',
   },
-  bottomContainer: {
-    flex: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingBottom: 40,
-    gap: 20,
+  animation: {
+     width: 600, 
+     height: 600 
   },
 });
