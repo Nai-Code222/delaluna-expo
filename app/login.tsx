@@ -13,7 +13,8 @@ import {
   Alert,
   Platform,
 } from 'react-native'
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '../firebaseConfig'
+import { signInWithEmailAndPassword } from 'firebase/auth'
 import '../firebaseConfig' // Ensure you have initialized Firebase in this file
 import SecondaryButtonComponent from '@/components/buttons/secondaryButtonComponent'
 import { router } from 'expo-router'
@@ -24,11 +25,9 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  // track incorrect login attempts
   const [loginAttempts, setLoginAttempts] = useState(0);
 
   const handleLogin = async () => {
-    const auth = getAuth()
 
     try {
       await signInWithEmailAndPassword(auth, email, password)
