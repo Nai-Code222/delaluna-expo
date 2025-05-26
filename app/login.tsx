@@ -1,7 +1,7 @@
 // app/login.tsx
 import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -14,11 +14,14 @@ import {
   Platform,
 } from 'react-native'
 import { auth } from '../firebaseConfig'
-import { signInWithEmailAndPassword } from 'firebase/auth'
+import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth'
 import '../firebaseConfig' // Ensure you have initialized Firebase in this file
 import SecondaryButtonComponent from '@/components/buttons/secondaryButtonComponent'
-import { router } from 'expo-router'
+import { router, useRouter } from 'expo-router'
 import AlertModal from '@/components/alerts/AlertModal'
+import LoadingScreen from '@/components/utils/LoadingScreen'
+import { useAuth } from '@/backend/AuthContext';
+
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -26,15 +29,38 @@ export default function Login() {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [loginAttempts, setLoginAttempts] = useState(0);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const { user, initializing } = useAuth();
+  const router = useRouter();
+
+
+useEffect(() => {
+  if (!initializing && user) {
+    router.replace('/home');
+  }
+}, [initializing, user]);
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCheckingAuth(false);
+      if (user) {
+        router.replace('/home');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  // If still checking auth status, show loading screen
+  if (initializing) return <LoadingScreen message="Initializing..." progress={0} />;
 
   const handleLogin = async () => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password)
       Alert.alert('Success', 'You are logged in!')
-      // Reset login attempts on successful login
       setLoginAttempts(0);
-      // Navigate to the home screen or wherever you want after login
       router.push('/home')
     } catch (error: any) {
       const msg = 

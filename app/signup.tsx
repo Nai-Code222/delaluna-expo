@@ -17,24 +17,27 @@ import { UserCredential } from 'firebase/auth';
 import { UserRecord } from '@/model/UserRecord';
 import { createUserDoc } from '@/service/userService';
 import LoadingScreen from '@/components/utils/LoadingScreen';
-
-
-// Import policy modals and static text if needed
-// import PrivacyText from '../assets/privacy.txt';
-// import TermsText from '../assets/terms.txt';
+import { useAuth } from '@/backend/AuthContext';
+import { useEffect } from 'react';
 
 export default function SignUpChatScreen() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const { user, initializing } = useAuth();
+
+  useEffect(() => {
+    if (!initializing && user) {
+      router.replace('/home');
+    }
+  }, [initializing, user]);
 
   const steps: StepConfig[] = [
     {
       key: 'firstName',
       renderQuestion: () =>
-        `Hey, I’m glad you’re here! I have to ask a few quick questions for astrological reasons. Let’s start with some basic info to get you set up. 
-      \n\ What’s your name?`,
+        `Hey, I’m glad you’re here! I have to ask a few quick questions for astrological reasons. Let’s start with some basic info to get you set up. \n\n What’s your name?`,
       inputType: 'text',
       placeholder: 'First name…',
     },
@@ -91,7 +94,7 @@ export default function SignUpChatScreen() {
     {
       key: 'final',
       renderQuestion: () =>
-        `Your secrets are safe with us 🔒`,
+        `Your secrets are safe with us 🔐`,
       inputType: 'final',
     },
   ];
@@ -103,14 +106,10 @@ export default function SignUpChatScreen() {
     }
   };
 
-
   const handleComplete = async (answers: AnswerRecord) => {
-    console.log('Signup answers:', answers);
     try {
-      // 1) Create the Firebase Auth user
-      let userCred: UserCredential = await signUp(answers.email!, answers.password!);
+      let userCred: UserCredential = await signUp(answers.email!.trim(), answers.password!);
       const uid = userCred.user.uid;
-      console.log('User created:', uid);
 
       const userRecord: UserRecord = {
         id: uid,
@@ -127,7 +126,6 @@ export default function SignUpChatScreen() {
           : typeof answers.birthtime === 'string'
             ? answers.birthtime
             : '',
-
         placeOfBirth: answers.placeOfBirth!,
         zodiacSign: null,
         risingSign: null,
@@ -144,7 +142,6 @@ export default function SignUpChatScreen() {
       setIsLoading(true);
       let currentProgress = 0;
 
-      // fake loading progress animation
       const interval = setInterval(() => {
         currentProgress += 0.2;
         setProgress(currentProgress);
@@ -158,15 +155,16 @@ export default function SignUpChatScreen() {
         Alert.alert('Email already in use', 'Please go back and use a different email.');
         setStepToKey('email');
         return;
-      }
-      else {
+      } else {
         Alert.alert('Signup Error', e.message);
       }
     }
   };
-  if (isLoading) {
-  return <LoadingScreen progress={progress} message="Reading your stars..." />;
-}
+
+  if (isLoading || initializing) {
+    return <LoadingScreen progress={progress} message="Reading your stars..." />;
+  }
+
   return (
     <ImageBackground
       source={require('../assets/images/background.jpg')}
@@ -205,7 +203,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 8,
     position: 'relative',
-    fontFamily: 'Futura-Generic',
   },
   cancelButton: {
     position: 'absolute',

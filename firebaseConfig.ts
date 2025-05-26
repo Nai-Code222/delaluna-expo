@@ -1,8 +1,9 @@
-// src/firebaseConfig.ts
 import Constants from 'expo-constants';
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getReactNativePersistence, initializeAuth } from 'firebase/auth';
+
 
 // Expo SDK 48+ may use expoConfig instead of manifest
 const raw = (Constants.manifest as any)?.extra
@@ -30,9 +31,13 @@ const firebaseConfig = {
   appId: firebaseAppId,
 };
 
-// Initialize Firebase
+// Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Export the services you need elsewhere in your app
-export const auth = getAuth(app);
+// ✅ Initialize Auth with AsyncStorage for persistence
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
+
+// Firestore stays the same
 export const db = getFirestore(app);
