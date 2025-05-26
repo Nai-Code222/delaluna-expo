@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:497678885238:android:fcc4d6ea881a6e13a5da57",
+        "mobilesdk_app_id": "1:497678885238:android:7c68ca06978448a1a5da57",
         "android_client_info": {
-          "package_name": "com.delalunaanswers.app"
+          "package_name": "com.naicode022.delalunaexpo"
         }
       },
       "oauth_client": [],

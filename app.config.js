@@ -34,7 +34,7 @@ export default {
         foregroundImage: './assets/images/adaptive-icon.png',
         backgroundColor: '#ffffff',
       },
-      package: 'com.delalunaanswers.app',
+      package: 'com.naicode022.delalunaexpo',
       googleServicesFile: './google-services.json',
     },
 
