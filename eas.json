@@ -8,7 +8,18 @@
       "developmentClient": true,
       "distribution": "internal"
     },
-    
+    "clean": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal"
+    },
+    "demo": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal"
+    },
     "preview": {
       "distribution": "internal",
       "android": {
