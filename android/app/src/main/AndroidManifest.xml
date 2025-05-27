@@ -27,6 +27,7 @@
         <data android:scheme="myapp"/>
         <data android:scheme="com.delalunaanswers.app"/>
         <data android:scheme="exp+delaluna-expo"/>
+        <data android:scheme="com.naicode022.delalunaexpo"/>
       </intent-filter>
     </activity>
   </application>
