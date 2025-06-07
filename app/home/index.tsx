@@ -1,18 +1,25 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, ActivityIndicator } from 'react-native';
 import { auth } from '../../firebaseConfig';
 import { signOut } from 'firebase/auth';
 import { router } from 'expo-router';
-import { AuthContext } from '@/backend/AuthContext'; // Adjust if needed
+import { AuthContext } from '@/backend/AuthContext';
 
 const HomeScreen: React.FC = () => {
   const { user, initializing } = useContext(AuthContext);
+
+  // 👇 Add this effect to handle navigation on logout
+  useEffect(() => {
+    if (!initializing && !user) {
+      router.replace('/welcome');
+    }
+  }, [user, initializing]);
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       console.log('User signed out successfully');
-      router.push('/welcome');
+      // No navigation here!
     } catch (error) {
       console.error('Logout error:', error);
     }
