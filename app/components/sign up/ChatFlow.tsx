@@ -10,9 +10,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { LocationAutocomplete } from './LocationAutocomplete';
-import { checkEmailExists } from '@/service/Auth.service';
-import { auth } from '../../firebaseConfig'
+import LocationAutocomplete from './LocationAutocomplete';
+import { checkEmailExists } from '@/app/service/Auth.service';
+import { auth } from '../../../firebaseConfig'
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
 import { PolicyModal } from './PolicyModals';
 import { termsAndConditions, privacyPolicy } from '../../assets/legal/legalTexts';
@@ -48,7 +48,7 @@ type ChatFlowProps = {
   setStep: React.Dispatch<React.SetStateAction<number>>;
 };
 
-export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
+export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
   const [answers, setAnswers] = useState<AnswerRecord>({
     firstName: '',
     lastName: '',

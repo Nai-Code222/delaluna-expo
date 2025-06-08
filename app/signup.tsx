@@ -11,13 +11,13 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
-import { ChatFlow, StepConfig, AnswerRecord } from '@/components/sign up/ChatFlow';
-import { signUp } from '../service/Auth.service';
+import ChatFlow, { StepConfig, AnswerRecord } from '@/app/components/sign up/ChatFlow';
+import signUp from '../app/service/Auth.service';
 import { UserCredential } from 'firebase/auth';
-import { UserRecord } from '@/app/model/UserRecord';
-import { createUserDoc } from '@/service/userService';
-import LoadingScreen from '@/components/utils/LoadingScreen';
-import { useAuth } from '@/backend/AuthContext';
+import UserRecord from '@/app/model/UserRecord';
+import { createUserDoc } from '@/app/service/userService';
+import LoadingScreen from '@/app/components/utils/LoadingScreen';
+import { useAuth } from '@/app/backend/AuthContext';
 import { useEffect } from 'react';
 
 export default function SignUpChatScreen() {
@@ -167,7 +167,7 @@ export default function SignUpChatScreen() {
 
   return (
     <ImageBackground
-      source={require('../assets/images/background.jpg')}
+      source={require('../app/assets/images/background.jpg')}
       style={styles.background}
       resizeMode="cover"
     >

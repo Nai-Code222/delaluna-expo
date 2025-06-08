@@ -3,7 +3,7 @@ import { View, Text, Button, StyleSheet, ActivityIndicator } from 'react-native'
 import { auth } from '../../firebaseConfig';
 import { signOut } from 'firebase/auth';
 import { router } from 'expo-router';
-import { AuthContext } from '@/app/backend/AuthContext';
+import AuthContext from '@/app/backend/AuthContext';
 
 const HomeScreen: React.FC = () => {
   const { user, initializing } = useContext(AuthContext);

@@ -1,7 +1,7 @@
-import { auth } from '../firebaseConfig';
+import { auth } from '../../firebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
 import { User } from 'firebase/auth';
-import { db } from '../firebaseConfig';
+import { db } from '../../firebaseConfig';
 import { UserCredential } from 'firebase/auth';
 import {
   createUserWithEmailAndPassword,
@@ -9,10 +9,10 @@ import {
   onAuthStateChanged as fbOnAuthStateChanged,
   signOut as fbSignOut,
 } from 'firebase/auth';
-import { AnswerRecord } from '@/components/sign up/ChatFlow';
-import { UserRecord } from '@/app/model/UserRecord';
+import { AnswerRecord } from '@/app/components/sign up/ChatFlow';
+import UserRecord from '@/app/model/UserRecord';
 
-export function signUp(email: string, password: string) {
+export default function signUp(email: string, password: string) {
   return createUserWithEmailAndPassword(auth, email, password);
 }
 

@@ -21,3 +21,5 @@ export const BodyText = ({ children, style }: Props) => (
     {children}
   </Text>
 );
+
+export default BodyText;

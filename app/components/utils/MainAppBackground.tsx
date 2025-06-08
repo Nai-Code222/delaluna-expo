@@ -8,7 +8,7 @@ type GradientBackgroundProps = {
   children?: React.ReactNode;
 };
 
-export function GradientBackground({
+export default function GradientBackground({
   style,
   children,
 }: GradientBackgroundProps) {

@@ -1,6 +1,6 @@
 // src/services/authService.ts
-import { UserRecord } from '@/app/model/UserRecord';
-import { auth, db } from '../firebaseConfig';
+import UserRecord from '@/app/model/UserRecord';
+import { auth, db } from '../../firebaseConfig';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -17,7 +17,7 @@ import { doc, setDoc } from 'firebase/firestore';
  * Create a new user with email & password.
  * Resolves with the UserCredential.
  */
-export function signUp(
+export default function signUp(
   email: string,
   password: string
 ): Promise<UserCredential> {

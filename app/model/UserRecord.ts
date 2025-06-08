@@ -1,5 +1,5 @@
 // src/models/User.ts
-export interface UserRecord {
+export default interface UserRecord {
     id?: string;
     firstName: string;
     lastName: string;
@@ -16,8 +16,4 @@ export interface UserRecord {
     isPaidMember: boolean;
     signUpDate?: string; // store as ISO date string
     lastLoginDate?: string; // store as ISO date string
-}
-
-export interface UserRecordWithId extends UserRecord {
-    id: string;
 }

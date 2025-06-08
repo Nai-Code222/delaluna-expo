@@ -23,7 +23,7 @@ interface PolicyModalProps {
 }
 
 
-export function PolicyModal({
+export default function PolicyModal({
   visible,
   onClose,
   textContent,

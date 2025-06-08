@@ -97,7 +97,7 @@ useEffect(() => {
 
   return (
     <ImageBackground
-      source={require('../assets/images/background.jpg')}
+      source={require('../app/assets/images/background.jpg')}
       style={styles.background}
       resizeMode="cover"
     >
@@ -111,7 +111,7 @@ useEffect(() => {
       {/* 1) Logo Container */}
       <View style={styles.logoContainer}>
         <Image
-          source={require('../assets/images/delaluna_logo.png')}
+          source={require('../app/assets/images/delaluna_logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />

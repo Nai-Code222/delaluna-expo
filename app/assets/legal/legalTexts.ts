@@ -247,3 +247,8 @@ Our Platform is intended for U.S. users only. If you reside in the EU or elsewhe
 
 We may update this Privacy Policy at any time without notice.
 `;
+
+export default {
+  termsAndConditions,
+  privacyPolicy,
+};

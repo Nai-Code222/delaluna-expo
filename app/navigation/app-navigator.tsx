@@ -14,3 +14,5 @@ export function AppNavigator() {
     </Tab.Navigator>
   );
 }
+
+export default AppNavigator;

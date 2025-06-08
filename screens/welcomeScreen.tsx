@@ -9,9 +9,9 @@ import {
 import LottieView from 'lottie-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '@/app/navigation/auth-navigator';
-import PrimaryButton from '@/components/buttons/primaryButtonComponent';
+import PrimaryButton from '@/app/components/buttons/primaryButtonComponent';
 
-const welcomeJson = require('../assets/animations/Pre comp 4.json');
+const welcomeJson = require('../app/assets/animations/Pre comp 4.json');
 
 // Tell TS what routes we have on this stack
 type Props = NativeStackScreenProps<AuthStackParamList, 'Welcome'>;
@@ -21,7 +21,7 @@ export default function WelcomeScreen({ navigation }: Props) {
     <View style={styles.container}>
       {/* Background */}
       <ImageBackground
-        source={require('../assets/images/backgroundImg.png')}
+        source={require('../app/assets/images/backgroundImg.png')}
         style={styles.background}
         resizeMode="cover"
       />

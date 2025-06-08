@@ -19,7 +19,7 @@ export default function SplashScreen() {
 
   return (
     <ImageBackground
-      source={require('../../assets/images/background.jpg')}
+      source={require('../app/assets/images/background.jpg')}
       style={styles.background}
 
       resizeMode="cover"
@@ -27,7 +27,7 @@ export default function SplashScreen() {
       <View style={styles.overlay}>
         <LottieView
           ref={animationRef}
-          source={require('../../assets/animations/splash-animation.json')}
+          source={require('../app/assets/animations/splash-animation.json')}
           autoPlay
           loop={true}
           style={styles.animation}

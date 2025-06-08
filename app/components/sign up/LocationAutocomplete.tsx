@@ -36,7 +36,7 @@ interface LocationAutocompleteProps {
 }
 
 
-export function LocationAutocomplete({
+export default function LocationAutocomplete({
   value,
   onSelect,
   onResultsVisibilityChange,

@@ -22,3 +22,5 @@ export const TitleText = ({ children, style }: Props) => (
     {children}
   </Text>
 );
+
+export default TitleText;

@@ -3,15 +3,14 @@ import React from 'react';
 import { View, Button, StyleSheet, ImageBackground } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useRouter } from 'expo-router';
-import PrimaryButton from '@/components/buttons/primaryButtonComponent';
-import SecondaryButton from '@/components/buttons/secondaryButtonComponent';
-import { TitleText } from '@/components/typography/TitleText';
-import { BodyText } from '@/components/typography/BodyText';
-import ButtonText from '@/components/typography/ButtonText';
+import PrimaryButton from '@/app/components/buttons/primaryButtonComponent';
+import SecondaryButton from '@/app/components/buttons/secondaryButtonComponent';
+import { TitleText } from '@/app/components/typography/TitleText';
+import ButtonText from '@/app/components/typography/ButtonText';
 import SplashScreen from '.';
 
-const welcomeJson = require('../assets/animations/Pre comp 4.json');
-const logoJson = require('../assets/animations/Pre comp 3_1.json');
+const welcomeJson = require('../app/assets/animations/Pre comp 4.json');
+const logoJson = require('../app/assets/animations/Pre comp 3_1.json');
 
 export default function Welcome() {
   const router = useRouter();
@@ -20,7 +19,7 @@ export default function Welcome() {
     <View style={styles.container}>
       {/* Background */}
       <ImageBackground
-        source={require('../assets/images/background.jpg')}
+        source={require('../app/assets/images/background.jpg')}
         style={styles.background}
         resizeMode="cover"
       />
