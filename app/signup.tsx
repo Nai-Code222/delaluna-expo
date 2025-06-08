@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import { ChatFlow, StepConfig, AnswerRecord } from '@/components/sign up/ChatFlow';
 import { signUp } from '../service/Auth.service';
 import { UserCredential } from 'firebase/auth';
-import { UserRecord } from '@/model/UserRecord';
+import { UserRecord } from '@/app/model/UserRecord';
 import { createUserDoc } from '@/service/userService';
 import LoadingScreen from '@/components/utils/LoadingScreen';
 import { useAuth } from '@/backend/AuthContext';

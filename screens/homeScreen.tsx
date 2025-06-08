@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { HomeTabParamList }     from '../navigation/HomeTabs';
+import type { HomeTabParamList }     from '../app/navigation/HomeTabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = BottomTabScreenProps<HomeTabParamList, 'Home'>;

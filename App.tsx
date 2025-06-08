@@ -3,8 +3,8 @@ import { enableScreens } from 'react-native-screens';
 import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { AuthProvider, AuthContext } from './backend/AuthContext';
-import { AppNavigator } from './navigation/app-navigator';
-import AuthNavigator from './navigation/auth-navigator';
+import { AppNavigator } from './app/navigation/app-navigator';
+import AuthNavigator from './app/navigation/auth-navigator';
 import { ActivityIndicator, View } from 'react-native';
 import { useFonts } from 'expo-font';
 

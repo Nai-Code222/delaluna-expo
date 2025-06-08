@@ -16,11 +16,11 @@ import {
 import { auth } from '../firebaseConfig'
 import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth'
 import '../firebaseConfig' // Ensure you have initialized Firebase in this file
-import SecondaryButtonComponent from '@/components/buttons/secondaryButtonComponent'
+import SecondaryButtonComponent from '@/app/components/buttons/secondaryButtonComponent'
 import { router, useRouter } from 'expo-router'
-import AlertModal from '@/components/alerts/AlertModal'
-import LoadingScreen from '@/components/utils/LoadingScreen'
-import { useAuth } from '@/backend/AuthContext';
+import AlertModal from '@/app/components/alerts/AlertModal'
+import LoadingScreen from '@/app/components/utils/LoadingScreen'
+import { useAuth } from '@/app/backend/AuthContext';
 
 
 export default function Login() {

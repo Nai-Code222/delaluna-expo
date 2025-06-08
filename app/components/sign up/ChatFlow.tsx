@@ -240,7 +240,6 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
   };
 
   const renderInputArea = () => {
-    // Go Back button removed from here!
     return (
       <View>
         {(() => {
@@ -334,6 +333,13 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
               const today = new Date();
               const selected: Date | null = answers.birthday;
               const isFuture = selected ? selected > today : false;
+              const isUnder18 = selected
+                ? today.getFullYear() - selected.getFullYear() < 18 ||
+                  (today.getFullYear() - selected.getFullYear() === 18 &&
+                    (today.getMonth() < selected.getMonth() ||
+                      (today.getMonth() === selected.getMonth() &&
+                        today.getDate() < selected.getDate())))
+                : false;
               return (
                 <View style={styles.inputContainer}>
                   <View style={styles.inputRow}>
@@ -370,6 +376,13 @@ export function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
                     <View style={styles.errorContainer}>
                       <Text style={styles.errorText}>
                         Please select a valid date not in the future.
+                      </Text>
+                    </View>
+                  )}
+                  {isUnder18 && !isFuture && (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorText}>
+                        You must be at least 18 years old to register.
                       </Text>
                     </View>
                   )}

@@ -10,7 +10,7 @@ import {
   signOut as fbSignOut,
 } from 'firebase/auth';
 import { AnswerRecord } from '@/components/sign up/ChatFlow';
-import { UserRecord } from '@/model/UserRecord';
+import { UserRecord } from '@/app/model/UserRecord';
 
 export function signUp(email: string, password: string) {
   return createUserWithEmailAndPassword(auth, email, password);

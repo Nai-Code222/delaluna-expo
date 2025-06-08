@@ -3,7 +3,6 @@ import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { router } from 'expo-router';
-import { TitleText } from '@/components/typography/TitleText';
 
 export default function SplashScreen() {
   const animationRef = useRef<LottieView>(null);
@@ -20,7 +19,7 @@ export default function SplashScreen() {
 
   return (
     <ImageBackground
-      source={require('../assets/images/background.jpg')}
+      source={require('../../assets/images/background.jpg')}
       style={styles.background}
 
       resizeMode="cover"
@@ -28,7 +27,7 @@ export default function SplashScreen() {
       <View style={styles.overlay}>
         <LottieView
           ref={animationRef}
-          source={require('../assets/animations/splash-animation.json')}
+          source={require('../../assets/animations/splash-animation.json')}
           autoPlay
           loop={true}
           style={styles.animation}

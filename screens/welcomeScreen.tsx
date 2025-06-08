@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import LottieView from 'lottie-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '@/navigation/auth-navigator';
+import { AuthStackParamList } from '@/app/navigation/auth-navigator';
 import PrimaryButton from '@/components/buttons/primaryButtonComponent';
 
 const welcomeJson = require('../assets/animations/Pre comp 4.json');
