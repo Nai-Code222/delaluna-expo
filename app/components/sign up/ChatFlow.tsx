@@ -14,7 +14,7 @@ import LocationAutocomplete from './LocationAutocomplete';
 import { checkEmailExists } from '@/app/service/Auth.service';
 import { auth } from '../../../firebaseConfig'
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
-import { PolicyModal } from './PolicyModals';
+import PolicyModal from './PolicyModals';
 import { termsAndConditions, privacyPolicy } from '../../assets/legal/legalTexts';
 
 
@@ -414,7 +414,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                 setLocationError(null);
                 setAnswers(a => ({
                   ...a,
-                  placeOfBirth: '',
+                  placeOfBirth: 'Greenwich, London, England, United Kingdom',
                   placeOfBirthUnknown: true,
                 }));
                 saveAndNext('I don’t know');

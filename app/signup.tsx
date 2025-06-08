@@ -178,7 +178,7 @@ export default function SignUpChatScreen() {
               <Text style={styles.goBackText}>← Go Back</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity onPress={() => router.replace('/')} style={styles.cancelButton}>
+          <TouchableOpacity onPress={() => router.replace('/home')} style={styles.cancelButton}>
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
         </View>

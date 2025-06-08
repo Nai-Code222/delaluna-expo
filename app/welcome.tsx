@@ -28,12 +28,12 @@ export default function Welcome() {
       <LottieView
           source={welcomeJson}
           autoPlay
-          style={{ width: 400, height: 300 }}
+          style={{ width: 300, height: 300 }}
         />
         <LottieView
           source={logoJson}
           autoPlay
-          style={{ width: 500, height: 500 }}
+          style={{ width: 400, height: 500 }}
         />
       </View>
 
