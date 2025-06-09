@@ -5,7 +5,47 @@
   },
   "build": {
     "development": {
+      "developmentClient": false,
+      "distribution": "internal"
+    },
+    "release": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal"
+    },
+    "internal": {
       "developmentClient": true,
+      "distribution": "internal"
+    },
+    "staging": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal"
+    },
+    "qa": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal"
+    },
+    "uat": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal"
+    },
+    "testing": {
+      "android": {  
+        "buildType": "apk"
+      },
+      "distribution": "internal"
+    },
+    "debug": {
+      "android": {
+        "buildType": "apk"
+      },
       "distribution": "internal"
     },
     "clean": {

@@ -101,6 +101,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('@naicode022__delaluna-expo.jks')
+            storePassword 'd4721ab2db7af32015d99cc975833323'
+            keyAlias 'e23d6a35ec6bdbf156037bcc28b91513'
+            keyPassword '055b56f04d3b56acd0dce193812885a1'
+        }
     }
     buildTypes {
         debug {
