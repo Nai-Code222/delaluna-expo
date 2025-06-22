@@ -1,7 +1,7 @@
 // AppNavigator.tsx
 // navigation/AppNavigator.tsx
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from '@/screens/homeScreen';
+import HomeScreen from '@/app/screens/homeScreen';
 import HomeTabs from './HomeTabs';
 
 const Tab = createBottomTabNavigator();
