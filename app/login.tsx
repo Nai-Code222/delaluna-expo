@@ -15,7 +15,7 @@ import {
 } from 'react-native'
 import { auth } from '../firebaseConfig'
 import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth'
-import '../firebaseConfig' // Ensure you have initialized Firebase in this file
+import '../firebaseConfig'
 import SecondaryButtonComponent from '@/app/components/buttons/secondaryButtonComponent'
 import { router, useRouter } from 'expo-router'
 import AlertModal from '@/app/components/alerts/AlertModal'
@@ -40,8 +40,7 @@ useEffect(() => {
   }
 }, [initializing, user]);
 
-  // Check if user is already authenticated
-  useEffect(() => {
+useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCheckingAuth(false);
       if (user) {
@@ -52,7 +51,6 @@ useEffect(() => {
     return () => unsubscribe();
   }, [router]);
 
-  // If still checking auth status, show loading screen
   if (initializing) return <LoadingScreen message="Initializing..." progress={0} />;
 
   const handleLogin = async () => {
@@ -66,17 +64,15 @@ useEffect(() => {
       const msg = 
       error.code === 'auth/invalid-email'   ? 'That email looks wrong.'
     : error.code === 'auth/user-not-found'   ? 'No account for that email.'
-    : error.code === 'auth/wrong-password'   ? 'Password incorrect.'
-    : /* fallback */                      'Something went wrong—please try again.';
+    : error.code === 'auth/wrong-password'   ? 'Password incorrect.' : 'Something went wrong—please try again.';
 
       
       setLoginAttempts(prev => prev + 1);
-      // if less than 3 tries display the error message
-      if (loginAttempts < 2) {
+      if (loginAttempts < 3) {
         setErrorMessage(error.message);
         setShowErrorModal(true);
       } 
-      else  if (loginAttempts >= 2) {
+      else  if (loginAttempts >= 3) {
         Alert.alert(
           'Forgot Password?',
           'It seems you are having trouble logging in. Would you like to reset your password?',
@@ -148,7 +144,7 @@ useEffect(() => {
                 onChangeText={setPassword}
               />
               <TouchableOpacity>
-                <Text style={styles.forgotPassword}>Forgot Password?</Text>
+                <Text style={styles.forgotPassword} onPress={() => router.push('/screens/forgotPassword.screen')}>Forgot Password?</Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>

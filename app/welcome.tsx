@@ -67,8 +67,6 @@ export default function Welcome() {
   );
 }
 
-// ...styles remain unchanged...
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
