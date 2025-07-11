@@ -57,7 +57,6 @@ useEffect(() => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      Alert.alert('Success', 'You are logged in!')
       setLoginAttempts(0);
       router.push('/home')
     } catch (error: any) {
@@ -83,7 +82,7 @@ useEffect(() => {
             },
             {
               text: 'Reset Password',
-              //onPress: () => router.push('/reset-password'),
+              onPress: () => router.push('/screens/forgotPassword.screen'),
             },
           ]
         )

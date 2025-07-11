@@ -1,21 +1,25 @@
-import React, { useContext, useEffect } from 'react'
+// screens/HomeScreen.tsx
+
+import React, { useContext, useEffect, useState } from 'react'
 import {
   View,
   Text,
-  Button,
+  TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   ImageBackground,
+  Platform,
+  StatusBar,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { auth } from '../../firebaseConfig'
 import { signOut } from 'firebase/auth'
 import { router } from 'expo-router'
 import AuthContext from '@/app/backend/AuthContext'
+import HeaderNav from '../components/headerNav'
 
-
-const HomeScreen: React.FC = () => {
+export default function HomeScreen() { 
   const { user, initializing } = useContext(AuthContext)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     if (!initializing && !user) {
@@ -23,12 +27,9 @@ const HomeScreen: React.FC = () => {
     }
   }, [user, initializing])
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth)
-    } catch (error) {
-      console.error('Logout error:', error)
-    }
+  const goToProfile = () => {
+    setMenuOpen(false)
+    router.push('/screens/profile.screen')
   }
 
   if (initializing) {
@@ -39,20 +40,25 @@ const HomeScreen: React.FC = () => {
     )
   }
 
+  // Calculate dropdown top offset: safe-area + header height
+  const safeAreaOffset = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0
+  const headerHeight = 56  // same as HeaderNav.container height
+
   return (
     <ImageBackground
       source={require('../assets/images/mainBackground.png')}
       style={styles.background}
       resizeMode="cover"
     >
+      {/* Reusable HeaderNav */}
+      <HeaderNav
+        title="Home"
+        onAvatarPress={() => goToProfile()}
+      />
 
-      <SafeAreaView style={styles.headerNav}>
-        <Text style={styles.headerTitle}>Home</Text>
-       
-      </SafeAreaView>
-
+      {/* Main Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome Home!</Text>
+        <Text style={styles.title}>Welcome home!</Text>
         <Text style={styles.email}>
           {user ? `Logged in as: ${user.email}` : 'No user logged in.'}
         </Text>
@@ -68,21 +74,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerNav: {
-    width: '100%',
-    height: 60,
-    backgroundColor: '#513877',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  dropdown: {
+    position: 'absolute',
+    right: 16,
+    width: 140,
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    overflow: 'hidden',
+  },
+  menuItem: {
+    paddingVertical: 12,
     paddingHorizontal: 16,
   },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    textAlign: 'center',
-    flex: 1,
+  menuText: {
+    fontSize: 16,
+    color: '#333',
   },
   content: {
     flex: 1,
@@ -92,6 +103,4 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 24, marginBottom: 8, color: '#fff' },
   email: { fontSize: 16, marginBottom: 20, color: '#ddd' },
-})
-
-export default HomeScreen
+});
