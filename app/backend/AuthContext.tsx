@@ -24,9 +24,7 @@ export  const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    console.log('🟣 AuthContext mounted');
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      console.log('👤 Firebase user changed:', firebaseUser);
       setUser(firebaseUser);
       setInitializing(false);
     });

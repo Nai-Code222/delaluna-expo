@@ -50,3 +50,9 @@ export function signOut() {
 export function onAuthStateChanged(cb: any) {
   return fbOnAuthStateChanged(auth, cb);
 }
+
+export function getUserDocRef(userId: string) {
+  const userDocRef = doc(db, 'users', userId);
+  return userDocRef;
+}
+

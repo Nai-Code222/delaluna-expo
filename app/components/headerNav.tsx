@@ -1,4 +1,5 @@
 // components/HeaderNav.tsx
+
 import React from 'react'
 import {
   View,
@@ -6,61 +7,97 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  ImageSourcePropType,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
 
 type HeaderNavProps = {
-  title: string
-  onAvatarPress: () => void
+  title?: string
+  leftIconName?: React.ComponentProps<typeof Ionicons>['name']
+  onLeftPress?: () => void
+  rightIconSource?: ImageSourcePropType
+  rightLabel?: string
+  onRightPress?: () => void
 }
 
-export default function HeaderNav({ title, onAvatarPress }: HeaderNavProps) {
+export default function HeaderNav({
+  title,
+  leftIconName,
+  onLeftPress,
+  rightIconSource,
+  rightLabel,
+  onRightPress,
+}: HeaderNavProps) {
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.title}>{title}</Text>
-        <TouchableOpacity
-          onPress={onAvatarPress}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Image
-            source={require('../assets/icons/Avatar.png')}
-          />
-        </TouchableOpacity>
+    <>
+      {/* 1) just fill the notch/status-bar on iOS; harmless on Android */}
+      <SafeAreaView edges={['top']} style={styles.safeArea} />
+
+      {/* 2) the fixed-height nav bar */}
+      <View style={styles.navBar}>
+        {/* LEFT BUTTON (or placeholder) */}
+        {leftIconName ? (
+          <TouchableOpacity onPress={onLeftPress} style={styles.sideButton}>
+            <Ionicons name={leftIconName} size={24} color="#fff" />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.sideButton} />
+        )}
+
+        {/* TITLE always flex:1 and textAlign:center */}
+        {title ? <Text style={styles.title}>{title}</Text> : <View style={styles.titlePlaceholder} />}
+
+        {/* RIGHT BUTTON (icon or label) or placeholder */}
+        {rightIconSource || rightLabel ? (
+          <TouchableOpacity onPress={onRightPress} style={styles.sideButton}>
+            {rightIconSource && <Image source={rightIconSource} style={styles.icon} />}
+            {rightLabel && <Text style={styles.buttonText}>{rightLabel}</Text>}
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.sideButton} />
+        )}
       </View>
-    </SafeAreaView>
+    </>
   )
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: '#513877',
+    width: '100%',
   },
-  container: {
-    height: 56,
+  navBar: {
+    height: 44,
+    width: '100%',
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center',           // vertical centering
     justifyContent: 'space-between',
     paddingHorizontal: 16,
+    backgroundColor: '#513877',
+  },
+  sideButton: {
+    width: 40,                      // reserves space even when empty
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
+    flex: 1,                        // takes all center space
+    textAlign: 'center',            // centers text horizontally
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
   },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#fff',
+  titlePlaceholder: {
+    flex: 1,
+  },
+  icon: {
+    width: 28,
+    height: 28,
+    resizeMode: 'contain',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 })
-
-// This component can be used in your screens like this:
-//// <HeaderNav
-//   title="Home"
-//   onAvatarPress={() => {
-//     // Handle avatar press, e.g., navigate to profile
-//     router.push('/profile')
-//   }}
-// />
