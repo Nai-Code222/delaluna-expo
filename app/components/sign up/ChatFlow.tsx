@@ -51,6 +51,7 @@ type ChatFlowProps = {
 export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
   const defaultMidnight = new Date();
   defaultMidnight.setHours(0, 0, 0, 0);
+  const defaultPlaceOfBirth = 'Greenwich, London, England, United Kingdom';
   const [answers, setAnswers] = useState<AnswerRecord>({
     firstName: '',
     lastName: '',
@@ -196,8 +197,8 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
       case 'location':
         setAnswers(a => ({
           ...a,
-          placeOfBirth: value === 'I don’t know' ? null : value,
-          placeOfBirthUnknown: value === 'I don’t know',
+          placeOfBirth: value === defaultPlaceOfBirth ? defaultPlaceOfBirth : value,
+          placeOfBirthUnknown: value === defaultPlaceOfBirth,
         }));
         setTextInput('');
         break;
@@ -405,7 +406,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                 setLocationError(null);
                 setAnswers(a => ({
                   ...a,
-                  placeOfBirth: textInput.trim(),
+                  placeOfBirth: textInput,
                   placeOfBirthUnknown: false,
                 }));
                 saveAndNext(textInput.trim());
@@ -417,7 +418,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                 setLocationError(null);
                 setAnswers(a => ({
                   ...a,
-                  placeOfBirth: 'Greenwich, London, England, United Kingdom',
+                  placeOfBirth: defaultPlaceOfBirth,
                   placeOfBirthUnknown: true,
                 }));
                 saveAndNext('I don’t know');
