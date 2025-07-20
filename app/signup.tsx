@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import ChatFlow, { StepConfig, AnswerRecord } from '@/app/components/sign up/ChatFlow';
 import signUp from '../app/service/Auth.service';
 import { UserCredential } from 'firebase/auth';
-import UserRecord from '@/app/model/UserRecord';
+import type { UserRecord } from '@/app/model/UserRecord';
 import { createUserDoc } from '@/app/service/userService';
 import LoadingScreen from '@/app/components/utils/LoadingScreen';
 import { useAuth } from '@/app/backend/AuthContext';
@@ -131,10 +131,11 @@ export default function SignUpChatScreen() {
         risingSign: null,
         moonSign: null,
         email: answers.email,
-        emailVerified: false,
         isPaidMember: false,
         signUpDate: new Date().toISOString(),
         lastLoginDate: new Date().toISOString(),
+        isBirthTimeUnknown: answers.birthtimeUnknown,
+        isPlaceOfBirthUnknown: answers.placeOfBirthUnknown,
       };
 
       await new Promise(resolve => setTimeout(resolve, 1000));

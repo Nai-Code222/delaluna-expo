@@ -1,19 +1,38 @@
-// src/models/User.ts
-export default interface UserRecord {
+export interface UserRecord {
     id?: string;
     firstName: string;
     lastName: string;
     pronouns: string;
-    birthday: string;     // store as ISO date string
-    birthtime: string;    // store as ISO time string
+    birthday: string;
+    birthtime: string;
+    isBirthTimeUnknown: boolean;
     placeOfBirth: string | null;
+    isPlaceOfBirthUnknown: boolean;
     zodiacSign?: string | null;
     risingSign?: string | null;
     moonSign?: string | null;
     email: string;
-    password?: string;     // store as hashed string
-    emailVerified?: boolean;
+    password?: string;
+    isEmailVerified?: boolean;
     isPaidMember: boolean;
-    signUpDate?: string; // store as ISO date string
-    lastLoginDate?: string; // store as ISO date string
+    signUpDate?: string;
+    lastLoginDate?: string;
 }
+
+const UserRecordDefault: UserRecord = {
+    firstName: "",
+    lastName: "",
+    pronouns: "",
+    birthday: "",
+    birthtime: "",
+    isBirthTimeUnknown: false,
+    placeOfBirth: "",
+    isPlaceOfBirthUnknown: false,
+    email: "",
+    isPaidMember: false,
+    password: "",
+    isEmailVerified: false,
+    signUpDate: "",
+};
+
+export default UserRecordDefault;

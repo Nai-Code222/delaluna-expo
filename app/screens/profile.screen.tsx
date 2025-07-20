@@ -12,7 +12,7 @@ import AlertModal from '@/app/components/alerts/AlertModal'
 import PronounToggle from '../components/utils/pronounSwitch'
 import { getUserDocRef } from '../service/userService'
 import { getDoc } from 'firebase/firestore'
-import UserRecord from '@/app/model/UserRecord'
+import {UserRecord} from '@/app/model/UserRecord'
 const PRONOUNS = ['She/Her', 'He/Him', 'Non Binary'];
 
 

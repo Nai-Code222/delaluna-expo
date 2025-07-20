@@ -23,11 +23,11 @@ export interface AnswerRecord {
   firstName: string;
   lastName: string;
   pronouns: string;
-  birthday: Date | null;
-  birthtime: Date | null;
+  birthday: Date;
+  birthtime: Date;
   birthtimeUnknown: boolean;
-  placeOfBirth?: string | null;
-  placeOfBirthUnknown?: boolean;
+  placeOfBirth: string;
+  placeOfBirthUnknown: boolean;
   email: string;
   password: string;
 }
@@ -49,12 +49,14 @@ type ChatFlowProps = {
 };
 
 export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
+  const defaultMidnight = new Date();
+  defaultMidnight.setHours(0, 0, 0, 0);
   const [answers, setAnswers] = useState<AnswerRecord>({
     firstName: '',
     lastName: '',
     pronouns: '',
-    birthday: null,
-    birthtime: null,
+    birthday: new Date(),
+    birthtime: defaultMidnight,
     birthtimeUnknown: false,
     placeOfBirth: '',
     placeOfBirthUnknown: false,
@@ -80,6 +82,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
   const [locationError, setLocationError] = useState<string | null>(null);
 
   const current = steps[step];
+  
 
   useEffect(() => {
     if (current.inputType === 'location') {
@@ -481,8 +484,6 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
 
             case 'time': {
               const now = new Date();
-              const defaultMidnight = new Date();
-              defaultMidnight.setHours(0, 0, 0, 0);
               const birthDate = answers.birthday;
               const birthTime = answers.birthtime;
               const isBirthdayToday = birthDate?.toDateString() === now.toDateString();
@@ -754,20 +755,20 @@ const markdownStyles = {
   heading1: {
     fontSize: 22,
     fontWeight: 'bold',
-    textAlign: 'center', // 👈 center h1
+    textAlign: 'center',
     marginBottom: 10,
   },
   heading2: {
     fontSize: 20,
     fontWeight: 'bold',
-    textAlign: 'center', // 👈 center h2
+    textAlign: 'center', 
     marginTop: 16,
     marginBottom: 6,
   },
   heading3: {
     fontSize: 18,
     fontWeight: '600',
-    textAlign: 'center', // 👈 center h3
+    textAlign: 'center', 
     marginTop: 12,
     marginBottom: 4,
   },
@@ -821,7 +822,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3A506B',
     borderRadius: 24,
     paddingHorizontal: 15,
-    color: '#fff', // ✅ white input text
+    color: '#fff',
     height: 50,
     marginBottom: Platform.OS === 'ios' ? 10 : 5,
     alignSelf: 'center',

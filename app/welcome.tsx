@@ -54,14 +54,6 @@ export default function Welcome() {
             onPress={() => router.push('/login')}
           />
         </ButtonText>
-        <Button
-          title="Continue as Guest"
-          color="#FF9800"
-          onPress={() => {
-            console.log('Continue as Guest');
-            router.push('/home');
-          }}
-        />
       </View>
     </View>
   );
