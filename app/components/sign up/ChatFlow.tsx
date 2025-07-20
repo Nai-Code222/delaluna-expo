@@ -204,10 +204,13 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
         break;
     }
     if (step === steps.length - 1) {
-      onComplete(answers);
-    } else {
-      setStep((s) => s + 1);
-    }
+  setAnswers(a => {
+    onComplete(a);
+    return a;
+  });
+} else {
+  setStep((s) => s + 1);
+}
   };
 
   const renderAnswerBubble = (s: StepConfig, idx: number) => {
