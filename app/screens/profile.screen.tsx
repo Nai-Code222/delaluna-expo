@@ -68,7 +68,7 @@ if (initializing || profileLoading || !userRecord) {
   };
 
   const goToChangePassword = () => {
-    router.push('/screens/forgotPassword.screen')
+    
   };
 
   const backToPreviousPage = () => {
@@ -95,8 +95,6 @@ if (initializing || profileLoading || !userRecord) {
       setShowErrorModal(true)
     }
   };
-
-  
 
   if (initializing) {
     return <LoadingScreen message="Loading profile..." progress={0} />

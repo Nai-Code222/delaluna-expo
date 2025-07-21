@@ -234,7 +234,6 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
           ? raw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           : raw;
     }
-
     if (s.inputType === 'secure') {
       display = raw ? '******' : '';
     }
