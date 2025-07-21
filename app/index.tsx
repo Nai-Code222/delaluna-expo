@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(4, 4, 4, 0.45)', // optional tint
+    backgroundColor: 'rgba(4, 4, 4, 0.45)',
     justifyContent: 'center',
     alignItems: 'center',
   },

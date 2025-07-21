@@ -2,7 +2,7 @@ import LottieView from 'lottie-react-native';
 import React from 'react';
 import { View, ImageBackground, StyleSheet, Animated, Easing, Image } from 'react-native';
 import { BodyText } from '../typography/BodyText';
-const backgroundImg = require('../../assets/images/background.jpg');
+const backgroundImg = require('../../assets/images/mainBackground.png');
 const splashAnimation = require('../../assets/animations/splash-animation.json'); // Replace with your animation asset
 
 type LoadingScreenProps = {
@@ -25,27 +25,14 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ progress }) => {
     return (
         <ImageBackground source={backgroundImg} style={styles.background}>
             <View style={styles.centerContent}>
-                 <View style={styles.overlay}></View>
+                <View style={styles.overlay}></View>
                 <LottieView
                     source={splashAnimation}
                     autoPlay
                     style={{ width: 500, height: 500 }}
                 />
-                <View style={styles.progressBarContainer}>
-                    <Animated.View
-                        style={[
-                            styles.progressBarFill,
-                            {
-                                width: animatedWidth.interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: ['0%', '100%'],
-                                }),
-                            },
-                        ]}
-                    />
-                </View>
                 {progress < 1 && (
-                    <BodyText>{`Loading... ${Math.round(progress * 100)}%`}</BodyText>
+                    <BodyText>{`Loading...`}</BodyText>
                 )}
                 {progress === 1 && (
                     <BodyText>Loading complete!</BodyText>
@@ -83,11 +70,11 @@ const styles = StyleSheet.create({
         borderRadius: 6,
     },
     overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(4, 4, 4, 0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+        flex: 1,
+        backgroundColor: 'rgba(4, 4, 4, 0.60)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
 
 export default LoadingScreen;

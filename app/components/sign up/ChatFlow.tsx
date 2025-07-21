@@ -23,10 +23,10 @@ export interface AnswerRecord {
   firstName: string;
   lastName: string;
   pronouns: string;
-  birthday: Date;
-  birthtime: Date;
+  birthday: Date | null;
+  birthtime: Date | null;
   birthtimeUnknown: boolean;
-  placeOfBirth: string;
+  placeOfBirth: string | null;
   placeOfBirthUnknown: boolean;
   email: string;
   password: string;
@@ -56,8 +56,8 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
     firstName: '',
     lastName: '',
     pronouns: '',
-    birthday: new Date(),
-    birthtime: defaultMidnight,
+    birthday: null,
+    birthtime: null,
     birthtimeUnknown: false,
     placeOfBirth: '',
     placeOfBirthUnknown: false,
@@ -71,7 +71,6 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
   const [checkedPolicy, setCheckedPolicy] = useState(false);
   const [checkedTerms, setCheckedTerms] = useState(false);
   const [showSendButton, setShowSendButton] = useState(true);
-  const [isFocused, setIsFocused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const [isPolicyModalVisible, setIsPolicyModalVisible] = useState(false);
@@ -122,7 +121,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
         if (!active) return;
         setError(exists ? 'Email already in use' : null);
       } catch {
-        if (active) setError('Error checking email');
+        if (active) setError('Please enter valid email address');
       } finally {
         if (active) setEmailValidating(false);
       }
@@ -191,14 +190,18 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
         setShowDatePicker(false);
         break;
       case 'time':
-        setAnswers((a) => ({ ...a, birthtime: value }));
+        setAnswers((a) => ({ 
+          ...a, 
+          birthtime: value === 'I don’t know' ? defaultMidnight : value,
+          birthtimeUnknown: value === 'I don’t know'
+        }));
         setShowTimePicker(false);
         break;
       case 'location':
         setAnswers(a => ({
           ...a,
-          placeOfBirth: value === defaultPlaceOfBirth ? defaultPlaceOfBirth : value,
-          placeOfBirthUnknown: value === defaultPlaceOfBirth,
+          placeOfBirth: value === 'I don’t know' ? defaultPlaceOfBirth : value,
+          placeOfBirthUnknown: value === 'I don’t know',
         }));
         setTextInput('');
         break;
@@ -218,7 +221,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
     const raw = (answers as any)[s.key];
     let display = raw;
 
-    if (s.key === 'placeOfBirth' && raw === null) {
+    if (s.key === 'placeOfBirth' && answers.placeOfBirthUnknown) {
       display = "I don't know";
     }
     if (s.inputType === 'date' && raw instanceof Date) {
@@ -421,7 +424,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                 setLocationError(null);
                 setAnswers(a => ({
                   ...a,
-                  placeOfBirth: defaultPlaceOfBirth,
+                  placeOfBirth: null,
                   placeOfBirthUnknown: true,
                 }));
                 saveAndNext('I don’t know');
@@ -526,15 +529,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                       { alignSelf: 'center', marginTop: 16 },
                     ]}
                     onPress={() => {
-
                       saveAndNext('I don’t know');
-
-                      setAnswers(a => ({
-                        ...a,
-                        birthtime: defaultMidnight,
-                        birthtimeUnknown: true,
-                      }));
-
                     }}
                   >
                     <Text

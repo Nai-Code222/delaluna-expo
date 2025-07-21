@@ -43,7 +43,7 @@ export default function HomeScreen() {
   }
 
   function goToProfile(): void {
-    router.push('../screens/profile.screen')
+    router.push('/screens/profile.screen')
   }
 
   return (

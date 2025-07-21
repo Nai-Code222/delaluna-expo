@@ -11,10 +11,9 @@ import LoadingScreen from '@/app/components/utils/LoadingScreen'
 import AlertModal from '@/app/components/alerts/AlertModal'
 import PronounToggle from '../components/utils/pronounSwitch'
 import { getUserDocRef } from '../service/userService'
-import { getDoc } from 'firebase/firestore'
+import { deleteDoc, getDoc } from 'firebase/firestore'
 import {UserRecord} from '@/app/model/UserRecord'
 const PRONOUNS = ['She/Her', 'He/Him', 'Non Binary'];
-
 
 export default function ProfileScreen() {
   const { user, initializing } = useAuth();
@@ -22,6 +21,8 @@ export default function ProfileScreen() {
   const [errorMessage, setErrorMessage] = useState('');
   const [textInput, setTextInput] = useState('');
   const [userRecord, setUserRecord] = useState<UserRecord | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
   const initialIndex = user
     ? PRONOUNS.findIndex((p) => p === user.displayName)
     : 0;
@@ -30,16 +31,37 @@ export default function ProfileScreen() {
     initialIndex >= 0 ? initialIndex : 0
   );
 
+  const getUserRecord = async () => {
+  try {
+    const userDocRef = getUserDocRef(user?.uid || '');
+    const docSnap = await getDoc(userDocRef);
+    if (docSnap.exists()) {
+      const userData = docSnap.data();
+      setUserRecord(userData as UserRecord);
+    } else {
+      console.log('No such document!');
+    }
+  } catch (error) {
+    setErrorMessage('Failed to fetch user data. Please try again.');
+    setShowErrorModal(true);
+  } finally {
+    setProfileLoading(false);
+  }
+};
+
   useEffect(() => {
-    if (initializing) return
-    if (!user) {
-      router.replace('/welcome')
-    }
-    else{
-      // Fetch user record or any other necessary data here
-      getUserRecord();
-    }
-  }, [user, initializing]);
+  if (initializing) return;
+  if (!user) {
+    router.replace('/welcome');
+  } else {
+    setProfileLoading(true);
+    getUserRecord();
+  }
+}, [user, initializing]);
+
+if (initializing || profileLoading || !userRecord) {
+  return <LoadingScreen message="Loading profile..." progress={0} />;
+}
 
   const goToEditProfile = () => {
     router.push('/screens/editProfile.screen')
@@ -65,28 +87,16 @@ export default function ProfileScreen() {
 
   const handleDeleteAccount = async () => {
     try {
-      // Delete account logic here
+      deleteDoc(getUserDocRef(user?.uid || ''))
+      await user?.delete()
+      router.replace('/welcome')
     } catch (error) {
       setErrorMessage('Account deletion failed. Please try again.')
       setShowErrorModal(true)
     }
   };
 
-  const getUserRecord = async () => {
-  try {
-    const userDocRef = getUserDocRef(user?.uid || '');
-    const docSnap = await getDoc(userDocRef);
-    if (docSnap.exists()) {
-      const userData = docSnap.data();
-      setUserRecord(userData as UserRecord);
-    } else {
-      console.log('No such document!');
-    }
-  } catch (error) {
-    setErrorMessage('Failed to fetch user data. Please try again.');
-    setShowErrorModal(true);
-  }
-};
+  
 
   if (initializing) {
     return <LoadingScreen message="Loading profile..." progress={0} />
@@ -103,9 +113,9 @@ export default function ProfileScreen() {
         <HeaderNav
           title="Profile"
           leftIconName={"arrow-back"}
-          onLeftPress={() => { }}
+          onLeftPress={ backToPreviousPage }
           rightLabel="Edit"
-          onRightPress={() => { }} />
+          onRightPress={ goToEditProfile } />
 
         <View style={styles.profileContentContainer}>
           <View style={styles.titleContainer}>
@@ -149,7 +159,7 @@ export default function ProfileScreen() {
           <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
         </TouchableOpacity>
 
-         <TouchableOpacity style={styles.profileButtonWithIcons} onPress={() => { }}>
+         <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
           <Image source={require('../assets/icons/changePasseordIcon.png')} style={styles.leftIconContainer} />
           <Text style={styles.buttonText}>Change Password</Text>
           <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
@@ -160,7 +170,7 @@ export default function ProfileScreen() {
           <Text style={styles.buttonText}>Logout</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.deleteAccountButton} onPress={handleLogout}>
+        <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
           <Image source={require('../assets/icons/deleteAccountIcon.png')} style={styles.leftIconContainer} />
           <Text style={styles.buttonText}>Delete Account</Text>
         </TouchableOpacity>
