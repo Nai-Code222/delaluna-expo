@@ -1,14 +1,4 @@
-import {View, StyleSheet} from 'react-native';
-import {useState} from 'react';
 
+export default function ChangeThemeScreen() {
 
-const ChangeThemeScreen = () => {
-  
-
-  return (
-    <View>
-      
-    </View>
-  );
 }
-

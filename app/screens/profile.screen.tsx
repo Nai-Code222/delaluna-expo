@@ -64,11 +64,15 @@ if (initializing || profileLoading || !userRecord) {
 }
 
   const goToEditProfile = () => {
-    router.push('/screens/editProfile.screen')
+    router.push('/screens/edit-profile.screen');
   };
 
+  const goToUpdateTheme = () => {
+    router.push('/screens/update-theme.screen');
+  }
+
   const goToChangePassword = () => {
-    
+   router.push('/screens/update-password.screen');
   };
 
   const backToPreviousPage = () => {
