@@ -12,7 +12,9 @@ import AlertModal from '@/app/components/alerts/AlertModal'
 import PronounToggle from '../components/utils/pronounSwitch'
 import { getUserDocRef } from '../service/userService'
 import { deleteDoc, getDoc } from 'firebase/firestore'
-import {UserRecord} from '@/app/model/UserRecord'
+import { UserRecord } from '@/app/model/UserRecord'
+import EditProfileScreen from './edit-profile.screen'
+import type { DocumentData } from 'firebase/firestore';
 const PRONOUNS = ['She/Her', 'He/Him', 'Non Binary'];
 
 export default function ProfileScreen() {
@@ -22,6 +24,7 @@ export default function ProfileScreen() {
   const [textInput, setTextInput] = useState('');
   const [userRecord, setUserRecord] = useState<UserRecord | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  let userData: DocumentData;
 
   const initialIndex = user
     ? PRONOUNS.findIndex((p) => p === user.displayName)
@@ -32,39 +35,52 @@ export default function ProfileScreen() {
   );
 
   const getUserRecord = async () => {
-  try {
-    const userDocRef = getUserDocRef(user?.uid || '');
-    const docSnap = await getDoc(userDocRef);
-    if (docSnap.exists()) {
-      const userData = docSnap.data();
-      setUserRecord(userData as UserRecord);
-    } else {
-      console.log('No such document!');
+    try {
+      const docSnap = await getDoc(getUserDocRef(user!.uid));
+      if (!docSnap.exists()) throw new Error('No such document');
+      const data = docSnap.data() as UserRecord;
+      setUserRecord(data);
+      //  ← use `data` here, not `userRecord`
+      const idx = PRONOUNS.findIndex(p => p === data.pronouns);
+      if (idx >= 0) setSelectedIdx(idx);
+    } catch {
+      setErrorMessage('Failed to fetch user data.');
+      setShowErrorModal(true);
+    } finally {
+      setProfileLoading(false);
     }
-  } catch (error) {
-    setErrorMessage('Failed to fetch user data. Please try again.');
-    setShowErrorModal(true);
-  } finally {
-    setProfileLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
-  if (initializing) return;
-  if (!user) {
-    router.replace('/welcome');
-  } else {
-    setProfileLoading(true);
-    getUserRecord();
-  }
-}, [user, initializing]);
+    if (initializing) return;
+    if (!user) {
+      router.replace('/welcome');
+    } else {
+      setProfileLoading(true);
+      getUserRecord();
+    }
+  }, [user, initializing]);
 
-if (initializing || profileLoading || !userRecord) {
-  return <LoadingScreen message="Loading profile..." progress={0} />;
-}
+  if (initializing || profileLoading || !userRecord) {
+    return <LoadingScreen message="Loading profile..." progress={0} />;
+  }
 
   const goToEditProfile = () => {
-    router.push('/screens/edit-profile.screen');
+    router.push({
+      pathname: '/screens/edit-profile.screen',
+      params: {
+        firstName: userRecord.firstName ?? '',
+        lastName: userRecord.lastName ?? '',
+        pronouns: userRecord.pronouns ?? '',
+        birthday: userRecord.birthday ?? '',
+        birthtime: userRecord.birthtime ?? '',
+        birthtimeUnknown: String(userRecord.isBirthTimeUnknown),
+        placeOfBirth: userRecord.placeOfBirth ?? '',
+        placeOfBirthUnknown: String(userRecord.isPlaceOfBirthUnknown),
+        email: user?.email ?? '',
+        userID: user?.uid ?? '',
+      },
+    });
   };
 
   const goToUpdateTheme = () => {
@@ -72,7 +88,7 @@ if (initializing || profileLoading || !userRecord) {
   }
 
   const goToChangePassword = () => {
-   router.push('/screens/update-password.screen');
+    router.push('/screens/update-password.screen');
   };
 
   const backToPreviousPage = () => {
@@ -100,10 +116,6 @@ if (initializing || profileLoading || !userRecord) {
     }
   };
 
-  if (initializing) {
-    return <LoadingScreen message="Loading profile..." progress={0} />
-  }
-
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -115,9 +127,9 @@ if (initializing || profileLoading || !userRecord) {
         <HeaderNav
           title="Profile"
           leftIconName={"arrow-back"}
-          onLeftPress={ backToPreviousPage }
+          onLeftPress={backToPreviousPage}
           rightLabel="Edit"
-          onRightPress={ goToEditProfile } />
+          onRightPress={goToEditProfile} />
 
         <View style={styles.profileContentContainer}>
           <View style={styles.titleContainer}>
@@ -138,7 +150,11 @@ if (initializing || profileLoading || !userRecord) {
             </View>
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Pronouns </Text>
-              <PronounToggle selectedIndex={selectedIdx} onChange={setSelectedIdx} />
+              <PronounToggle
+              selectedIndex={selectedIdx} 
+              onChange={setSelectedIdx} 
+              clickable={false}
+              style={{ width: '70%' }}/>
             </View>
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Place of Birth </Text>
@@ -155,13 +171,13 @@ if (initializing || profileLoading || !userRecord) {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.profileButtonWithIcons} onPress={() => { }}>
+        <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
           <Image source={require('../assets/icons/changeThemeIcon.png')} style={styles.leftIconContainer} />
           <Text style={styles.buttonText}>Change Color Theme</Text>
           <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
         </TouchableOpacity>
 
-         <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
+        <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
           <Image source={require('../assets/icons/changePasseordIcon.png')} style={styles.leftIconContainer} />
           <Text style={styles.buttonText}>Change Password</Text>
           <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
@@ -188,7 +204,7 @@ if (initializing || profileLoading || !userRecord) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, width: '100%', height: '100%', overflowX: 'hidden', overflowY: 'scroll' },
+  container: { flex: 1, width: '100%', height: '100%', alignSelf: 'center', },
   background: { flex: 1 },
   profileContentContainer: {
     display: 'flex',
@@ -238,7 +254,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     width: '100%',
   },
-  userDataPronounContainer:{
+  userDataPronounContainer: {
     width: '70%',
     alignItems: 'center',
     justifyContent: 'center',
@@ -248,7 +264,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 28,
     fontWeight: 'bold',
-    paddingTop: 10,
+    paddingTop: 15,
     paddingLeft: 15,
   },
   textInput: {
@@ -281,7 +297,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     height: 70,
   },
-  profileButtonWithIcons:{
+  profileButtonWithIcons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     display: 'flex',
@@ -292,14 +308,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   leftIconContainer: {
-     width: 20, 
-     height: 20, 
-     marginRight: 8,
-     
+    width: 20,
+    height: 20,
+    marginRight: 8,
+
   },
   rightIconContainer: {
-    width: 20, 
-    height: 20, 
+    width: 20,
+    height: 20,
     marginLeft: 8,
   },
   deleteAccountButton: {

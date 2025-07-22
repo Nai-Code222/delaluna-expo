@@ -1,26 +1,33 @@
 // PronounToggle.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   LayoutChangeEvent,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const PRONOUNS = ['She/Her', 'He/Him', 'Non Binary'];
+const PRONOUNS = ['She/Her', 'He/Him', 'They/Them','Non Binary'];
 
 interface PronounToggleProps {
   selectedIndex: number;
   onChange: (newIndex: number) => void;
+  clickable?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 export default function PronounToggle({
   selectedIndex,
   onChange,
+  clickable = true,
+  style,
 }: PronounToggleProps) {
-  const [width, setWidth] = React.useState(0);
+  const [width, setWidth] = useState(0);
 
   const onLayout = (e: LayoutChangeEvent) => {
     setWidth(e.nativeEvent.layout.width);
@@ -33,7 +40,7 @@ export default function PronounToggle({
       colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.0)']}
       start={[0, 0]}
       end={[0, 1]}
-      style={styles.outer}
+      style={[styles.outer, style]}
     >
       <View style={styles.inner} onLayout={onLayout}>
         {width > 0 && (
@@ -53,7 +60,10 @@ export default function PronounToggle({
             key={label}
             style={styles.segment}
             activeOpacity={0.8}
-            onPress={() => onChange(i)}
+            disabled={!clickable}
+            onPress={() => {
+              if (clickable) onChange(i);
+            }}
           >
             <Text
               style={[
@@ -70,7 +80,14 @@ export default function PronounToggle({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<{
+  outer: ViewStyle;
+  inner: ViewStyle;
+  slider: ViewStyle;
+  segment: ViewStyle;
+  text: TextStyle;
+  textSelected: TextStyle;
+}>({
   outer: {
     borderRadius: 30,
     padding: 3,
@@ -90,14 +107,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: '#FFF',
     borderRadius: 25,
-    
   },
   segment: {
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    
   },
   text: {
     color: '#EEE',
@@ -108,4 +123,3 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
-// This component is a toggle switch for selecting pronouns. It uses a gradient background and animates the slider to indicate the selected option.

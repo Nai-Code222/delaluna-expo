@@ -53,7 +53,7 @@ export default function SignUpChatScreen() {
       renderQuestion: (answers) =>
         `What are your pronouns, ${answers.firstName || '[First Name]'}?`,
       inputType: 'choices',
-      choices: ['She/Her', 'He/Him', 'They/Them', 'Other'],
+      choices: ['She/Her', 'He/Him', 'They/Them', 'Non Binary'],
       placeholder: 'Pronouns…',
     },
     {

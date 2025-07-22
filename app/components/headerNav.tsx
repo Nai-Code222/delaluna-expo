@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons'
 type HeaderNavProps = {
   title?: string
   leftIconName?: React.ComponentProps<typeof Ionicons>['name']
+  leftLabel?: string
   onLeftPress?: () => void
   rightIconSource?: ImageSourcePropType
   rightLabel?: string
@@ -24,6 +25,7 @@ type HeaderNavProps = {
 export default function HeaderNav({
   title,
   leftIconName,
+  leftLabel,
   onLeftPress,
   rightIconSource,
   rightLabel,
@@ -37,9 +39,10 @@ export default function HeaderNav({
       {/* 2) the fixed-height nav bar */}
       <View style={styles.navBar}>
         {/* LEFT BUTTON (or placeholder) */}
-        {leftIconName ? (
+        {leftIconName || leftLabel ? (
           <TouchableOpacity onPress={onLeftPress} style={styles.sideButton}>
-            <Ionicons name={leftIconName} size={24} color="#fff" />
+            {leftIconName && <Ionicons name={leftIconName} size={24} color="#fff" />}
+            {leftLabel && <Text style={styles.buttonText}>{leftLabel}</Text>}
           </TouchableOpacity>
         ) : (
           <View style={styles.sideButton} />
@@ -68,22 +71,22 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   navBar: {
-    height: 44,
+    height: 45,
     width: '100%',
     flexDirection: 'row',
-    alignItems: 'center',           // vertical centering
+    alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     backgroundColor: '#513877',
   },
   sideButton: {
-    width: 40,                      // reserves space even when empty
+    width: 50,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    flex: 1,                        // takes all center space
-    textAlign: 'center',            // centers text horizontally
+    flex: 1,
+    textAlign: 'center',
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
@@ -99,5 +102,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
+
   },
 })
