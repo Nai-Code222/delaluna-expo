@@ -1,239 +1,292 @@
-// profile screen
-import React, { useContext, useEffect, useState } from 'react'
-import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, TextInput, Platform } from 'react-native'
-import { useAuth } from '@/app/backend/AuthContext'
-import { router } from 'expo-router'
-import HeaderNav from '../components/headerNav'
-import { auth } from '../../firebaseConfig'
-import { signOut } from 'firebase/auth'
-import { LinearGradient } from 'expo-linear-gradient'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { BlurView } from 'expo-blur'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { StatusBar } from 'expo-status-bar'
-import LoadingScreen from '@/app/components/utils/LoadingScreen'
-import AlertModal from '@/app/components/alerts/AlertModal'
-import PronounToggle from '../components/utils/pronounSwitch'
-import { UserRecord } from '../model/UserRecord'
-const PRONOUNS = ['She/Her', 'He/Him', 'Non Binary'];
+// /screens/edit-profile.screen.tsx
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  ImageBackground,
+  Switch,
+  Platform,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import PronounToggle from '../components/utils/pronounSwitch';
+import HeaderNav from '../components/headerNav';
+import { GlassButton } from '../components/utils/GlassButton';
+import { fetchSignInMethodsForEmail } from 'firebase/auth';
+import { auth } from '../../firebaseConfig';
 
+const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
+
+type Params = {
+  firstName: string;
+  lastName: string;
+  pronouns: string;
+  birthday: string;
+  birthtime: string;
+  birthtimeUnknown: string;
+  placeOfBirth: string;
+  placeOfBirthUnknown: string;
+  email: string;
+  userID: string;
+};
 
 export default function EditProfileScreen() {
-  const { user, initializing } = useAuth();
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [textInput, setTextInput] = useState('');
-  const [userRecord, setUserRecord] = useState<UserRecord | null>(null);
-  const initialIndex = user
-    ? PRONOUNS.findIndex((p) => p === user.displayName)
-    : 0;
+  const router = useRouter();
+  const params = useLocalSearchParams<Params>();
 
-  const [selectedIdx, setSelectedIdx] = useState(
-    initialIndex >= 0 ? initialIndex : 0
-  );
+  // State for fields
+  const [firstName, setFirstName] = useState(params.firstName);
+  const [lastName, setLastName] = useState(params.lastName);
+  const [email, setEmail] = useState(params.email);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [pronoun, setPronoun] = useState(params.pronouns);
+  const [birthday, setBirthday] = useState(params.birthday);
+  const [birthdayError, setBirthdayError] = useState<string | null>(null);
+  const [timeOfBirth, setTimeOfBirth] = useState(params.birthtime);
+  const [timeError, setTimeError] = useState<string | null>(null);
+  const [birthtimeUnknown, setBirthtimeUnknown] = useState(params.birthtimeUnknown === 'true');
+  const [placeOfBirth, setPlaceOfBirth] = useState(params.placeOfBirth);
+  const [placeError, setPlaceError] = useState<string | null>(null);
+  const [placeUnknown, setPlaceUnknown] = useState(params.placeOfBirthUnknown === 'true');
 
+  // Initialize state from params on mount
   useEffect(() => {
-    if (initializing) return
-    if (!user) {
-      router.replace('/welcome')
-    }
-  }, [user, initializing])
+    setFirstName(params.firstName);
+    setLastName(params.lastName);
+    setEmail(params.email);
+    setPronoun(params.pronouns);
+    setBirthday(params.birthday);
+    setTimeOfBirth(params.birthtime);
+    setBirthtimeUnknown(params.birthtimeUnknown === 'true');
+    setPlaceOfBirth(params.placeOfBirth);
+    setPlaceUnknown(params.placeOfBirthUnknown === 'true');
+    // clear errors
+    setEmailError(null);
+    setBirthdayError(null);
+    setTimeError(null);
+    setPlaceError(null);
+  }, []);
 
-  if (initializing) {
-    return <LoadingScreen message="Loading profile..." progress={0} />
-  }
+  // Email validation: format + existence
+  useEffect(() => {
+    if (!email) {
+      setEmailError(null);
+      return;
+    }
+    const formatOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!formatOk) {
+      setEmailError('Invalid email address');
+      return;
+    }
+    let active = true;
+    setCheckingEmail(true);
+    fetchSignInMethodsForEmail(auth, email)
+      .then(methods => {
+        if (!active) return;
+        setEmailError(methods.length ? 'Email already in use' : null);
+      })
+      .catch(() => {
+        if (active) setEmailError('Error checking email');
+      })
+      .finally(() => {
+        if (active) setCheckingEmail(false);
+      });
+    return () => { active = false; };
+  }, [email]);
+
+  // Birthday validation: not future, at least 18
+  useEffect(() => {
+    if (!birthday) {
+      setBirthdayError(null);
+      return;
+    }
+    const date = new Date(birthday);
+    const today = new Date();
+    if (date > today) {
+      setBirthdayError('Date cannot be in the future');
+    } else {
+      const age = today.getFullYear() - date.getFullYear() - (
+        today.getMonth() < date.getMonth() ||
+        (today.getMonth() === date.getMonth() && today.getDate() < date.getDate())
+      ? 1 : 0);
+      setBirthdayError(age < 18 ? 'You must be at least 18' : null);
+    }
+  }, [birthday]);
+
+  // Time validation: not future if today
+  useEffect(() => {
+    if (birthtimeUnknown) {
+      setTimeError(null);
+      return;
+    }
+    if (!timeOfBirth) {
+      setTimeError(null);
+      return;
+    }
+    const bd = new Date(birthday);
+    const now = new Date();
+    if (bd.toDateString() === now.toDateString()) {
+      const [h, m] = timeOfBirth.split(':').map(Number);
+      if (h > now.getHours() || (h === now.getHours() && m > now.getMinutes())) {
+        setTimeError('Time cannot be in the future');
+        return;
+      }
+    }
+    setTimeError(null);
+  }, [timeOfBirth, birthday, birthtimeUnknown]);
+
+  // Place validation: required unless unknown
+  useEffect(() => {
+    if (placeUnknown) {
+      setPlaceError(null);
+    } else if (!placeOfBirth.trim()) {
+      setPlaceError('Place of birth is required');
+    } else {
+      setPlaceError(null);
+    }
+  }, [placeOfBirth, placeUnknown]);
+
+  // Save handler: block if any errors or email check pending
+  const handleSave = () => {
+    if (emailError || checkingEmail || birthdayError || timeError || placeError) {
+      return;
+    }
+    // TODO: write back to Firestore via your userService… then:
+    router.back();
+  };
 
   return (
+    <ImageBackground
+      source={require('../assets/images/mainBackground.png')}
+      style={styles.bg}
+      resizeMode="cover"
+    >
+      <HeaderNav
+        title="Edit Profile"
+        leftIconName="arrow-back"
+        onLeftPress={() => router.back()}
+      />
+      <ScrollView contentContainerStyle={styles.container}>
 
-    <View style={styles.container}>
-      <StatusBar style="light" />
-      <ImageBackground
-        source={require('../assets/images/mainBackground.png')}
-        style={styles.background}
-        resizeMode="cover">
-
-        <HeaderNav
-          title="Profile"
-          leftIconName={"arrow-back"}
-          onLeftPress={() => { }}
-          rightLabel="Edit"
-          onRightPress={() => { }} />
-
-          <View style={styles.profileContentContainer}>
-                    <View style={styles.titleContainer}>
-                      <Text style={styles.title}>Your Profile</Text>
-                    </View>
-                    <View style={styles.profileInformationContainer}>
-                      <View style={styles.fieldContainer}>
-                        <Text style={styles.fieldLabel}>Email </Text>
-                        <View style={styles.userDataContainer}>
-                          <Text style={styles.userDataTextField}>{user?.email}</Text>
-                        </View>
-                      </View>
-                      <View style={styles.fieldContainer}>
-                        <Text style={styles.fieldLabel}>Date of Birth </Text>
-                        <View style={styles.userDataContainer}>
-                          <Text style={styles.userDataTextField}>{userRecord?.birthday}</Text>
-                        </View>
-                      </View>
-                      <View style={styles.fieldContainer}>
-                        <Text style={styles.fieldLabel}>Pronouns </Text>
-                        <PronounToggle selectedIndex={selectedIdx} onChange={setSelectedIdx} />
-                      </View>
-                      <View style={styles.fieldContainer}>
-                        <Text style={styles.fieldLabel}>Place of Birth </Text>
-                        <View style={styles.userDataContainer}>
-                          <Text style={styles.userDataTextField}>{userRecord?.placeOfBirth || "Unknown"}</Text>
-                        </View>
-                      </View>
-                      <View style={styles.fieldContainer}>
-                        <Text style={styles.fieldLabel}>Time of Birth </Text>
-                        <View style={styles.userDataContainer}>
-                          <Text style={styles.userDataTextField}>{userRecord?.birthtime}</Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-
-        <AlertModal
-          visible={showErrorModal}
-          message={errorMessage}
-          onClose={() => setShowErrorModal(false)}
+        {/* First Name */}
+        <Text style={styles.label}>First Name</Text>
+        <TextInput
+          style={styles.input}
+          value={firstName}
+          onChangeText={setFirstName}
         />
-      </ImageBackground>
-    </View>
-  )
+
+        {/* Last Name */}
+        <Text style={styles.label}>Last Name</Text>
+        <TextInput
+          style={styles.input}
+          value={lastName}
+          onChangeText={setLastName}
+        />
+
+        {/* Email */}
+        <Text style={styles.label}>Email</Text>
+        <View style={styles.emailRow}>
+          <TextInput
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
+          {checkingEmail && <ActivityIndicator style={styles.loader} color="#fff" />}
+        </View>
+        {emailError && <Text style={styles.errorText}>{emailError}</Text>}
+
+        {/* Birthday */}
+        <Text style={styles.label}>Birthday</Text>
+        <TextInput
+          style={styles.input}
+          value={birthday}
+          placeholder="YYYY-MM-DD"
+          onChangeText={setBirthday}
+        />
+        {birthdayError && <Text style={styles.errorText}>{birthdayError}</Text>}
+
+        {/* Pronouns */}
+        <Text style={styles.label}>Pronouns</Text>
+        <PronounToggle
+          selectedIndex={PRONOUNS.indexOf(pronoun)}
+          onChange={i => setPronoun(PRONOUNS[i])}
+          clickable={true}
+          style={{ width: '100%' }}
+        />
+
+        {/* Place of Birth */}
+        <Text style={styles.label}>Place of Birth</Text>
+        <TextInput
+          style={styles.input}
+          value={placeOfBirth}
+          onChangeText={setPlaceOfBirth}
+        />
+        {placeError && <Text style={styles.errorText}>{placeError}</Text>}
+        <View style={styles.toggleRow}>
+          <Switch
+            value={placeUnknown}
+            onValueChange={setPlaceUnknown}
+          />
+          <Text style={styles.toggleLabel}>I don’t know</Text>
+        </View>
+
+        {/* Time of Birth */}
+        <Text style={styles.label}>Time of Birth</Text>
+        <TextInput
+          style={styles.input}
+          value={timeOfBirth}
+          onChangeText={setTimeOfBirth}
+          placeholder="HH:mm"
+        />
+        {timeError && <Text style={styles.errorText}>{timeError}</Text>}
+        <View style={styles.toggleRow}>
+          <Switch
+            value={birthtimeUnknown}
+            onValueChange={setBirthtimeUnknown}
+          />
+          <Text style={styles.toggleLabel}>I don’t know</Text>
+        </View>
+
+      </ScrollView>
+      <View style={[styles.saveBttnContainer, { position: 'absolute', bottom: 40, left: 0, right: 0, alignSelf: 'center' }]}>
+        <GlassButton
+          title="Save Changes"
+          onPress={handleSave}
+        />
+      </View>
+    </ImageBackground>
+  );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, width: '100%', height: '100%', overflowX: 'hidden', overflowY: 'scroll' },
-  background: { flex: 1 },
-  profileContentContainer: {
-    display: 'flex',
-    width: '100%',
-    alignItems: 'flex-start',
-    paddingVertical: 1,
-    flexDirection: 'column',
-  },
-  titleContainer: {
-    borderBottomColor: '#fff',
-    borderBottomWidth: 1,
-    width: '100%',
-    paddingBottom: 10,
-  },
-  profileInformationContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    alignSelf: 'center',
-    paddingHorizontal: 5,
-    gap: 5,
-    paddingVertical: 5,
-  },
-  userDataContainer: {
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#8e44ad',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    width: '70%',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-
-  },
-  fieldContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 10,
-  },
-  userDataTextField: {
-    color: '#fff',
-    fontSize: 16,
-    marginVertical: 5,
-    width: '100%',
-  },
-  userDataPronounContainer:{
-    width: '70%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 70,
-  },
-  title: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
-    paddingTop: 10,
-    paddingLeft: 15,
-  },
-  textInput: {
+  bg: { flex: 1, width: '100%' },
+  container: { padding: 20, paddingBottom: 60 },
+  saveBttnContainer: {
     flex: 1,
-    backgroundColor: '#3A506B',
-    borderRadius: 24,
-    paddingHorizontal: 15,
-    color: '#fff',
-    height: 50,
-    marginBottom: Platform.OS === 'ios' ? 10 : 5,
-    alignSelf: 'center',
-  },
-  fieldLabel: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: 'bold',
-    marginTop: 10,
-    width: '30%',
-    textAlign: 'center',
-    paddingHorizontal: 5,
-  },
-  profileButton: {
-    display: 'flex',
-    flexDirection: 'row',
-    padding: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
-    width: '100%',
+  },
+  cancel: { marginBottom: 20 },
+  cancelText: { color: '#fff', fontSize: 18 },
+  label: { color: '#fff', marginBottom: 6, fontWeight: '600' },
+  input: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    padding: 12,
     color: '#fff',
-    height: 70,
+    marginBottom: 16,
   },
-  profileButtonWithIcons:{
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    display: 'flex',
-    padding: 16,
-    width: '100%',
-    color: '#fff',
-    height: 70,
-    alignItems: 'center',
-  },
-  leftIconContainer: {
-     width: 20, 
-     height: 20, 
-     marginRight: 8,
-     
-  },
-  rightIconContainer: {
-    width: 20, 
-    height: 20, 
-    marginLeft: 8,
-  },
-  deleteAccountButton: {
-    marginTop: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#ff4757',
-    borderRadius: 5,
-    flexDirection: 'row',
-    display: 'flex',
-    justifyContent: 'center',
-    height: 70,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  toggleLabel: { color: '#fff', marginLeft: 8 },
+  emailRow: { flexDirection: 'row', alignItems: 'center' },
+  loader: { marginLeft: 8 },
+  errorText: { color: 'red', marginBottom: 16 },
 });

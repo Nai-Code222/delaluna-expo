@@ -56,3 +56,19 @@ export function getUserDocRef(userId: string) {
   return userDocRef;
 }
 
+// Update user document in Firestore return success or failure
+export async function updateUserDoc(
+  userId: string,
+  userData: Partial<UserRecord>
+): Promise<void> {
+  try {
+    const userDocRef = getUserDocRef(userId);
+    await setDoc(userDocRef, userData, { merge: true });
+    console.log('User document updated successfully:', userId);
+    return Promise.resolve();
+  } catch (error) {
+    console.error('Error updating user document:', error);
+    throw new Error('Error updating user document');
+  }
+}
+
