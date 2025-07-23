@@ -1,5 +1,6 @@
 {
   "expo": {
+    
     "name": "delaluna-expo",
     "slug": "delaluna-expo",
     "version": "1.0.0",
@@ -8,6 +9,8 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "owner": "naicode022",
+    
 
     "ios": {
       "supportsTablet": true,

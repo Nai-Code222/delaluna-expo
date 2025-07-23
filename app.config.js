@@ -10,6 +10,8 @@ export default {
     scheme: 'myapp',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
+    owner: "naicode022",
+   
 
     extra: {
       firebaseApiKey: process.env.FIREBASE_API_KEY,
