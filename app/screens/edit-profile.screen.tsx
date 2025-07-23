@@ -20,6 +20,7 @@ import { GlassButton } from '../components/utils/GlassButton';
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
 import { updateUserDoc } from '../service/userService';
+import UserRecordDefault from '../model/UserRecord'
 
 const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
@@ -29,9 +30,9 @@ type Params = {
   pronouns: string;
   birthday: string;
   birthtime: string;
-  birthtimeUnknown: string;
+  isBirthTimeUnknown: string;
   placeOfBirth: string;
-  placeOfBirthUnknown: string;
+  isPlaceOfBirthUnknown: string;
   email: string;
   userID: string;
 };
@@ -47,12 +48,10 @@ export default function EditProfileScreen() {
     pronouns: params.pronouns,
     birthday: params.birthday,
     birthtime: params.birthtime,
-    birthtimeUnknown: params.birthtimeUnknown === 'true',
+    isBirthTimeUnknown: params.isBirthTimeUnknown === 'true',
     placeOfBirth: params.placeOfBirth,
-    placeOfBirthUnknown: params.placeOfBirthUnknown === 'true',
+    isPlaceOfBirthUnknown: params.isPlaceOfBirthUnknown === 'true',
   };
-
-  
 
   // State for fields
   const [firstName, setFirstName] = useState(params.firstName);
@@ -65,10 +64,10 @@ export default function EditProfileScreen() {
   const [birthdayError, setBirthdayError] = useState<string | null>(null);
   const [timeOfBirth, setTimeOfBirth] = useState(params.birthtime);
   const [timeError, setTimeError] = useState<string | null>(null);
-  const [birthtimeUnknown, setBirthtimeUnknown] = useState(params.birthtimeUnknown === 'true');
+  const [isBirthTimeUnknown, setisBirthTimeUnknown] = useState(params.isBirthTimeUnknown === 'true');
   const [placeOfBirth, setPlaceOfBirth] = useState(params.placeOfBirth);
   const [placeError, setPlaceError] = useState<string | null>(null);
-  const [placeUnknown, setPlaceUnknown] = useState(params.placeOfBirthUnknown === 'true');
+  const [placeUnknown, setPlaceUnknown] = useState(params.isPlaceOfBirthUnknown === 'true');
   const [userID] = useState(params.userID);
 
   const current = {
@@ -78,9 +77,9 @@ export default function EditProfileScreen() {
     pronouns: pronoun,
     birthday,
     birthtime: timeOfBirth,
-    birthtimeUnknown,
+    isBirthTimeUnknown,
     placeOfBirth,
-    placeOfBirthUnknown: placeUnknown,
+    isPlaceOfBirthUnknown: placeUnknown,
   };
 
   // Initialize state from params on mount
@@ -91,9 +90,9 @@ export default function EditProfileScreen() {
     setPronoun(params.pronouns);
     setBirthday(params.birthday);
     setTimeOfBirth(params.birthtime);
-    setBirthtimeUnknown(params.birthtimeUnknown === 'true');
+    setisBirthTimeUnknown(params.isBirthTimeUnknown === 'true');
     setPlaceOfBirth(params.placeOfBirth);
-    setPlaceUnknown(params.placeOfBirthUnknown === 'true');
+    setPlaceUnknown(params.isPlaceOfBirthUnknown === 'true');
     // clear errors
     setEmailError(null);
     setBirthdayError(null);
@@ -101,7 +100,6 @@ export default function EditProfileScreen() {
     setPlaceError(null);
   }, []);
 
-  // Email validation: format + existence
   useEffect(() => {
     if (!email) {
       setEmailError(null);
@@ -149,7 +147,7 @@ export default function EditProfileScreen() {
 
   // Time validation: not future if today
   useEffect(() => {
-    if (birthtimeUnknown) {
+    if (isBirthTimeUnknown) {
       setTimeError(null);
       return;
     }
@@ -167,7 +165,7 @@ export default function EditProfileScreen() {
       }
     }
     setTimeError(null);
-  }, [timeOfBirth, birthday, birthtimeUnknown]);
+  }, [timeOfBirth, birthday, isBirthTimeUnknown]);
 
   // Place validation: required unless unknown
   useEffect(() => {
@@ -180,7 +178,28 @@ export default function EditProfileScreen() {
     }
   }, [placeOfBirth, placeUnknown]);
 
-  
+  const hasUnsaved = () => {
+    return Object.keys(current).some(key => {
+      const k = key as keyof typeof original;
+      return current[k] !== original[k];
+    });
+  };
+
+  const handleCancel = () => {
+    if (!hasUnsaved()) {
+      router.back();
+      return;
+    }
+    Alert.alert(
+      'Discard changes?',
+      'You have unsaved changes. Are you sure you want to discard them?',
+      [
+        { text: 'No', style: 'cancel' },
+        { text: 'Yes', style: 'destructive', onPress: () => router.back() },
+      ]
+    );
+  };
+
 
   // Save handler: block if any errors or email check pending
   const handleSave = async () => {
@@ -209,6 +228,7 @@ export default function EditProfileScreen() {
 
     // 4. otherwise turn into an update object
     const updateObj = Object.fromEntries(changes.map(c => [c.field, c.value]));
+    console.log("object: ", updateObj)
 
     try {
       await updateUserDoc(userID, updateObj);
@@ -227,7 +247,7 @@ export default function EditProfileScreen() {
     >
       <HeaderNav
         title="Edit Profile"
-        leftIconName="arrow-back"
+        leftLabel='Cancel'
         onLeftPress={() => router.back()}
       />
       <ScrollView contentContainerStyle={styles.container}>
@@ -283,37 +303,45 @@ export default function EditProfileScreen() {
 
         {/* Place of Birth */}
         <Text style={styles.label}>Place of Birth</Text>
-        <TextInput
-          style={styles.input}
-          value={placeOfBirth}
-          onChangeText={setPlaceOfBirth}
-        />
-        {placeError && <Text style={styles.errorText}>{placeError}</Text>}
+        {!placeUnknown ? (
+          <>
+            <TextInput style={styles.input} value={placeOfBirth} onChangeText={setPlaceOfBirth} />
+            {placeError && <Text style={styles.errorText}>{placeError}</Text>}
+          </>
+        ) : (
+          <Text style={styles.input}>Unknown</Text>
+        )}
         <View style={styles.toggleRow}>
           <Switch
             value={placeUnknown}
-            onValueChange={setPlaceUnknown}
+            onValueChange={val=>{
+              setPlaceUnknown(val);
+              if(val) setPlaceOfBirth('Greenwich, London, United Kingdom');
+            }}
           />
           <Text style={styles.toggleLabel}>I don’t know</Text>
         </View>
 
         {/* Time of Birth */}
         <Text style={styles.label}>Time of Birth</Text>
-        <TextInput
-          style={styles.input}
-          value={timeOfBirth}
-          onChangeText={setTimeOfBirth}
-          placeholder="HH:mm"
-        />
-        {timeError && <Text style={styles.errorText}>{timeError}</Text>}
+        {!isBirthTimeUnknown ? (
+          <>
+            <TextInput style={styles.input} value={timeOfBirth} onChangeText={setTimeOfBirth} placeholder='HH:mm' />
+            {timeError && <Text style={styles.errorText}>{timeError}</Text>}
+          </>
+        ) : (
+          <Text style={styles.input}>Unknown</Text>
+        )}
         <View style={styles.toggleRow}>
           <Switch
-            value={birthtimeUnknown}
-            onValueChange={setBirthtimeUnknown}
+            value={isBirthTimeUnknown}
+            onValueChange={val=>{
+              setisBirthTimeUnknown(val);
+              if(val) setTimeOfBirth('00:00');
+            }}
           />
           <Text style={styles.toggleLabel}>I don’t know</Text>
         </View>
-
       </ScrollView>
       <View style={[styles.saveBttnContainer, { position: 'absolute', bottom: 40, left: 0, right: 0, alignSelf: 'center' }]}>
         <GlassButton

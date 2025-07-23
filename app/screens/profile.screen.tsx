@@ -15,6 +15,7 @@ import { deleteDoc, getDoc } from 'firebase/firestore'
 import { UserRecord } from '@/app/model/UserRecord'
 import EditProfileScreen from './edit-profile.screen'
 import type { DocumentData } from 'firebase/firestore';
+import { useIsFocused } from '@react-navigation/native';
 const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 export default function ProfileScreen() {
@@ -24,6 +25,7 @@ export default function ProfileScreen() {
   const [textInput, setTextInput] = useState('');
   const [userRecord, setUserRecord] = useState<UserRecord | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const isFocused = useIsFocused();
   let userData: DocumentData;
 
   const initialIndex = user
@@ -61,7 +63,15 @@ export default function ProfileScreen() {
     }
   }, [user, initializing]);
 
-  if (initializing || profileLoading || !userRecord) {
+  useEffect(() => {
+    if (isFocused && user) {
+      setProfileLoading(true);
+      getUserRecord();
+    }
+  }, [isFocused, user]);
+
+
+  if (initializing || !userRecord) {
     return <LoadingScreen message="Loading profile..." progress={0} />;
   }
 
@@ -74,9 +84,9 @@ export default function ProfileScreen() {
         pronouns: userRecord.pronouns ?? '',
         birthday: userRecord.birthday ?? '',
         birthtime: userRecord.birthtime ?? '',
-        birthtimeUnknown: String(userRecord.isBirthTimeUnknown),
+        isBirthtimeUnknown: String(userRecord.isBirthTimeUnknown),
         placeOfBirth: userRecord.placeOfBirth ?? '',
-        placeOfBirthUnknown: String(userRecord.isPlaceOfBirthUnknown),
+        isPlaceOfBirthUnknown: String(userRecord.isPlaceOfBirthUnknown),
         email: user?.email ?? '',
         userID: user?.uid ?? '',
       },
@@ -165,7 +175,7 @@ export default function ProfileScreen() {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Time of Birth </Text>
               <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{userRecord?.birthtime}</Text>
+                <Text style={styles.userDataTextField}>{!userRecord?.isBirthTimeUnknown ? userRecord.birthtime : "Unknown"}</Text>
               </View>
             </View>
           </View>
