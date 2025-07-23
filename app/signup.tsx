@@ -19,6 +19,7 @@ import { createUserDoc } from '@/app/service/userService';
 import LoadingScreen from '@/app/components/utils/LoadingScreen';
 import { useAuth } from '@/app/backend/AuthContext';
 import { useEffect } from 'react';
+import { StatusBar } from 'expo-status-bar';
 
 export default function SignUpChatScreen() {
   const router = useRouter();
@@ -168,11 +169,12 @@ export default function SignUpChatScreen() {
 
   return (
     <ImageBackground
-      source={require('../app/assets/images/background.jpg')}
+      source={require('../app/assets/images/mainBackground.png')}
       style={styles.background}
       resizeMode="cover"
     >
-      <BlurView intensity={80} tint="dark" style={styles.overlay}>
+       <StatusBar style={'light'} />
+      <BlurView intensity={10} tint="dark" style={styles.overlay}>
         <View style={styles.header}>
           {step > 0 && (
             <TouchableOpacity onPress={() => setStep(step - 1)}>

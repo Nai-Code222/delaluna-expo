@@ -41,6 +41,10 @@ useEffect(() => {
 }, [initializing, user]);
 
 useEffect(() => {
+    setLoginAttempts(0)
+  }, [email])
+
+useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCheckingAuth(false);
       if (user) {
@@ -54,36 +58,28 @@ useEffect(() => {
   if (initializing) return <LoadingScreen message="Initializing..." progress={0} />;
 
   const handleLogin = async () => {
-
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      setLoginAttempts(0);
-      router.push('/home')
+      // 2. On success, clear attempts
+      setLoginAttempts(0)
+      router.replace('/home')
     } catch (error: any) {
-      const msg = 
-      error.code === 'auth/invalid-email'   ? 'That email looks wrong.'
-    : error.code === 'auth/user-not-found'   ? 'No account for that email.'
-    : error.code === 'auth/wrong-password'   ? 'Password incorrect.' : 'Something went wrong—please try again.';
+      // increment attempts
+      setLoginAttempts(prev => prev + 1)
 
-      
-      setLoginAttempts(prev => prev + 1);
-      if (loginAttempts < 3) {
-        setErrorMessage(error.message);
-        setShowErrorModal(true);
-      } 
-      else  if (loginAttempts >= 3) {
+      // if under threshold, show an error modal
+      if (loginAttempts < 2) {
+        setErrorMessage(error.message)
+        setShowErrorModal(true)
+      }
+      // once 3+ is hit, show the “forgot password” alert
+      else {
         Alert.alert(
           'Forgot Password?',
           'It seems you are having trouble logging in. Would you like to reset your password?',
           [
-            {
-              text: 'Cancel',
-              style: 'cancel',
-            },
-            {
-              text: 'Reset Password',
-              onPress: () => router.push('/screens/forgotPassword.screen'),
-            },
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Reset Password', onPress: () => router.push('/screens/forgot-password.screen') },
           ]
         )
       }
@@ -143,7 +139,7 @@ useEffect(() => {
                 onChangeText={setPassword}
               />
               <TouchableOpacity>
-                <Text style={styles.forgotPassword} onPress={() => router.push('/screens/forgotPassword.screen')}>Forgot Password?</Text>
+                <Text style={styles.forgotPassword} onPress={() => router.push('/screens/forgot-password.screen')}>Forgot Password?</Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>

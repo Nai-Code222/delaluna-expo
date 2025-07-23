@@ -364,7 +364,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.sendButton, { opacity: selected && !isFuture ? 1 : 0.5 }]}
-                      disabled={!selected || isFuture}
+                      disabled={!selected || isFuture || isUnder18}
                       onPress={() => saveAndNext(selected!)}
                     >
                       <Text style={styles.sendText}>➔</Text>
@@ -835,15 +835,15 @@ const styles = StyleSheet.create({
   choiceRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 12,
+    padding: 5,
   },
   choiceButton: {
     borderWidth: 1,
-    borderColor: '#5BC0BE',
+    borderColor: '#e2e2e2ff',
     borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    marginBottom: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    marginBottom: 25,
   },
   choiceSelected: { backgroundColor: '#5BC0BE' },
   choiceText: { color: '#fff' },
