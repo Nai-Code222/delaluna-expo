@@ -11,7 +11,11 @@ export default {
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
     owner: "naicode022",
-   
+    updates: {
+      url: "https://u.expo.dev/24610560-82da-4ee8-99d3-e51db4e8401c"
+    },
+    runtimeVersion: "1.0.0",
+
 
     extra: {
       firebaseApiKey: process.env.FIREBASE_API_KEY,

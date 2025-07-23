@@ -1,6 +1,5 @@
 {
   "expo": {
-    
     "name": "delaluna-expo",
     "slug": "delaluna-expo",
     "version": "1.0.0",
@@ -11,17 +10,14 @@
     "newArchEnabled": true,
     "owner": "naicode022",
     "updates": {
-    "url": "https://u.expo.dev/24610560-82da-4ee8-99d3-e51db4e8401c"
-  },
-  "runtimeVersion": "1.0.0",
-    
-
+      "url": "https://u.expo.dev/24610560-82da-4ee8-99d3-e51db4e8401c"
+    },
+    "runtimeVersion": "1.0.0",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.delalunaanswers.app",
       "googleServicesFile": "./GoogleService-Info.plist"
     },
-  
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
