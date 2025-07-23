@@ -15,7 +15,7 @@ import { deleteDoc, getDoc } from 'firebase/firestore'
 import { UserRecord } from '@/app/model/UserRecord'
 import EditProfileScreen from './edit-profile.screen'
 import type { DocumentData } from 'firebase/firestore';
-const PRONOUNS = ['She/Her', 'He/Him', 'Non Binary'];
+const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 export default function ProfileScreen() {
   const { user, initializing } = useAuth();
@@ -159,7 +159,7 @@ export default function ProfileScreen() {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Place of Birth </Text>
               <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{userRecord?.placeOfBirth || "Unknown"}</Text>
+                <Text style={styles.userDataTextField}>{!userRecord?.isPlaceOfBirthUnknown ? userRecord?.placeOfBirth : "Unknown"}</Text>
               </View>
             </View>
             <View style={styles.fieldContainer}>

@@ -1,5 +1,6 @@
 // /screens/edit-profile.screen.tsx
 import React, { useState, useEffect } from 'react';
+import { Alert } from 'react-native';
 import {
   View,
   Text,
@@ -18,6 +19,7 @@ import HeaderNav from '../components/headerNav';
 import { GlassButton } from '../components/utils/GlassButton';
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
+import { updateUserDoc } from '../service/userService';
 
 const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
@@ -38,6 +40,20 @@ export default function EditProfileScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<Params>();
 
+  const original = {
+    firstName: params.firstName,
+    lastName: params.lastName,
+    email: params.email,
+    pronouns: params.pronouns,
+    birthday: params.birthday,
+    birthtime: params.birthtime,
+    birthtimeUnknown: params.birthtimeUnknown === 'true',
+    placeOfBirth: params.placeOfBirth,
+    placeOfBirthUnknown: params.placeOfBirthUnknown === 'true',
+  };
+
+  
+
   // State for fields
   const [firstName, setFirstName] = useState(params.firstName);
   const [lastName, setLastName] = useState(params.lastName);
@@ -53,6 +69,19 @@ export default function EditProfileScreen() {
   const [placeOfBirth, setPlaceOfBirth] = useState(params.placeOfBirth);
   const [placeError, setPlaceError] = useState<string | null>(null);
   const [placeUnknown, setPlaceUnknown] = useState(params.placeOfBirthUnknown === 'true');
+  const [userID] = useState(params.userID);
+
+  const current = {
+    firstName,
+    lastName,
+    email,
+    pronouns: pronoun,
+    birthday,
+    birthtime: timeOfBirth,
+    birthtimeUnknown,
+    placeOfBirth,
+    placeOfBirthUnknown: placeUnknown,
+  };
 
   // Initialize state from params on mount
   useEffect(() => {
@@ -112,8 +141,8 @@ export default function EditProfileScreen() {
     } else {
       const age = today.getFullYear() - date.getFullYear() - (
         today.getMonth() < date.getMonth() ||
-        (today.getMonth() === date.getMonth() && today.getDate() < date.getDate())
-      ? 1 : 0);
+          (today.getMonth() === date.getMonth() && today.getDate() < date.getDate())
+          ? 1 : 0);
       setBirthdayError(age < 18 ? 'You must be at least 18' : null);
     }
   }, [birthday]);
@@ -151,14 +180,44 @@ export default function EditProfileScreen() {
     }
   }, [placeOfBirth, placeUnknown]);
 
+  
+
   // Save handler: block if any errors or email check pending
-  const handleSave = () => {
+  const handleSave = async () => {
     if (emailError || checkingEmail || birthdayError || timeError || placeError) {
       return;
     }
-    // TODO: write back to Firestore via your userService… then:
-    router.back();
-  };
+
+    // 2. build a list of changed fields
+    const changes = Object.keys(current).reduce(
+      (acc, key) => {
+        // TypeScript: key is keyof typeof original & keyof typeof current
+        const k = key as keyof typeof original;
+        if (current[k] !== original[k]) {
+          acc.push({ field: k, value: current[k] });
+        }
+        return acc;
+      },
+      [] as { field: string; value: any }[]
+    );
+
+    // 3. if no changes, alert and go back
+    if (changes.length === 0) {
+      Alert.alert('No changes made', undefined, [{ text: 'OK', onPress: () => router.back() }]);
+      return;
+    }
+
+    // 4. otherwise turn into an update object
+    const updateObj = Object.fromEntries(changes.map(c => [c.field, c.value]));
+
+    try {
+      await updateUserDoc(userID, updateObj);
+      router.back();
+    } catch {
+      Alert.alert('Save failed', 'Please try again.');
+    }
+
+  }
 
   return (
     <ImageBackground
