@@ -4,11 +4,22 @@
     "appVersionSource": "remote"
   },
   "build": {
+    // 1) Dev client: day‑to‑day feature work
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      }
     },
-    "preview": {
+
+    // 2) Preview/Test: QA (standalone APK/IPA, no debugger)
+    // 2a) Preview for simulators/emulators
+    "preview-simulator": {
+      "developmentClient": false,
       "distribution": "internal",
       "ios": {
         "simulator": true
@@ -17,10 +28,37 @@
         "buildType": "apk"
       }
     },
+
+    // 2b) Preview for real devices
+    // (iOS → .ipa, Android → .apk)
+    "preview-device": {
+      "developmentClient": false,
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+
+    // 3) Production: App Store & Play Store releases
     "production": {
-      "autoIncrement": true
+      "developmentClient": false,
+      "distribution": "store",
+      "autoIncrement": true,
+      "android": {
+        // builds an AAB for Play Store
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        // builds an .ipa for App Store
+        "simulator": false
+      }
     }
   },
+
+  // optional: submission profiles
   "submit": {
     "production": {}
   }
