@@ -112,6 +112,7 @@ export default function EditProfileScreen() {
     }
     let active = true;
     setCheckingEmail(true);
+    
     fetchSignInMethodsForEmail(auth, email)
       .then(methods => {
         if (!active) return;

@@ -4,7 +4,10 @@ export default {
   expo: {
     name: 'delaluna-expo',
     slug: 'delaluna-expo',
-    version: '1.0.0',
+    jsEngine: 'jsc',
+    ios: { jsEngine: 'jsc' },
+    android: { jsEngine: 'hermes' },
+    version: '2.0.0',
     orientation: 'portrait',
     icon: './app/assets/images/icon.png',
     scheme: 'myapp',
@@ -14,7 +17,7 @@ export default {
     updates: {
       url: "https://u.expo.dev/24610560-82da-4ee8-99d3-e51db4e8401c"
     },
-    runtimeVersion: "1.0.0",
+    runtimeVersion: "2.0.0",
 
 
     extra: {
