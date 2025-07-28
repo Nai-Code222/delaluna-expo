@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:497678885238:android:ef19c4731302c9f0a5da57",
+        "android_client_info": {
+          "package_name": "com.delalunaanswers.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAigKNrE90xASshoz0vp-gKDYYtntvPSJM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:497678885238:android:7c68ca06978448a1a5da57",
         "android_client_info": {
           "package_name": "com.naicode022.delalunaexpo"

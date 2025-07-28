@@ -1,4 +1,6 @@
 // screens/HomeScreen.tsx
+import 'react-native-gesture-handler'; 
+import 'expo-router/entry';
 import React, { useContext, useEffect, useState } from 'react'
 import {
   View,

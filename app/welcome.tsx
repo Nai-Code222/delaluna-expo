@@ -51,7 +51,7 @@ export default function Welcome() {
           <SecondaryButton
             title="Already a member?"
             linkString="Log In"
-            onPress={() => router.push('/login')}
+            onPress={() => router.replace('/login')}
           />
         </ButtonText>
       </View>

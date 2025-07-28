@@ -59,10 +59,11 @@ useEffect(() => {
 
   const handleLogin = async () => {
     try {
+      console.log("here")
       await signInWithEmailAndPassword(auth, email, password)
       // 2. On success, clear attempts
       setLoginAttempts(0)
-      router.replace('/home')
+      
     } catch (error: any) {
       // increment attempts
       setLoginAttempts(prev => prev + 1)

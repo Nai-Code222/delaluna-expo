@@ -112,7 +112,7 @@ export default function EditProfileScreen() {
     }
     let active = true;
     setCheckingEmail(true);
-    
+
     fetchSignInMethodsForEmail(auth, email)
       .then(methods => {
         if (!active) return;
@@ -201,7 +201,6 @@ export default function EditProfileScreen() {
     );
   };
 
-
   // Save handler: block if any errors or email check pending
   const handleSave = async () => {
     if (emailError || checkingEmail || birthdayError || timeError || placeError) {
@@ -249,7 +248,7 @@ export default function EditProfileScreen() {
       <HeaderNav
         title="Edit Profile"
         leftLabel='Cancel'
-        onLeftPress={() => router.back()}
+        onLeftPress={handleCancel}
       />
       <ScrollView contentContainerStyle={styles.container}>
 

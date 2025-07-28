@@ -1,4 +1,6 @@
 // app/splash.tsx
+import 'react-native-gesture-handler'; 
+import 'expo-router/entry';
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
 import LottieView from 'lottie-react-native';
