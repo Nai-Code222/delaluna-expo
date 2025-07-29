@@ -27,7 +27,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="myapp"/>
-        <data android:scheme="com.naicode022.delalunaexpo"/>
+        <data android:scheme="com.delalunaanswers.app"/>
         <data android:scheme="exp+delaluna-expo"/>
       </intent-filter>
     </activity>

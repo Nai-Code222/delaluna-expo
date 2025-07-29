@@ -37,21 +37,38 @@ export default function ProfileScreen() {
   );
 
   const getUserRecord = async () => {
-    try {
-      const docSnap = await getDoc(getUserDocRef(user!.uid));
-      if (!docSnap.exists()) throw new Error('No such document');
-      const data = docSnap.data() as UserRecord;
-      setUserRecord(data);
-      //  ← use `data` here, not `userRecord`
-      const idx = PRONOUNS.findIndex(p => p === data.pronouns);
-      if (idx >= 0) setSelectedIdx(idx);
-    } catch {
-      setErrorMessage('Failed to fetch user data.');
-      setShowErrorModal(true);
-    } finally {
-      setProfileLoading(false);
+  if (!user?.uid) return;
+
+  try {
+    console.log("Current auth UID:", auth.currentUser?.email);
+
+
+    const ref = getUserDocRef(user.uid);
+    console.log("Fetching user doc from:", ref.path);
+
+    const docSnap = await getDoc(ref);
+    console.log("doc: ", docSnap)
+
+    
+
+    if (!docSnap.exists()) {
+      throw new Error("User profile does not exist in Firestore.");
     }
-  };
+
+    const data = docSnap.data() as UserRecord;
+    setUserRecord(data);
+
+    const idx = PRONOUNS.findIndex(p => p === data.pronouns);
+    if (idx >= 0) setSelectedIdx(idx);
+  } catch (error) {
+    console.error("Failed to fetch user data:", error);
+    setErrorMessage('Failed to fetch user data.');
+    setShowErrorModal(true);
+  } finally {
+    setProfileLoading(false);
+  }
+};
+
 
   useEffect(() => {
     if (initializing) return;
@@ -63,12 +80,7 @@ export default function ProfileScreen() {
     }
   }, [user, initializing]);
 
-  useEffect(() => {
-    if (isFocused && user) {
-      setProfileLoading(true);
-      getUserRecord();
-    }
-  }, [isFocused, user]);
+
 
 
   if (initializing || !userRecord) {
@@ -161,10 +173,10 @@ export default function ProfileScreen() {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Pronouns </Text>
               <PronounToggle
-              selectedIndex={selectedIdx} 
-              onChange={setSelectedIdx} 
-              clickable={false}
-              style={{ width: '70%' }}/>
+                selectedIndex={selectedIdx}
+                onChange={setSelectedIdx}
+                clickable={false}
+                style={{ width: '70%' }} />
             </View>
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Place of Birth </Text>

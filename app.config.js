@@ -5,7 +5,7 @@ export default {
     name: 'delaluna-expo',
     slug: 'delaluna-expo',
     jsEngine: 'jsc',
-    ios: { jsEngine: 'jsc' },
+    ios: { jsEngine: 'hermes' },
     android: { jsEngine: 'hermes' },
     version: '2.0.0',
     orientation: 'portrait',
@@ -44,7 +44,7 @@ export default {
         foregroundImage: './app/assets/images/adaptive-icon.png',
         backgroundColor: '#ffffff',
       },
-      package: 'com.naicode022.delalunaexpo',
+      package: 'com.delalunaanswers.app',
       googleServicesFile: './google-services.json',
     },
 

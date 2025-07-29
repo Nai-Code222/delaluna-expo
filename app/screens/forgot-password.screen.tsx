@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Button, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, ImageBackground, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import React from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -7,6 +7,11 @@ import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 // app/screens/forgotPassword.screen.tsx
 export default function ForgotPasswordScreen() {
     var email = '';
+
+    const handleCancel = () => {
+        router.replace('/login');
+    }
+
     return (
         <LinearGradient
             colors={['#2D1B42', '#3B235A', '#5A3E85']}
@@ -17,7 +22,7 @@ export default function ForgotPasswordScreen() {
             <View style={styles.container}>
                 <TouchableOpacity
                     style={styles.cancelButton}
-                    onPress={() => router.back()}>
+                    onPress={handleCancel}>
                     <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
                 <Text style={styles.title}>Forgot Password</Text>
@@ -36,32 +41,32 @@ export default function ForgotPasswordScreen() {
                 />
 
                 <View style={styles.spacer} />
-                
+
                 <TouchableOpacity
                     style={styles.button}
                     onPress={() => {
-                    const emailInput = email.trim();
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        const emailInput = email.trim();
+                        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-                    // 1. Not empt
-                    // 2. Valid email format
-                    // 3. Not already registered (optional, can be checked in Firebase)
-                    if (!email || emailInput === '' || emailInput.length === 0 || !emailRegex.test(emailInput)) {
-                        alert('Please enter a vaild email address.');
-                        return;
-                    }
-                    else {
-                        const auth = getAuth();
-                        sendPasswordResetEmail(auth, email)
-                            .then(() => {
-                                alert('Password reset email sent! Please check your inbox.');
-                                router.back();
-                            })
-                            .catch((error) => {
-                                const errorCode = error.code;
-                                const errorMessage = error.message;
-                            });
-                    }
+                        // 1. Not empt
+                        // 2. Valid email format
+                        // 3. Not already registered (optional, can be checked in Firebase)
+                        if (!email || emailInput === '' || emailInput.length === 0 || !emailRegex.test(emailInput)) {
+                            alert('Please enter a vaild email address.');
+                            return;
+                        }
+                        else {
+                            const auth = getAuth();
+                            sendPasswordResetEmail(auth, email)
+                                .then(() => {
+                                    alert('"If an account with that email exists, a password reset link has been sent.');
+                                    router.back();
+                                })
+                                .catch((error) => {
+                                    const errorCode = error.code;
+                                    const errorMessage = error.message;
+                                });
+                        }
                     }}>
                     <Text style={styles.buttonText}>Send Reset Link</Text>
                 </TouchableOpacity>
@@ -118,7 +123,7 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 24,
         borderRadius: 6,
-        alignSelf: 'stretch',         
+        alignSelf: 'stretch',
         marginTop: 20,
     },
     buttonText: {
@@ -132,7 +137,7 @@ const styles = StyleSheet.create({
     },
     cancelButton: {
         position: 'absolute',
-        top: 50,
+        top: Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 50,
         left: 20,
         padding: 10,
     },

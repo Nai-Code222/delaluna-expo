@@ -1,4 +1,4 @@
-package com.naicode022.delalunaexpo
+package com.delalunaanswers.app
 
 import android.app.Application
 import android.content.res.Configuration

@@ -14,7 +14,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { auth } from '../../firebaseConfig'
-import { signOut } from 'firebase/auth'
+import { getAuth, signOut } from 'firebase/auth'
 import { router } from 'expo-router'
 import AuthContext from '@/app/backend/AuthContext'
 import HeaderNav from '../components/headerNav'
@@ -22,7 +22,6 @@ import ProfileScreen from '../screens/profile.screen'
 
 export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext)
-  const [menuOpen, setMenuOpen] = useState(false)
   const insets = useSafeAreaInsets()
   const safeOffset = Platform.OS === 'android'
     ? StatusBar.currentHeight || 0
@@ -45,7 +44,10 @@ export default function HomeScreen() {
   }
 
   function goToProfile(): void {
-    router.push('/screens/profile.screen')
+    //console.log("User: ", getAuth().currentUser?.uid);
+    //router.replace('/screens/profile.screen')
+    signOut(auth)
+    router.replace('/welcome')
   }
 
   return (

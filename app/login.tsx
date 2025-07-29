@@ -14,7 +14,7 @@ import {
   Platform,
 } from 'react-native'
 import { auth } from '../firebaseConfig'
-import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth'
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth'
 import '../firebaseConfig'
 import SecondaryButtonComponent from '@/app/components/buttons/secondaryButtonComponent'
 import { router, useRouter } from 'expo-router'
@@ -34,17 +34,17 @@ export default function Login() {
   const router = useRouter();
 
 
-useEffect(() => {
-  if (!initializing && user) {
-    router.replace('/home');
-  }
-}, [initializing, user]);
+  useEffect(() => {
+    if (!initializing && user) {
+      router.replace('/home');
+    }
+  }, [initializing, user]);
 
-useEffect(() => {
+  useEffect(() => {
     setLoginAttempts(0)
   }, [email])
 
-useEffect(() => {
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCheckingAuth(false);
       if (user) {
@@ -57,21 +57,36 @@ useEffect(() => {
 
   if (initializing) return <LoadingScreen message="Initializing..." progress={0} />;
 
+
   const handleLogin = async () => {
     try {
-      console.log("here")
       await signInWithEmailAndPassword(auth, email, password)
       // 2. On success, clear attempts
       setLoginAttempts(0)
-      
+      console.log("Current user uid:", getAuth().currentUser?.uid);
+
+      router.replace('/home');
+
     } catch (error: any) {
+      const errorCode = error.code;
+
       // increment attempts
       setLoginAttempts(prev => prev + 1)
 
       // if under threshold, show an error modal
       if (loginAttempts < 2) {
-        setErrorMessage(error.message)
-        setShowErrorModal(true)
+        if (errorCode === 'auth/wrong-password') {
+          alert('Incorrect password. Please try again.');
+        } else if (errorCode === 'auth/user-not-found') {
+          alert('No account found with that email address.');
+        } else if (errorCode === 'auth/invalid-email') {
+          alert('Please enter a valid email address.');
+        } 
+         else if (errorCode === 'auth/missing-password') {
+          alert('Please enter a password.');
+         } else {
+          alert(error.message);
+        }
       }
       // once 3+ is hit, show the “forgot password” alert
       else {
@@ -80,7 +95,7 @@ useEffect(() => {
           'It seems you are having trouble logging in. Would you like to reset your password?',
           [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Reset Password', onPress: () => router.push('/screens/forgot-password.screen') },
+            { text: 'Reset Password', onPress: () => router.replace('/screens/forgot-password.screen') },
           ]
         )
       }
@@ -140,7 +155,7 @@ useEffect(() => {
                 onChangeText={setPassword}
               />
               <TouchableOpacity>
-                <Text style={styles.forgotPassword} onPress={() => router.push('/screens/forgot-password.screen')}>Forgot Password?</Text>
+                <Text style={styles.forgotPassword} onPress={() => router.replace('/screens/forgot-password.screen')}>Forgot Password?</Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
@@ -149,7 +164,7 @@ useEffect(() => {
             <SecondaryButtonComponent
               title="Not a member? "
               linkString='Sign up'
-              onPress={() => router.push('/signup')}
+              onPress={() => router.replace('/signup')}
             />
           </View>
         </LinearGradient>
