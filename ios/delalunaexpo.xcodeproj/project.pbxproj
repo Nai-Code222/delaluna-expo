@@ -11,12 +11,12 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		4DF706AE035D42FBBCC7C38B /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AAF4C3BB704DC79F467669 /* noop-file.swift */; };
+		633654FE7D174C7FB362A1E9 /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A33557D29DF454DB347E201 /* noop-file.swift */; };
+		9696A6D0EB0E430EB256EC8A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5645DFCEFDBE4AE0AD3048CE /* GoogleService-Info.plist */; };
+		AE4386FBC31A2149D6F2C679 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D17D0333B46749A519A76118 /* PrivacyInfo.xcprivacy */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		BBDC1B5C193F57CE3C39EA82 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 5CC2F7346D14EBB1180FE859 /* PrivacyInfo.xcprivacy */; };
-		BC364BF5DF0625993178B959 /* Pods_delalunaexpo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC3DC00C88A050CC84D6B7C7 /* Pods_delalunaexpo.framework */; };
-		BF4E389A89D64DB483C37378 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 97E02491E2FB4FFAA408181A /* GoogleService-Info.plist */; };
+		FA33476A7452D29F3D584AD0 /* Pods_delalunaexpo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB790141865C8748EB224508 /* Pods_delalunaexpo.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,15 +26,15 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = delalunaexpo/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = delalunaexpo/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = delalunaexpo/main.m; sourceTree = "<group>"; };
-		5CC2F7346D14EBB1180FE859 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = delalunaexpo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1A33557D29DF454DB347E201 /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "delalunaexpo/noop-file.swift"; sourceTree = "<group>"; };
+		44717890B95B41748A1BCE38 /* delalunaexpo-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "delalunaexpo-Bridging-Header.h"; path = "delalunaexpo/delalunaexpo-Bridging-Header.h"; sourceTree = "<group>"; };
+		5645DFCEFDBE4AE0AD3048CE /* GoogleService-Info.plist */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "delalunaexpo/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		6C2E3173556A471DD304B334 /* Pods-delalunaexpo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-delalunaexpo.debug.xcconfig"; path = "Target Support Files/Pods-delalunaexpo/Pods-delalunaexpo.debug.xcconfig"; sourceTree = "<group>"; };
 		7A4D352CD337FB3A3BF06240 /* Pods-delalunaexpo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-delalunaexpo.release.xcconfig"; path = "Target Support Files/Pods-delalunaexpo/Pods-delalunaexpo.release.xcconfig"; sourceTree = "<group>"; };
-		83AAF4C3BB704DC79F467669 /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "delalunaexpo/noop-file.swift"; sourceTree = "<group>"; };
-		97E02491E2FB4FFAA408181A /* GoogleService-Info.plist */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "delalunaexpo/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = delalunaexpo/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		BC3DC00C88A050CC84D6B7C7 /* Pods_delalunaexpo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_delalunaexpo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		DC3CB175C0BB4BC3AA610107 /* delalunaexpo-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "delalunaexpo-Bridging-Header.h"; path = "delalunaexpo/delalunaexpo-Bridging-Header.h"; sourceTree = "<group>"; };
+		BB790141865C8748EB224508 /* Pods_delalunaexpo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_delalunaexpo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D17D0333B46749A519A76118 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = delalunaexpo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-delalunaexpo/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -44,7 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BC364BF5DF0625993178B959 /* Pods_delalunaexpo.framework in Frameworks */,
+				FA33476A7452D29F3D584AD0 /* Pods_delalunaexpo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,10 +61,10 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				97E02491E2FB4FFAA408181A /* GoogleService-Info.plist */,
-				83AAF4C3BB704DC79F467669 /* noop-file.swift */,
-				DC3CB175C0BB4BC3AA610107 /* delalunaexpo-Bridging-Header.h */,
-				5CC2F7346D14EBB1180FE859 /* PrivacyInfo.xcprivacy */,
+				5645DFCEFDBE4AE0AD3048CE /* GoogleService-Info.plist */,
+				1A33557D29DF454DB347E201 /* noop-file.swift */,
+				44717890B95B41748A1BCE38 /* delalunaexpo-Bridging-Header.h */,
+				D17D0333B46749A519A76118 /* PrivacyInfo.xcprivacy */,
 			);
 			name = delalunaexpo;
 			sourceTree = "<group>";
@@ -73,7 +73,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				BC3DC00C88A050CC84D6B7C7 /* Pods_delalunaexpo.framework */,
+				BB790141865C8748EB224508 /* Pods_delalunaexpo.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -150,14 +150,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "delalunaexpo" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				7F8CA8E5A35349DD3E0B1CCD /* [Expo] Configure project */,
+				39F065290BE9DE509CC0869B /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				CA118000353FAE19B2707315 /* [CP-User] [RNFB] Core Configuration */,
-				755A45D0EE8F88C6AE54793A /* [CP] Embed Pods Frameworks */,
+				A3ECF2204A1DDF988C0CA40B /* [CP-User] [RNFB] Core Configuration */,
 			);
 			buildRules = (
 			);
@@ -207,8 +206,8 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				BF4E389A89D64DB483C37378 /* GoogleService-Info.plist in Resources */,
-				BBDC1B5C193F57CE3C39EA82 /* PrivacyInfo.xcprivacy in Resources */,
+				9696A6D0EB0E430EB256EC8A /* GoogleService-Info.plist in Resources */,
+				AE4386FBC31A2149D6F2C679 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -252,25 +251,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		755A45D0EE8F88C6AE54793A /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-delalunaexpo/Pods-delalunaexpo-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-delalunaexpo/Pods-delalunaexpo-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		7F8CA8E5A35349DD3E0B1CCD /* [Expo] Configure project */ = {
+		39F065290BE9DE509CC0869B /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -363,7 +344,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-delalunaexpo/Pods-delalunaexpo-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CA118000353FAE19B2707315 /* [CP-User] [RNFB] Core Configuration */ = {
+		A3ECF2204A1DDF988C0CA40B /* [CP-User] [RNFB] Core Configuration */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -386,7 +367,7 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
-				4DF706AE035D42FBBCC7C38B /* noop-file.swift in Sources */,
+				633654FE7D174C7FB362A1E9 /* noop-file.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -523,7 +504,7 @@
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
-				USE_HERMES = true;
+				USE_HERMES = false;
 			};
 			name = Debug;
 		};
@@ -588,7 +569,7 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
-				USE_HERMES = true;
+				USE_HERMES = false;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
