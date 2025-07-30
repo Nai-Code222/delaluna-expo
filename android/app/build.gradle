@@ -86,13 +86,13 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.delalunaexpo"
+    namespace 'com.delalunaanswers.app'
     defaultConfig {
-        applicationId "com.app.delaluna_answers"
+        applicationId 'com.delalunaanswers.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "2.0.0"
     }
     signingConfigs {
         debug {
@@ -176,4 +176,3 @@ dependencies {
 }
 
 apply plugin: 'com.google.gms.google-services'
-
