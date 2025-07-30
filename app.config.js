@@ -35,7 +35,7 @@ export default {
 
     ios: {
       supportsTablet: true,
-      bundleIdentifier: 'com.delalunaanswers.app',
+      bundleIdentifier: 'com.app.delaluna-answers',
       googleServicesFile: './GoogleService-Info.plist',
     },
 
@@ -44,7 +44,7 @@ export default {
         foregroundImage: './app/assets/images/adaptive-icon.png',
         backgroundColor: '#ffffff',
       },
-      package: 'com.delalunaanswers.app',
+      package: 'com.app.delaluna_answers',
       googleServicesFile: './google-services.json',
     },
 
