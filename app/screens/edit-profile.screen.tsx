@@ -1,6 +1,6 @@
 // /screens/edit-profile.screen.tsx
 import React, { useState, useEffect } from 'react';
-import { Alert } from 'react-native';
+import { Alert, TouchableOpacity } from 'react-native';
 import {
   View,
   Text,
@@ -21,7 +21,8 @@ import { fetchSignInMethodsForEmail } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
 import { updateUserDoc } from '../service/userService';
 import UserRecordDefault from '../model/UserRecord'
-
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { format } from 'date-fns';
 const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 type Params = {
@@ -53,6 +54,8 @@ export default function EditProfileScreen() {
     isPlaceOfBirthUnknown: params.isPlaceOfBirthUnknown === 'true',
   };
 
+
+
   // State for fields
   const [firstName, setFirstName] = useState(params.firstName);
   const [lastName, setLastName] = useState(params.lastName);
@@ -69,6 +72,9 @@ export default function EditProfileScreen() {
   const [placeError, setPlaceError] = useState<string | null>(null);
   const [placeUnknown, setPlaceUnknown] = useState(params.isPlaceOfBirthUnknown === 'true');
   const [userID] = useState(params.userID);
+  const [birthTime, setBirthTime] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const current = {
     firstName,
@@ -222,7 +228,7 @@ export default function EditProfileScreen() {
 
     // 3. if no changes, alert and go back
     if (changes.length === 0) {
-      Alert.alert('No changes made', undefined, [{ text: 'OK', onPress: () => router.back() }]);
+      Alert.alert('No changes made', undefined, [{ text: 'OK', onPress: () => router.replace('/screens/profile.screen') }]);
       return;
     }
 
@@ -232,7 +238,7 @@ export default function EditProfileScreen() {
 
     try {
       await updateUserDoc(userID, updateObj);
-      router.back();
+      router.replace('/screens/profile.screen');
     } catch {
       Alert.alert('Save failed', 'Please try again.');
     }
@@ -284,13 +290,25 @@ export default function EditProfileScreen() {
 
         {/* Birthday */}
         <Text style={styles.label}>Birthday</Text>
-        <TextInput
-          style={styles.input}
-          value={birthday}
-          placeholder="YYYY-MM-DD"
-          onChangeText={setBirthday}
-        />
+        <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+      <Text style={styles.input}>{format(birthday, 'yyyy-MM-dd')}</Text>
+      <DateTimePickerModal
+        isVisible={showDatePicker}
+        mode="date"
+        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+        maximumDate={new Date()}
+        date={new Date(birthday)}
+        onConfirm={(date: Date) => {
+          setBirthday(format(date, 'yyyy-MM-dd'));
+          setShowDatePicker(false);
+        }}
+        onCancel={() => setShowDatePicker(false)}
+      />
+    </TouchableOpacity>
         {birthdayError && <Text style={styles.errorText}>{birthdayError}</Text>}
+
+
+
 
         {/* Pronouns */}
         <Text style={styles.label}>Pronouns</Text>
@@ -298,7 +316,7 @@ export default function EditProfileScreen() {
           selectedIndex={PRONOUNS.indexOf(pronoun)}
           onChange={i => setPronoun(PRONOUNS[i])}
           clickable={true}
-          style={{ width: '100%' }}
+          style={{ width: '100%', height: '8%' }}
         />
 
         {/* Place of Birth */}
@@ -314,9 +332,9 @@ export default function EditProfileScreen() {
         <View style={styles.toggleRow}>
           <Switch
             value={placeUnknown}
-            onValueChange={val=>{
+            onValueChange={val => {
               setPlaceUnknown(val);
-              if(val) setPlaceOfBirth('Greenwich, London, United Kingdom');
+              if (val) setPlaceOfBirth('Greenwich, London, United Kingdom');
             }}
           />
           <Text style={styles.toggleLabel}>I don’t know</Text>
@@ -335,9 +353,9 @@ export default function EditProfileScreen() {
         <View style={styles.toggleRow}>
           <Switch
             value={isBirthTimeUnknown}
-            onValueChange={val=>{
+            onValueChange={val => {
               setisBirthTimeUnknown(val);
-              if(val) setTimeOfBirth('00:00');
+              if (val) setTimeOfBirth('00:00');
             }}
           />
           <Text style={styles.toggleLabel}>I don’t know</Text>

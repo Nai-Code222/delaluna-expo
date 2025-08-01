@@ -94,6 +94,7 @@ const styles = StyleSheet.create<{
     marginVertical: 12,
     width: '70%',
     alignSelf: 'center',
+    height: '70%'
   },
   inner: {
     flexDirection: 'row',

@@ -88,7 +88,7 @@ export default function ProfileScreen() {
   }
 
   const goToEditProfile = () => {
-    router.push({
+    router.replace({
       pathname: '/screens/edit-profile.screen',
       params: {
         firstName: userRecord.firstName ?? '',
@@ -96,7 +96,7 @@ export default function ProfileScreen() {
         pronouns: userRecord.pronouns ?? '',
         birthday: userRecord.birthday ?? '',
         birthtime: userRecord.birthtime ?? '',
-        isBirthtimeUnknown: String(userRecord.isBirthTimeUnknown),
+        isBirthTimeUnknown: String(userRecord.isBirthTimeUnknown),
         placeOfBirth: userRecord.placeOfBirth ?? '',
         isPlaceOfBirthUnknown: String(userRecord.isPlaceOfBirthUnknown),
         email: user?.email ?? '',
@@ -106,11 +106,11 @@ export default function ProfileScreen() {
   };
 
   const goToUpdateTheme = () => {
-    router.push('/screens/update-theme.screen');
+    router.replace('/screens/update-theme.screen');
   }
 
   const goToChangePassword = () => {
-    router.push('/screens/update-password.screen');
+    router.replace('/screens/update-password.screen');
   };
 
   const backToPreviousPage = () => {

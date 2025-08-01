@@ -44,10 +44,7 @@ export default function HomeScreen() {
   }
 
   function goToProfile(): void {
-    //console.log("User: ", getAuth().currentUser?.uid);
-    //router.replace('/screens/profile.screen')
-    signOut(auth)
-    router.replace('/welcome')
+    router.replace('/screens/profile.screen')
   }
 
   return (

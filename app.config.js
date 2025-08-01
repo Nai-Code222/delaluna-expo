@@ -2,6 +2,7 @@ import 'dotenv/config';
 
 export default {
   expo: {
+    entryPoint: "./node_modules/expo-router/entry",
     name: 'delaluna-expo',
     slug: 'delaluna-expo',
     jsEngine: 'jsc',
@@ -18,6 +19,7 @@ export default {
       url: "https://u.expo.dev/24610560-82da-4ee8-99d3-e51db4e8401c"
     },
     runtimeVersion: "2.0.0",
+    
 
 
     extra: {
