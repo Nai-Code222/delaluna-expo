@@ -43,7 +43,6 @@ export default {
     android: {
       adaptiveIcon: {
         foregroundImage: './app/assets/images/Delaluna_App_Icon.png',
-        backgroundColor: '#ffffff',
       },
       package: 'com.app.delaluna_answers',
       googleServicesFile: './google-services.json',
