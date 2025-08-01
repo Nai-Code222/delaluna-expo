@@ -47,26 +47,23 @@ export default function LocationAutocomplete({
   const [showResults, setShowResults] = useState<boolean>(true);
 
   useEffect(() => {
-    if (!showResults || query.length < 3) {
-      setResults([]);
-      onResultsVisibilityChange?.(false); // Notify parent that results are hidden
-      return;
-    }
-    onResultsVisibilityChange?.(true); // Notify parent that results are visible
-    const timer = setTimeout(async () => {
-      try {
-        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(
-          query
-        )}&limit=5`;
-        const resp = await fetch(url);
-        const json = await resp.json();
-        setResults(json.features);
-      } catch (e) {
-        console.warn('Photon lookup failed', e);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [query, showResults]);
+  if (!showResults || query.length < 3) {
+    setResults([]);
+    onResultsVisibilityChange?.(false);
+    return;
+  }
+
+  onResultsVisibilityChange?.(true);
+
+  const handler = setTimeout(() => {
+    fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`)
+      .then(res => res.json())
+      .then(json => setResults(json.features))
+      .catch(e => console.warn('Photon lookup failed', e));
+  }, 300); // debounce delay
+
+  return () => clearTimeout(handler); // cancel previous call if input changes fast
+}, [query, showResults]);
 
   return (
     <View style={styles.container}>
