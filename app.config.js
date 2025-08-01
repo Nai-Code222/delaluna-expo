@@ -2,12 +2,11 @@ import 'dotenv/config';
 
 export default {
   expo: {
-    entryPoint: "./node_modules/expo-router/entry",
     name: 'delaluna-expo',
     slug: 'delaluna-expo',
     jsEngine: 'jsc',
-    ios: { jsEngine: 'hermes' },
-    android: { jsEngine: 'hermes' },
+    ios: { jsEngine: 'jst' },
+    android: { jsEngine: 'jst' },
     version: '2.0.0',
     orientation: 'portrait',
     icon: './app/assets/images/icon.png',

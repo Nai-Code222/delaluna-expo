@@ -202,7 +202,7 @@ export default function EditProfileScreen() {
       'You have unsaved changes. Are you sure you want to discard them?',
       [
         { text: 'No', style: 'cancel' },
-        { text: 'Yes', style: 'destructive', onPress: () => router.back() },
+        { text: 'Yes', style: 'destructive', onPress: () => router.replace('/screens/profile.screen')},
       ]
     );
   };
@@ -291,20 +291,25 @@ export default function EditProfileScreen() {
         {/* Birthday */}
         <Text style={styles.label}>Birthday</Text>
         <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-      <Text style={styles.input}>{format(birthday, 'yyyy-MM-dd')}</Text>
-      <DateTimePickerModal
-        isVisible={showDatePicker}
-        mode="date"
-        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-        maximumDate={new Date()}
-        date={new Date(birthday)}
-        onConfirm={(date: Date) => {
-          setBirthday(format(date, 'yyyy-MM-dd'));
-          setShowDatePicker(false);
-        }}
-        onCancel={() => setShowDatePicker(false)}
-      />
-    </TouchableOpacity>
+          <Text style={styles.input}>
+            {birthday ? birthday : 'Select your birthdate'}
+          </Text>
+        </TouchableOpacity>
+
+        <DateTimePickerModal
+          isVisible={showDatePicker}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          maximumDate={new Date()}
+          date={birthday ? new Date(birthday) : new Date()}
+          onConfirm={(date: Date) => {
+            const formatted = format(date, 'yyyy-MM-dd');
+            setBirthday(formatted);
+            setShowDatePicker(false);
+          }}
+          onCancel={() => setShowDatePicker(false)}
+        />
+
         {birthdayError && <Text style={styles.errorText}>{birthdayError}</Text>}
 
 

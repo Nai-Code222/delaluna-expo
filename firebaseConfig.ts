@@ -1,29 +1,39 @@
-
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { initializeAuth, getReactNativePersistence } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import Constants from 'expo-constants';
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getReactNativePersistence, initializeAuth } from 'firebase/auth';
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Expo SDK 48+ may use expoConfig instead of manifest
+const raw = (Constants.manifest as any)?.extra
+  ?? (Constants.expoConfig as any)?.extra;
+
+if (!raw) {
+  throw new Error('Missing Expo constants extra; make sure app.config.js has an `extra` section');
+}
+
+const {
+  FIREBASE_API_KEY,
+  FIREBASE_AUTH_DOMAIN,
+  FIREBASE_PROJECT_ID,
+  FIREBASE_STORAGE_BUCKET,
+  FIREBASE_MESSAGING_SENDER_ID,
+  FIREBASE_APP_ID,
+  FIREBASE_MEASUREMENT_ID
+} = raw as Record<string, string>;
+
 const firebaseConfig = {
-  apiKey: "AIzaSyBHuxLRuwiLk1s6TJGoqPFe_1tYeFexVf8",
-  authDomain: "delaluna-answers.firebaseapp.com",
-  projectId: "delaluna-answers",
-  storageBucket: "delaluna-answers.firebasestorage.app",
-  messagingSenderId: "497678885238",
-  appId: "1:497678885238:web:8cfed66d7cec58b7a5da57",
-  measurementId: "G-YGE0L6115G"
+  apiKey: FIREBASE_API_KEY,
+  authDomain: FIREBASE_AUTH_DOMAIN,
+  projectId: FIREBASE_PROJECT_ID,
+  storageBucket: FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
+  appId: FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
+// Initialize Firebase App
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
 // ✅ Initialize Auth with AsyncStorage for persistence
 export const auth = initializeAuth(app, {
