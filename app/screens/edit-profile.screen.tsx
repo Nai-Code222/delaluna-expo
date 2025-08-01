@@ -58,6 +58,7 @@ export default function EditProfileScreen() {
   // State for fields
   const [firstName, setFirstName] = useState(params.firstName);
   const [lastName, setLastName] = useState(params.lastName);
+  const [nameError, setNameError] = useState<string | null>(null);
   const [email, setEmail] = useState(params.email);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [checkingEmail, setCheckingEmail] = useState(false);
