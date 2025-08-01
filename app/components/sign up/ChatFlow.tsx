@@ -82,7 +82,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
   const [locationError, setLocationError] = useState<string | null>(null);
 
   const current = steps[step];
-  
+
 
   useEffect(() => {
     if (current.inputType === 'location') {
@@ -190,8 +190,8 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
         setShowDatePicker(false);
         break;
       case 'time':
-        setAnswers((a) => ({ 
-          ...a, 
+        setAnswers((a) => ({
+          ...a,
           birthtime: value === 'I don’t know' ? defaultMidnight : value,
           birthtimeUnknown: value === 'I don’t know'
         }));
@@ -207,13 +207,13 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
         break;
     }
     if (step === steps.length - 1) {
-  setAnswers(a => {
-    onComplete(a);
-    return a;
-  });
-} else {
-  setStep((s) => s + 1);
-}
+      setAnswers(a => {
+        onComplete(a);
+        return a;
+      });
+    } else {
+      setStep((s) => s + 1);
+    }
   };
 
   const renderAnswerBubble = (s: StepConfig, idx: number) => {
@@ -275,14 +275,13 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
             case 'secure': {
               const handleSend = () => {
                 if (!textInput) {
-                  setError('Please enter a valid password.');
-                } else if (textInput.length < 8 && /[A-Z]/.test(textInput)) {
-                  setError('Password must be at least 8 characters.');
-                } else if (textInput.length >= 8 && !/[A-Z]/.test(textInput)) {
-                  setError('Password must contain at least one capital letter.');
+                  setError('Please enter a password.');
                 } else if (textInput.length < 8) {
                   setError('Password must be at least 8 characters.');
+                } else if (!/[A-Z]/.test(textInput)) {
+                  setError('Password must contain at least one uppercase letter.');
                 } else {
+                  setError(''); 
                   setError(null);
                   setAnswers((a) => ({ ...a, password: textInput }));
                   saveAndNext(textInput);
@@ -344,10 +343,10 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
               const isFuture = selected ? selected > today : false;
               const isUnder18 = selected
                 ? today.getFullYear() - selected.getFullYear() < 18 ||
-                  (today.getFullYear() - selected.getFullYear() === 18 &&
-                    (today.getMonth() < selected.getMonth() ||
-                      (today.getMonth() === selected.getMonth() &&
-                        today.getDate() < selected.getDate())))
+                (today.getFullYear() - selected.getFullYear() === 18 &&
+                  (today.getMonth() < selected.getMonth() ||
+                    (today.getMonth() === selected.getMonth() &&
+                      today.getDate() < selected.getDate())))
                 : false;
               return (
                 <View style={styles.inputContainer}>
@@ -759,14 +758,14 @@ const markdownStyles = {
   heading2: {
     fontSize: 20,
     fontWeight: 'bold',
-    textAlign: 'center', 
+    textAlign: 'center',
     marginTop: 16,
     marginBottom: 6,
   },
   heading3: {
     fontSize: 18,
     fontWeight: '600',
-    textAlign: 'center', 
+    textAlign: 'center',
     marginTop: 12,
     marginBottom: 4,
   },

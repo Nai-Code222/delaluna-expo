@@ -114,7 +114,7 @@ export default function ProfileScreen() {
   };
 
   const backToPreviousPage = () => {
-    router.back()
+    router.replace('/home')
   };
 
   const handleLogout = async () => {
