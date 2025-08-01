@@ -54,8 +54,6 @@ export default function EditProfileScreen() {
     isPlaceOfBirthUnknown: params.isPlaceOfBirthUnknown === 'true',
   };
 
-
-
   // State for fields
   const [firstName, setFirstName] = useState(params.firstName);
   const [lastName, setLastName] = useState(params.lastName);
@@ -154,25 +152,22 @@ export default function EditProfileScreen() {
 
   // Time validation: not future if today
   useEffect(() => {
-    if (isBirthTimeUnknown) {
+    if (!birthday || !timeOfBirth || isBirthTimeUnknown) return;
+    const today = new Date();
+    const birthDate = new Date(birthday);
+    const [h, m] = timeOfBirth.split(':').map(Number);
+    const birthTimeDate = new Date();
+    birthTimeDate.setHours(h);
+    birthTimeDate.setMinutes(m);
+
+    if (birthDate.toDateString() === today.toDateString() &&
+      (h > today.getHours() || (h === today.getHours() && m > today.getMinutes()))) {
+      setTimeError('Time cannot be in the future');
+    } else {
       setTimeError(null);
-      return;
     }
-    if (!timeOfBirth) {
-      setTimeError(null);
-      return;
-    }
-    const bd = new Date(birthday);
-    const now = new Date();
-    if (bd.toDateString() === now.toDateString()) {
-      const [h, m] = timeOfBirth.split(':').map(Number);
-      if (h > now.getHours() || (h === now.getHours() && m > now.getMinutes())) {
-        setTimeError('Time cannot be in the future');
-        return;
-      }
-    }
-    setTimeError(null);
   }, [timeOfBirth, birthday, isBirthTimeUnknown]);
+
 
   // Place validation: required unless unknown
   useEffect(() => {
@@ -202,7 +197,7 @@ export default function EditProfileScreen() {
       'You have unsaved changes. Are you sure you want to discard them?',
       [
         { text: 'No', style: 'cancel' },
-        { text: 'Yes', style: 'destructive', onPress: () => router.replace('/screens/profile.screen')},
+        { text: 'Yes', style: 'destructive', onPress: () => router.replace('/screens/profile.screen') },
       ]
     );
   };
@@ -295,7 +290,6 @@ export default function EditProfileScreen() {
             {birthday ? birthday : 'Select your birthdate'}
           </Text>
         </TouchableOpacity>
-
         <DateTimePickerModal
           isVisible={showDatePicker}
           mode="date"
@@ -309,11 +303,7 @@ export default function EditProfileScreen() {
           }}
           onCancel={() => setShowDatePicker(false)}
         />
-
         {birthdayError && <Text style={styles.errorText}>{birthdayError}</Text>}
-
-
-
 
         {/* Pronouns */}
         <Text style={styles.label}>Pronouns</Text>
@@ -349,7 +339,22 @@ export default function EditProfileScreen() {
         <Text style={styles.label}>Time of Birth</Text>
         {!isBirthTimeUnknown ? (
           <>
-            <TextInput style={styles.input} value={timeOfBirth} onChangeText={setTimeOfBirth} placeholder='HH:mm' />
+            <TouchableOpacity onPress={() => setShowTimePicker(true)}>
+              <Text style={styles.input}>{timeOfBirth || 'Select time'}</Text>
+            </TouchableOpacity>
+            <DateTimePickerModal
+              isVisible={showTimePicker}
+              mode="time"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              date={new Date()}
+              onConfirm={(date: Date) => {
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                setTimeOfBirth(`${hours}:${minutes}`);
+                setShowTimePicker(false);
+              }}
+              onCancel={() => setShowTimePicker(false)}
+            />
             {timeError && <Text style={styles.errorText}>{timeError}</Text>}
           </>
         ) : (
