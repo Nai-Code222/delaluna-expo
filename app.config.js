@@ -9,7 +9,7 @@ export default {
     android: { jsEngine: 'jst' },
     version: '2.0.0',
     orientation: 'portrait',
-    icon: './app/assets/images/icon.png',
+    icon: './app/assets/images/Delaluna_App_Icon.png',
     scheme: 'myapp',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
@@ -42,7 +42,7 @@ export default {
 
     android: {
       adaptiveIcon: {
-        foregroundImage: './app/assets/images/adaptive-icon.png',
+        foregroundImage: './app/assets/images/Delaluna_App_Icon.png',
         backgroundColor: '#ffffff',
       },
       package: 'com.app.delaluna_answers',
@@ -52,7 +52,7 @@ export default {
     web: {
       bundler: 'metro',
       output: 'static',
-      favicon: './assets/images/favicon.png',
+      favicon: './assets/images/Delaluna_App_Icon.png',
     },
 
     plugins: [
@@ -69,7 +69,7 @@ export default {
       [
         'expo-splash-screen',
         {
-          image: './app/assets/images/splash-icon.png',
+          image: './app/assets/images/Delaluna_App_Icon.png',
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#ffffff',
