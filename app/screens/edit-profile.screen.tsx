@@ -188,6 +188,25 @@ export default function EditProfileScreen() {
     }
   }, [placeOfBirth, placeUnknown]);
 
+  // First name validation
+  useEffect(() => {
+    if (!firstName.trim()) {
+      setNameError('First name is required');
+    } else {
+      setNameError(null);
+    }
+  }, [firstName]);
+
+  // Last name validation
+  const [lastNameError, setLastNameError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!lastName.trim()) {
+      setLastNameError('Last name is required');
+    } else {
+      setLastNameError(null);
+    }
+  }, [lastName]);
+
   const hasUnsaved = () => {
     return Object.keys(current).some(key => {
       const k = key as keyof typeof original;
@@ -241,7 +260,15 @@ export default function EditProfileScreen() {
 
   // Save handler: block if any errors or email check pending
   const handleSave = async () => {
-    if (emailError || checkingEmail || birthdayError || timeError || placeError) {
+    if (
+      nameError ||
+      lastNameError ||
+      emailError ||
+      checkingEmail ||
+      birthdayError ||
+      timeError ||
+      placeError
+    ) {
       return;
     }
 
@@ -290,180 +317,160 @@ export default function EditProfileScreen() {
       />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1 }}
+        style={styles.container}
         keyboardVerticalOffset={100}
       >
-        <ScrollView contentContainerStyle={styles.container}>
-          {/* Do NOT nest FlatList inside this ScrollView. 
-              If you need a list, use FlatList as the main container and move other content into ListHeaderComponent/ListFooterComponent. */}
-          {/* First Name */}
-          <Text style={styles.label}>First Name</Text>
+        {/* First Name */}
+        <Text style={styles.label}>First Name</Text>
+        <TextInput
+          style={styles.input}
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+        {nameError && <Text style={styles.errorText}>{nameError}</Text>}
+
+        {/* Last Name */}
+        <Text style={styles.label}>Last Name</Text>
+        <TextInput
+          style={styles.input}
+          value={lastName}
+          onChangeText={setLastName}
+        />
+        {lastNameError && <Text style={styles.errorText}>{lastNameError}</Text>}
+
+        {/* Email */}
+        <Text style={styles.label}>Email</Text>
+        <View style={styles.emailRow}>
           <TextInput
             style={styles.input}
-            value={firstName}
-            onChangeText={setFirstName}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
           />
+          {checkingEmail && <ActivityIndicator style={styles.loader} color="#fff" />}
+        </View>
+        {emailError && <Text style={styles.errorText}>{emailError}</Text>}
 
-          {/* Last Name */}
-          <Text style={styles.label}>Last Name</Text>
-          <TextInput
-            style={styles.input}
-            value={lastName}
-            onChangeText={setLastName}
-          />
+        {/* Birthday */}
+        <Text style={styles.label}>Birthday</Text>
+        <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+          <Text style={styles.input}>
+            {birthday ? birthday : 'Select your birthdate'}
+          </Text>
+        </TouchableOpacity>
+        <DateTimePickerModal
+          isVisible={showDatePicker}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          maximumDate={new Date()}
+          date={birthday ? new Date(birthday) : new Date()}
+          onConfirm={(date: Date) => {
+            const formatted = format(date, 'yyyy-MM-dd');
+            setBirthday(formatted);
+            setShowDatePicker(false);
+          }}
+          onCancel={() => setShowDatePicker(false)}
+        />
+        {birthdayError && <Text style={styles.errorText}>{birthdayError}</Text>}
 
-          {/* Email */}
-          <Text style={styles.label}>Email</Text>
-          <View style={styles.emailRow}>
-            <TextInput
-              style={styles.input}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-            />
-            {checkingEmail && <ActivityIndicator style={styles.loader} color="#fff" />}
-          </View>
-          {emailError && <Text style={styles.errorText}>{emailError}</Text>}
+        {/* Pronouns */}
+        <Text style={styles.label}>Pronouns</Text>
+        <PronounToggle
+          selectedIndex={PRONOUNS.indexOf(pronoun)}
+          onChange={i => setPronoun(PRONOUNS[i])}
+          clickable={true}
+          style={{ width: '100%', height: '8%' }}
+        />
 
-          {/* Birthday */}
-          <Text style={styles.label}>Birthday</Text>
-          <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-            <Text style={styles.input}>
-              {birthday ? birthday : 'Select your birthdate'}
-            </Text>
-          </TouchableOpacity>
-          <DateTimePickerModal
-            isVisible={showDatePicker}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            maximumDate={new Date()}
-            date={birthday ? new Date(birthday) : new Date()}
-            onConfirm={(date: Date) => {
-              const formatted = format(date, 'yyyy-MM-dd');
-              setBirthday(formatted);
-              setShowDatePicker(false);
+
+        {/* Place of Birth */}
+        <Text style={styles.label}>Place of Birth</Text>
+        {!placeUnknown ? (
+          <EditProfileLocationAutocomplete
+            value={placeTextInput}
+            onChange={text => {
+              setPlaceTextInput(text);
+              // clear any previous error when they type
+              setPlaceError(null);
+              setLocationError(null);
             }}
-            onCancel={() => setShowDatePicker(false)}
+            onSelect={item => {
+              const { name, city, state, country } = item.properties;
+              const label = [name, city, state, country]
+                .filter(Boolean)
+                .join(', ');
+              setPlaceTextInput(label);
+              setPlaceOfBirth(label);
+              setPlaceUnknown(false);
+              setPlaceError(null);
+              setLocationError(null);
+            }}
+            fetchSuggestions={q =>
+              fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`)
+                .then(res => res.json())
+                .then(json => json.features)
+            }
+            placeholder="Type your birth city…"
+            containerStyle={styles.autocompleteContainer}
+            inputStyle={styles.input}
+            listStyle={styles.autocompleteList}
           />
-          {birthdayError && <Text style={styles.errorText}>{birthdayError}</Text>}
-
-          {/* Pronouns */}
-          <Text style={styles.label}>Pronouns</Text>
-          <PronounToggle
-            selectedIndex={PRONOUNS.indexOf(pronoun)}
-            onChange={i => setPronoun(PRONOUNS[i])}
-            clickable={true}
-            style={{ width: '100%', height: '8%' }}
+        ) : (
+          <Text style={styles.input}>Unknown</Text>
+        )}
+        <View style={styles.toggleRow}>
+          <Switch
+            value={placeUnknown}
+            onValueChange={val => {
+              if (val) {
+                handlePlaceUnknown();
+              } else {
+                setPlaceUnknown(false);
+                setPlaceTextInput('');
+                setPlaceOfBirth('');
+              }
+            }}
           />
+          <Text style={styles.toggleLabel}>I don’t know</Text>
+        </View>
 
-          {/* Place of Birth */}
-          <Text style={styles.label}>Place of Birth</Text>
-          {!placeUnknown ? (
-            <EditProfileLocationAutocomplete
-              value={placeTextInput}
-              onInputChange={text => {
-                setPlaceTextInput(text);
-                if (placeUnknown) setPlaceUnknown(false);
-                setPlaceError(null);
-                setLocationError(null);
-              }}
-              onSelect={handlePlaceSelect}
-              error={placeError}
-              setError={setPlaceError}
-              style={styles.input}
-            />
-          ) : (
-            <Text style={styles.input}>Unknown</Text>
-          )}
-          <View style={styles.toggleRow}>
-            <Switch
-              value={placeUnknown}
-              onValueChange={val => {
-                if (val) {
-                  handlePlaceUnknown();
-                } else {
-                  setPlaceUnknown(false);
-                  setPlaceTextInput('');
-                  setPlaceOfBirth('');
-                }
-              }}
-            />
-            <Text style={styles.toggleLabel}>I don’t know</Text>
-          </View>
 
-          {/* Time of Birth */}
-          <Text style={styles.label}>Time of Birth</Text>
-          {!isBirthTimeUnknown ? (
-            <>
-              <TouchableOpacity onPress={() => setShowTimePicker(true)}>
-                <Text style={styles.input}>{timeOfBirth || 'Select time'}</Text>
-              </TouchableOpacity>
-              <DateTimePickerModal
-                isVisible={showTimePicker}
-                mode="time"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                date={new Date()}
-                onConfirm={(date: Date) => {
-                  const hours = date.getHours().toString().padStart(2, '0');
-                  const minutes = date.getMinutes().toString().padStart(2, '0');
-                  setTimeOfBirth(`${hours}:${minutes}`);
-                  setShowTimePicker(false);
-                }}
-                onCancel={() => setShowTimePicker(false)}
-              />
-              {timeError && <Text style={styles.errorText}>{timeError}</Text>}
-            </>
-          ) : (
-            <Text style={styles.input}>Unknown</Text>
-          )}
-          <View style={styles.toggleRow}>
-            <Switch
-              value={isBirthTimeUnknown}
-              onValueChange={val => {
-                setisBirthTimeUnknown(val);
-                if (val) setTimeOfBirth('00:00');
+        {/* Time of Birth */}
+        <Text style={styles.label}>Time of Birth</Text>
+        {!isBirthTimeUnknown ? (
+          <>
+            <TouchableOpacity onPress={() => setShowTimePicker(true)}>
+              <Text style={styles.input}>{timeOfBirth || 'Select time'}</Text>
+            </TouchableOpacity>
+            <DateTimePickerModal
+              isVisible={showTimePicker}
+              mode="time"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              date={new Date()}
+              onConfirm={(date: Date) => {
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                setTimeOfBirth(`${hours}:${minutes}`);
+                setShowTimePicker(false);
               }}
+              onCancel={() => setShowTimePicker(false)}
             />
-            <Text style={styles.toggleLabel}>I don’t know</Text>
-          </View>
-
-          {/* Time of Birth */}
-          <Text style={styles.label}>Time of Birth</Text>
-          {!isBirthTimeUnknown ? (
-            <>
-              <TouchableOpacity onPress={() => setShowTimePicker(true)}>
-                <Text style={styles.input}>{timeOfBirth || 'Select time'}</Text>
-              </TouchableOpacity>
-              <DateTimePickerModal
-                isVisible={showTimePicker}
-                mode="time"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                date={new Date()}
-                onConfirm={(date: Date) => {
-                  const hours = date.getHours().toString().padStart(2, '0');
-                  const minutes = date.getMinutes().toString().padStart(2, '0');
-                  setTimeOfBirth(`${hours}:${minutes}`);
-                  setShowTimePicker(false);
-                }}
-                onCancel={() => setShowTimePicker(false)}
-              />
-              {timeError && <Text style={styles.errorText}>{timeError}</Text>}
-            </>
-          ) : (
-            <Text style={styles.input}>Unknown</Text>
-          )}
-          <View style={styles.toggleRow}>
-            <Switch
-              value={isBirthTimeUnknown}
-              onValueChange={val => {
-                setisBirthTimeUnknown(val);
-                if (val) setTimeOfBirth('00:00');
-              }}
-            />
-            <Text style={styles.toggleLabel}>I don’t know</Text>
-          </View>
-        </ScrollView>
+            {timeError && <Text style={styles.errorText}>{timeError}</Text>}
+          </>
+        ) : (
+          <Text style={styles.input}>Unknown</Text>
+        )}
+        <View style={styles.toggleRow}>
+          <Switch
+            value={isBirthTimeUnknown}
+            onValueChange={val => {
+              setisBirthTimeUnknown(val);
+              if (val) setTimeOfBirth('00:00');
+            }}
+          />
+          <Text style={styles.toggleLabel}>I don’t know</Text>
+        </View>
       </KeyboardAvoidingView>
       <View style={[styles.saveBttnContainer, { position: 'absolute', bottom: 40, left: 0, right: 0, alignSelf: 'center' }]}>
         <GlassButton
@@ -498,4 +505,12 @@ const styles = StyleSheet.create({
   emailRow: { flexDirection: 'row', alignItems: 'center' },
   loader: { marginLeft: 8 },
   errorText: { color: 'red', marginBottom: 16 },
+  autocompleteContainer: {
+    marginBottom: 16,
+    // ensure the absolutely-positioned dropdown has room
+    zIndex: 1000,
+  },
+  autocompleteList: {
+    // optionally tweak width, shadows, etc.
+  },
 });
