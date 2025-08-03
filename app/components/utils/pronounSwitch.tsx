@@ -9,10 +9,14 @@ import {
   StyleProp,
   ViewStyle,
   TextStyle,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const PRONOUNS = ['She/Her', 'He/Him', 'They/Them','Non Binary'];
+const PRONOUNS = Platform.select({
+  ios: ['She/Her', 'He/Him', 'They/\nThem', 'Non\nBinary'],
+  android: ['She/Her', 'He/Him', 'They/Them', 'Non Binary'],
+})!;
 
 interface PronounToggleProps {
   selectedIndex: number;
@@ -69,7 +73,9 @@ export default function PronounToggle({
               style={[
                 styles.text,
                 i === selectedIndex && styles.textSelected,
+                {textAlign: 'center'}
               ]}
+            numberOfLines={2}
             >
               {label}
             </Text>
@@ -94,24 +100,24 @@ const styles = StyleSheet.create<{
     marginVertical: 12,
     width: '70%',
     alignSelf: 'center',
-    height: '70%'
+    minHeight: 64,
   },
   inner: {
     flexDirection: 'row',
     position: 'relative',
     borderRadius: 25,
-    overflow: 'hidden',
+    minHeight: 64 - 6,
   },
   slider: {
     position: 'absolute',
-    top: 0,
-    bottom: 0,
+    top: 3,
+    bottom: 3,
     backgroundColor: '#FFF',
     borderRadius: 25,
   },
   segment: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

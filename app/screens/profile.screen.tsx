@@ -16,7 +16,10 @@ import { UserRecord } from '@/app/model/UserRecord'
 import EditProfileScreen from './edit-profile.screen'
 import type { DocumentData } from 'firebase/firestore';
 import { useIsFocused } from '@react-navigation/native';
-const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
+const PRONOUNS = Platform.select({
+  ios: ['She/Her', 'He/Him', 'They/\nThem', 'Non\nBinary'],
+  android: ['She/Her', 'He/Him', 'They/Them', 'Non Binary'],
+})!;
 
 export default function ProfileScreen() {
   const { user, initializing } = useAuth();
@@ -176,7 +179,7 @@ export default function ProfileScreen() {
                 selectedIndex={selectedIdx}
                 onChange={setSelectedIdx}
                 clickable={false}
-                style={{ width: '70%' }} />
+                style={{ width: '70%', flexWrap: 'wrap', }} />
             </View>
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Place of Birth </Text>
@@ -355,5 +358,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+    
   },
 });
