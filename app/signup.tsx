@@ -21,6 +21,17 @@ import { useAuth } from '@/app/backend/AuthContext';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
+function formatTime12Hour(date: Date | null | undefined): string {
+  if (!(date instanceof Date)) return '';
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours === 0 ? 12 : hours;
+  const minStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
+  return `${hours}:${minStr} ${ampm}`;
+}
+
 export default function SignUpChatScreen() {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -119,11 +130,7 @@ export default function SignUpChatScreen() {
         pronouns: answers.pronouns!,
         birthday: answers.birthday!.toISOString().slice(0, 10),
         birthtime: answers.birthtime instanceof Date
-          ? new Intl.DateTimeFormat('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-          }).format(answers.birthtime)
+          ? formatTime12Hour(answers.birthtime)
           : typeof answers.birthtime === 'string'
             ? answers.birthtime
             : '',

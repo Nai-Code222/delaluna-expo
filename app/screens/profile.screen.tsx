@@ -1,6 +1,6 @@
 // profile screen
 import React, { useContext, useEffect, useState } from 'react'
-import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, TextInput, Platform } from 'react-native'
+import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, TextInput, Platform, ScrollView } from 'react-native'
 import { useAuth } from '@/app/backend/AuthContext'
 import { router } from 'expo-router'
 import HeaderNav from '../components/headerNav'
@@ -16,10 +16,7 @@ import { UserRecord } from '@/app/model/UserRecord'
 import EditProfileScreen from './edit-profile.screen'
 import type { DocumentData } from 'firebase/firestore';
 import { useIsFocused } from '@react-navigation/native';
-const PRONOUNS = Platform.select({
-  ios: ['She/Her', 'He/Him', 'They/\nThem', 'Non\nBinary'],
-  android: ['She/Her', 'He/Him', 'They/Them', 'Non Binary'],
-})!;
+const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 export default function ProfileScreen() {
   const { user, initializing } = useAuth();
@@ -40,37 +37,37 @@ export default function ProfileScreen() {
   );
 
   const getUserRecord = async () => {
-  if (!user?.uid) return;
+    if (!user?.uid) return;
 
-  try {
-    console.log("Current auth UID:", auth.currentUser?.email);
+    try {
+      console.log("Current auth UID:", auth.currentUser?.email);
 
 
-    const ref = getUserDocRef(user.uid);
-    console.log("Fetching user doc from:", ref.path);
+      const ref = getUserDocRef(user.uid);
+      console.log("Fetching user doc from:", ref.path);
 
-    const docSnap = await getDoc(ref);
-    console.log("doc: ", docSnap)
+      const docSnap = await getDoc(ref);
+      console.log("doc: ", docSnap)
 
-    
 
-    if (!docSnap.exists()) {
-      throw new Error("User profile does not exist in Firestore.");
+
+      if (!docSnap.exists()) {
+        throw new Error("User profile does not exist in Firestore.");
+      }
+
+      const data = docSnap.data() as UserRecord;
+      setUserRecord(data);
+
+      const idx = PRONOUNS.findIndex(p => p === data.pronouns);
+      if (idx >= 0) setSelectedIdx(idx);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+      setErrorMessage('Failed to fetch user data.');
+      setShowErrorModal(true);
+    } finally {
+      setProfileLoading(false);
     }
-
-    const data = docSnap.data() as UserRecord;
-    setUserRecord(data);
-
-    const idx = PRONOUNS.findIndex(p => p === data.pronouns);
-    if (idx >= 0) setSelectedIdx(idx);
-  } catch (error) {
-    console.error("Failed to fetch user data:", error);
-    setErrorMessage('Failed to fetch user data.');
-    setShowErrorModal(true);
-  } finally {
-    setProfileLoading(false);
-  }
-};
+  };
 
 
   useEffect(() => {
@@ -147,77 +144,98 @@ export default function ProfileScreen() {
       <ImageBackground
         source={require('../assets/images/mainBackground.png')}
         style={styles.background}
-        resizeMode="cover">
-
+        resizeMode="cover"
+      >
         <HeaderNav
           title="Profile"
           leftIconName={"arrow-back"}
           onLeftPress={backToPreviousPage}
           rightLabel="Edit"
-          onRightPress={goToEditProfile} />
-
-        <View style={styles.profileContentContainer}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>Your Profile</Text>
-          </View>
-          <View style={styles.profileInformationContainer}>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Email </Text>
-              <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{user?.email}</Text>
+          onRightPress={goToEditProfile}
+        />
+        <View style={styles.flexFill}>
+          <ScrollView
+            contentContainerStyle={styles.profileContentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>Your Profile</Text>
+            </View>
+            <View>
+              <View style={styles.profileInformationContainer}>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}> First Name </Text>
+                  <View style={styles.userDataContainer}>
+                    <Text style={styles.userDataTextField}>{userRecord?.firstName}</Text>
+                  </View>
+                </View>
               </View>
             </View>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Date of Birth </Text>
-              <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{userRecord?.birthday}</Text>
+            <View>
+              <View style={styles.profileInformationContainer}>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}> Last Name </Text>
+                  <View style={styles.userDataContainer}>
+                    <Text style={styles.userDataTextField}>{userRecord?.lastName}</Text>
+                  </View>
+                </View>
               </View>
             </View>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Pronouns </Text>
-              <PronounToggle
-                selectedIndex={selectedIdx}
-                onChange={setSelectedIdx}
-                clickable={false}
-                style={{ width: '70%', flexWrap: 'wrap', }} />
-            </View>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Place of Birth </Text>
-              <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{!userRecord?.isPlaceOfBirthUnknown ? userRecord?.placeOfBirth : "Unknown"}</Text>
+            <View style={styles.profileInformationContainer}>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Email </Text>
+                <View style={styles.userDataContainer}>
+                  <Text style={styles.userDataTextField}>{user?.email}</Text>
+                </View>
+              </View>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Date of Birth </Text>
+                <View style={styles.userDataContainer}>
+                  <Text style={styles.userDataTextField}>{userRecord?.birthday}</Text>
+                </View>
+              </View>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Pronouns </Text>
+                <PronounToggle
+                  selectedIndex={selectedIdx}
+                  onChange={setSelectedIdx}
+                  clickable={false}
+                  style={{ width: '70%', flexWrap: 'wrap', }} />
+              </View>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Place of Birth </Text>
+                <View style={styles.userDataContainer}>
+                  <Text style={styles.userDataTextField}>{!userRecord?.isPlaceOfBirthUnknown ? userRecord?.placeOfBirth : "Unknown"}</Text>
+                </View>
+              </View>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Time of Birth </Text>
+                <View style={styles.userDataContainer}>
+                  <Text style={styles.userDataTextField}>{!userRecord?.isBirthTimeUnknown ? userRecord.birthtime : "Unknown"}</Text>
+                </View>
               </View>
             </View>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Time of Birth </Text>
-              <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{!userRecord?.isBirthTimeUnknown ? userRecord.birthtime : "Unknown"}</Text>
-              </View>
-            </View>
-          </View>
+            {/* --- Move all buttons into the ScrollView so they always show --- */}
+            <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
+              <Image source={require('../assets/icons/changeThemeIcon.png')} style={styles.leftIconContainer} />
+              <Text style={styles.buttonText}>Change Color Theme</Text>
+              <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
+              <Image source={require('../assets/icons/changePasseordIcon.png')} style={styles.leftIconContainer} />
+              <Text style={styles.buttonText}>Change Password</Text>
+              <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.profileButton} onPress={handleLogout}>
+              <Image source={require('../assets/icons/logOutIcon.png')} style={styles.leftIconContainer} />
+              <Text style={styles.buttonText}>Logout</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
+              <Image source={require('../assets/icons/deleteAccountIcon.png')} style={styles.leftIconContainer} />
+              <Text style={styles.buttonText}>Delete Account</Text>
+            </TouchableOpacity>
+          </ScrollView>
         </View>
-
-        <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
-          <Image source={require('../assets/icons/changeThemeIcon.png')} style={styles.leftIconContainer} />
-          <Text style={styles.buttonText}>Change Color Theme</Text>
-          <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
-          <Image source={require('../assets/icons/changePasseordIcon.png')} style={styles.leftIconContainer} />
-          <Text style={styles.buttonText}>Change Password</Text>
-          <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.profileButton} onPress={handleLogout}>
-          <Image source={require('../assets/icons/logOutIcon.png')} style={styles.leftIconContainer} />
-          <Text style={styles.buttonText}>Logout</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
-          <Image source={require('../assets/icons/deleteAccountIcon.png')} style={styles.leftIconContainer} />
-          <Text style={styles.buttonText}>Delete Account</Text>
-        </TouchableOpacity>
-
         <AlertModal
           visible={showErrorModal}
           message={errorMessage}
@@ -229,14 +247,16 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, width: '100%', height: '100%', alignSelf: 'center', },
+  container: { flex: 1, width: '100%', alignSelf: 'center' },
   background: { flex: 1 },
+  flexFill: { flex: 1, paddingBottom: 10, width: '100%' },
   profileContentContainer: {
-    display: 'flex',
-    width: '100%',
+    flexGrow: 1,
+    justifyContent: 'flex-start',
     alignItems: 'flex-start',
-    paddingVertical: 1,
-    flexDirection: 'column',
+    width: '100%',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   titleContainer: {
     borderBottomColor: '#fff',
@@ -252,7 +272,6 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     paddingHorizontal: 5,
-    gap: 5,
     paddingVertical: 5,
   },
   userDataContainer: {
@@ -344,20 +363,25 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   deleteAccountButton: {
-    marginTop: 10,
-    paddingHorizontal: 20,
+    marginTop: 5, // more space above for separation
+    paddingHorizontal: 0, // flush with sides
     backgroundColor: '#ff4757',
-    borderRadius: 5,
+    borderRadius: 8, // slightly more rounded for modern look
     flexDirection: 'row',
-    display: 'flex',
     justifyContent: 'center',
-    height: 70,
     alignItems: 'center',
+    width: '100%',
+    minHeight: 50, // more touchable, but not too tall
+    height: undefined, // let content define height
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    elevation: 2, // subtle shadow for Android
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-    
   },
 });

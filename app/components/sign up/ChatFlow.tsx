@@ -146,10 +146,15 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
     scrollRef.current?.scrollToEnd({ animated: true });
   };
 
-  const formatTime = (date: unknown) => {
-    return date instanceof Date
-      ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      : 'Select birth time';
+  const formatTime12Hour = (date: Date | null | undefined) => {
+    if (!(date instanceof Date)) return 'Select birth time';
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours === 0 ? 12 : hours;
+    const minStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
+    return `${hours}:${minStr} ${ampm}`;
   };
 
   useEffect(() => {
@@ -190,6 +195,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
         setShowDatePicker(false);
         break;
       case 'time':
+        // Always save as a Date object, but display in 12-hour format
         setAnswers((a) => ({
           ...a,
           birthtime: value === 'I don’t know' ? defaultMidnight : value,
@@ -231,7 +237,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
       display = answers.birthtimeUnknown
         ? "I don't know"
         : raw instanceof Date
-          ? raw.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          ? formatTime12Hour(raw)
           : raw;
     }
     if (s.inputType === 'secure') {
@@ -281,7 +287,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                 } else if (!/[A-Z]/.test(textInput)) {
                   setError('Password must contain at least one uppercase letter.');
                 } else {
-                  setError(''); 
+                  setError('');
                   setError(null);
                   setAnswers((a) => ({ ...a, password: textInput }));
                   saveAndNext(textInput);
@@ -510,7 +516,10 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                       style={styles.datePickerButton}
                       onPress={() => setShowTimePicker(true)}
                     >
-                      <Text style={styles.datePickerText}>{formatTime(birthTime)}
+                      <Text style={styles.datePickerText}>
+                        {birthTime
+                          ? formatTime12Hour(birthTime)
+                          : formatTime12Hour(null)}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity

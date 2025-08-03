@@ -33,7 +33,7 @@ export default function Welcome() {
         <TitleText>
           <PrimaryButton
             title="Get Started"
-            onPress={() => router.push('/signup')}
+            onPress={() => router.replace('/signup')}
             style={{ marginBottom: 10 }}
             accessibilityLabel="Get Started"
             accessibilityHint="Navigate to the sign up screen"
