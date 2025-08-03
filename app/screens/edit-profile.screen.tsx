@@ -245,7 +245,7 @@ export default function EditProfileScreen() {
 
   const handleCancel = () => {
     if (!hasUnsaved()) {
-      router.back();
+      router.replace('/screens/profile.screen');
       return;
     }
     Alert.alert(
@@ -441,17 +441,45 @@ export default function EditProfileScreen() {
         {!isBirthTimeUnknown ? (
           <>
             <TouchableOpacity onPress={() => setShowTimePicker(true)}>
-              <Text style={styles.input}>{timeOfBirth || 'Select time'}</Text>
+              <Text style={styles.input}>
+                {timeOfBirth
+                  ? (() => {
+                      // Show time in hh:mm a format
+                      const [h, m] = timeOfBirth.split(':').map(Number);
+                      if (isNaN(h) || isNaN(m)) return timeOfBirth;
+                      const date = new Date();
+                      date.setHours(h);
+                      date.setMinutes(m);
+                      return format(date, 'hh:mm a');
+                    })()
+                  : 'Select time'}
+              </Text>
             </TouchableOpacity>
             <DateTimePickerModal
               isVisible={showTimePicker}
               mode="time"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              date={new Date()}
+              date={
+                (() => {
+                  // Parse timeOfBirth to Date if possible, else use now
+                  if (timeOfBirth) {
+                    const [h, m] = timeOfBirth.split(':').map(Number);
+                    if (!isNaN(h) && !isNaN(m)) {
+                      const d = new Date();
+                      d.setHours(h);
+                      d.setMinutes(m);
+                      d.setSeconds(0);
+                      d.setMilliseconds(0);
+                      return d;
+                    }
+                  }
+                  return new Date();
+                })()
+              }
               onConfirm={(date: Date) => {
-                const hours = date.getHours().toString().padStart(2, '0');
-                const minutes = date.getMinutes().toString().padStart(2, '0');
-                setTimeOfBirth(`${hours}:${minutes}`);
+                // Save as hh:mm a (12-hour with AM/PM)
+                const formatted = format(date, 'hh:mm a');
+                setTimeOfBirth(formatted);
                 setShowTimePicker(false);
               }}
               onCancel={() => setShowTimePicker(false)}
