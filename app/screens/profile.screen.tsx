@@ -215,7 +215,8 @@ export default function ProfileScreen() {
                 </View>
               </View>
             </View>
-            {/* --- Move all buttons into the ScrollView so they always show --- */}
+          </ScrollView>
+          {/* --- Move all buttons into the ScrollView so they always show --- */}
             <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
               <Image source={require('../assets/icons/changeThemeIcon.png')} style={styles.leftIconContainer} />
               <Text style={styles.buttonText}>Change Color Theme</Text>
@@ -234,7 +235,6 @@ export default function ProfileScreen() {
               <Image source={require('../assets/icons/deleteAccountIcon.png')} style={styles.leftIconContainer} />
               <Text style={styles.buttonText}>Delete Account</Text>
             </TouchableOpacity>
-          </ScrollView>
         </View>
         <AlertModal
           visible={showErrorModal}
