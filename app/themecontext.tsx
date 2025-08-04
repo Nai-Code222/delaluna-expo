@@ -5,6 +5,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import your default background image
 const mainBg = require('./assets/images/mainBackground.png');
+const blueBg = require('./assets/images/blueTheme.png');
+const greenBg = require('./assets/images/greenTheme.png');
+const orangeBg = require('./assets/images/orangeTheme.png');
+const redBg = require('./assets/images/redTheme.png');
+const yellowBg = require('./assets/images/yellowTheme.png');
 const pinkBg = require('./assets/images/pinkTheme.png');
 
 // 2) Define your Theme shape
@@ -42,7 +47,7 @@ const allThemes: Record<string, Theme> = {
       text:       '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: pinkBg, // uses app/assets/images/mainBackground.png
+    backgroundImage: mainBg, // uses app/assets/images/mainBackground.png
     blendMode: 'difference',
   },
   yellow: {
@@ -54,11 +59,8 @@ const allThemes: Record<string, Theme> = {
       primary:    '#F4C430',
       text:       '#6B0F1A',
     },
-    backgroundType: 'gradient',
-    gradient: {
-      colors: ['#FDD017', '#F4C430'],
-      angle: 105,
-    },
+    backgroundType: 'image',
+    backgroundImage: yellowBg, // uses app/assets/images/yellowTheme.png
     blendMode: 'difference',
   },
   pink: {
@@ -83,11 +85,8 @@ const allThemes: Record<string, Theme> = {
       primary:    '#00BFFF',
       text:       '#ffffff',
     },
-    backgroundType: 'gradient',
-    gradient: {
-      colors: ['#000080', '#00BFFF'],
-      angle: 95,
-    },
+    backgroundType: 'image',
+    backgroundImage: blueBg, // uses app/assets/images/blueTheme.png
     blendMode: 'difference',
   },
   green: {
@@ -99,11 +98,8 @@ const allThemes: Record<string, Theme> = {
       primary:    '#39FF14',
       text:       '#ffffff',
     },
-    backgroundType: 'gradient',
-    gradient: {
-      colors: ['#013220', '#39FF14'],
-      angle: 95,
-    },
+    backgroundType: 'image',
+    backgroundImage: greenBg, // uses app/assets/images/greenTheme.png
     blendMode: 'difference',
   },
   orange: {
@@ -115,11 +111,8 @@ const allThemes: Record<string, Theme> = {
       primary:    '#E76D2C',
       text:       '#ffffff',
     },
-    backgroundType: 'gradient',
-    gradient: {
-      colors: ['#FFA500', '#E76D2C'],
-      angle: 105,
-    },
+    backgroundType: 'image',
+    backgroundImage: orangeBg, // uses app/assets/images/orangeTheme.png
     blendMode: 'difference',
   },
   red: {
@@ -131,11 +124,8 @@ const allThemes: Record<string, Theme> = {
       primary:    '#65000B',
       text:       '#ffffff',
     },
-    backgroundType: 'gradient',
-    gradient: {
-      colors: ['#D3011C', '#65000B'],
-      angle: 105,
-    },
+    backgroundType: 'image',
+    backgroundImage: redBg, // uses app/assets/images/redTheme.png
     blendMode: 'difference',
   },
 };
