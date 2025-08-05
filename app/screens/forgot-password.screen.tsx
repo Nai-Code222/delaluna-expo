@@ -60,7 +60,7 @@ export default function ForgotPasswordScreen() {
                             sendPasswordResetEmail(auth, email)
                                 .then(() => {
                                     alert('"If an account with that email exists, a password reset link has been sent.');
-                                    router.back();
+                                    router.replace('/login');
                                 })
                                 .catch((error) => {
                                     const errorCode = error.code;
