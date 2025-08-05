@@ -41,8 +41,11 @@ export default function TransitsScreen() {
   }
 
   return renderBackground(
-    <></>
-  );
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text style={{ color: theme.colors.text, fontSize: 18, opacity: 0.6 }}>
+        No transits available.
+      </Text>
+    </View>
 }
 
 const styles = StyleSheet.create({
