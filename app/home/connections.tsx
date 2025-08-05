@@ -41,7 +41,9 @@ export default function ConnectionsScreen() {
   }
 
   return renderBackground(
-    <></>
+    <View style={styles.centered}>
+      <Text style={styles.placeholderText}>No connections yet</Text>
+    </View>
   );
 }
 
