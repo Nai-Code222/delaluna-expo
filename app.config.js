@@ -18,8 +18,6 @@ export default {
       url: "https://u.expo.dev/24610560-82da-4ee8-99d3-e51db4e8401c"
     },
     runtimeVersion: "2.0.0",
-    
-
 
     extra: {
       FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,

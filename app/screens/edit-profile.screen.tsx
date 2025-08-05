@@ -1,5 +1,5 @@
 // /screens/edit-profile.screen.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Alert, FlatList, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import {
   View,
@@ -25,6 +25,8 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { format } from 'date-fns';
 import LocationAutocomplete from '../components/sign up/LocationAutocomplete';
 import EditProfileLocationAutocomplete from '../components/sign up/EditProfileLocationAutocomplete';
+import { ThemeContext } from '../themecontext';
+import { LinearGradient } from 'expo-linear-gradient';
 const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 type Params = {
@@ -43,6 +45,7 @@ type Params = {
 export default function EditProfileScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<Params>();
+  const { theme } = useContext(ThemeContext);
 
   const original = {
     firstName: params.firstName,
@@ -304,12 +307,43 @@ export default function EditProfileScreen() {
 
   }
 
-  return (
-    <ImageBackground
-      source={require('../assets/images/mainBackground.png')}
-      style={styles.bg}
-      resizeMode="cover"
-    >
+  // Helper to render background using theme
+  function renderBackground(children: React.ReactNode) {
+    if (theme.backgroundType === 'image' && theme.backgroundImage) {
+      return (
+        <ImageBackground
+          source={theme.backgroundImage}
+          style={styles.bg}
+          resizeMode="cover"
+        >
+          {children}
+        </ImageBackground>
+      );
+    }
+    if (theme.backgroundType === 'gradient' && theme.gradient) {
+      return (
+        <LinearGradient
+          colors={theme.gradient.colors as [string, string, ...string[]]}
+          start={{ x: 0, y: 0 }}
+          end={{
+            x: Math.cos((theme.gradient.angle ?? 0) * Math.PI / 180),
+            y: Math.sin((theme.gradient.angle ?? 0) * Math.PI / 180),
+          }}
+          style={styles.bg}
+        >
+          {children}
+        </LinearGradient>
+      );
+    }
+    return (
+      <View style={[styles.bg, { backgroundColor: theme.colors.background }]}>
+        {children}
+      </View>
+    );
+  }
+
+  return renderBackground(
+    <React.Fragment>
       <HeaderNav
         title="Edit Profile"
         leftLabel='Cancel'
@@ -506,7 +540,7 @@ export default function EditProfileScreen() {
           onPress={handleSave}
         />
       </View>
-    </ImageBackground>
+    </React.Fragment>
   );
 }
 

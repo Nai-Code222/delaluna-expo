@@ -14,11 +14,12 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { auth } from '../../firebaseConfig'
-import { getAuth, signOut } from 'firebase/auth'
 import { router } from 'expo-router'
 import AuthContext from '@/app/backend/AuthContext'
 import HeaderNav from '../components/headerNav'
 import ProfileScreen from '../screens/profile.screen'
+import { ThemeContext } from '../themecontext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext)
@@ -26,7 +27,8 @@ export default function HomeScreen() {
   const safeOffset = Platform.OS === 'android'
     ? StatusBar.currentHeight || 0
     : insets.top
-  const HEADER_HEIGHT = 50
+  const HEADER_HEIGHT = 50;
+  const { theme } = useContext(ThemeContext);
 
 
   useEffect(() => {
@@ -47,32 +49,61 @@ export default function HomeScreen() {
     router.replace('/screens/profile.screen')
   }
 
-  return (
-    <View style={styles.container}>
-      <ImageBackground
-        source={require('../assets/images/mainBackground.png')}
-        style={styles.background}
-        resizeMode="cover"
-      >
-        <HeaderNav
-          title="Home"
-          leftIconName={undefined}
-          onLeftPress={() => {}}
-          rightIconSource={require('../assets/icons/Avatar.png')}
-          onRightPress={goToProfile}
-        />
+  // Helper to render background using theme
+  function renderBackground(children: React.ReactNode) {
+    if (theme.backgroundType === 'image' && theme.backgroundImage) {
+      return (
+        <ImageBackground
+          source={theme.backgroundImage}
+          style={styles.background}
+          resizeMode="cover"
+        >
+          {children}
+        </ImageBackground>
+      );
+    }
+    if (theme.backgroundType === 'gradient' && theme.gradient) {
+      return (
+        <LinearGradient
+          colors={theme.gradient.colors as [string, string, ...string[]]}
+          start={{ x: 0, y: 0 }}
+          end={{
+            x: Math.cos((theme.gradient.angle ?? 0) * Math.PI / 180),
+            y: Math.sin((theme.gradient.angle ?? 0) * Math.PI / 180),
+          }}
+          style={styles.background}
+        >
+          {children}
+        </LinearGradient>
+      );
+    }
+    return (
+      <View style={[styles.background, { backgroundColor: theme.colors.background }]}>
+        {children}
+      </View>
+    );
+  }
 
-        <View style={styles.content}>
-          <Text style={styles.title}>Welcome Home!</Text>
-          <Text style={styles.email}>
-            {user
-              ? `Logged in as: ${user.email}`
-              : 'No user logged in.'}
-          </Text>
-        </View>
-      </ImageBackground>
+  return renderBackground(
+    <View style={styles.container}>
+      <HeaderNav
+        title="Home"
+        leftIconName={undefined}
+        onLeftPress={() => {}}
+        rightIconSource={require('../assets/icons/Avatar.png')}
+        onRightPress={goToProfile}
+      />
+
+      <View style={styles.content}>
+        <Text style={styles.title}>Welcome Home!</Text>
+        <Text style={styles.email}>
+          {user
+            ? `Logged in as: ${user.email}`
+            : 'No user logged in.'}
+        </Text>
+      </View>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({

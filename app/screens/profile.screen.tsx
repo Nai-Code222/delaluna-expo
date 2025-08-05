@@ -16,6 +16,8 @@ import { UserRecord } from '@/app/model/UserRecord'
 import EditProfileScreen from './edit-profile.screen'
 import type { DocumentData } from 'firebase/firestore';
 import { useIsFocused } from '@react-navigation/native';
+import { ThemeContext } from '../themecontext';
+import { LinearGradient } from 'expo-linear-gradient';
 const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 export default function ProfileScreen() {
@@ -27,6 +29,8 @@ export default function ProfileScreen() {
   const [profileLoading, setProfileLoading] = useState(true);
   const isFocused = useIsFocused();
   let userData: DocumentData;
+
+  const { theme } = useContext(ThemeContext);
 
   const initialIndex = user
     ? PRONOUNS.findIndex((p) => p === user.displayName)
@@ -138,110 +142,139 @@ export default function ProfileScreen() {
     }
   };
 
-  return (
+  // Helper to render background
+  function renderBackground(children: React.ReactNode) {
+    if (theme.backgroundType === 'image' && theme.backgroundImage) {
+      return (
+        <ImageBackground
+          source={theme.backgroundImage}
+          style={styles.background}
+          resizeMode="cover"
+        >
+          {children}
+        </ImageBackground>
+      );
+    }
+    if (theme.backgroundType === 'gradient' && theme.gradient) {
+      return (
+        <LinearGradient
+          colors={theme.gradient.colors as [string, string, ...string[]]}
+          start={{ x: 0, y: 0 }}
+          end={{
+            x: Math.cos((theme.gradient.angle ?? 0) * Math.PI / 180),
+            y: Math.sin((theme.gradient.angle ?? 0) * Math.PI / 180),
+          }}
+          style={styles.background}
+        >
+          {children}
+        </LinearGradient>
+      );
+    }
+    return (
+      <View style={[styles.background, { backgroundColor: theme.colors.background }]}>
+        {children}
+      </View>
+    );
+  }
+
+  return renderBackground(
     <View style={styles.container}>
       <StatusBar style="light" />
-      <ImageBackground
-        source={require('../assets/images/mainBackground.png')}
-        style={styles.background}
-        resizeMode="cover"
-      >
-        <HeaderNav
-          title="Profile"
-          leftIconName={"arrow-back"}
-          onLeftPress={backToPreviousPage}
-          rightLabel="Edit"
-          onRightPress={goToEditProfile}
-        />
-        <View style={styles.flexFill}>
-          <ScrollView
-            contentContainerStyle={styles.profileContentContainer}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>Your Profile</Text>
-            </View>
-            <View>
-              <View style={styles.profileInformationContainer}>
-                <View style={styles.fieldContainer}>
-                  <Text style={styles.fieldLabel}> First Name </Text>
-                  <View style={styles.userDataContainer}>
-                    <Text style={styles.userDataTextField}>{userRecord?.firstName}</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-            <View>
-              <View style={styles.profileInformationContainer}>
-                <View style={styles.fieldContainer}>
-                  <Text style={styles.fieldLabel}> Last Name </Text>
-                  <View style={styles.userDataContainer}>
-                    <Text style={styles.userDataTextField}>{userRecord?.lastName}</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
+      <HeaderNav
+        title="Profile"
+        leftIconName={"arrow-back"}
+        onLeftPress={backToPreviousPage}
+        rightLabel="Edit"
+        onRightPress={goToEditProfile}
+      />
+      <View style={styles.flexFill}>
+        <ScrollView
+          contentContainerStyle={styles.profileContentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Your Profile</Text>
+          </View>
+          <View>
             <View style={styles.profileInformationContainer}>
               <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Email </Text>
+                <Text style={styles.fieldLabel}> First Name </Text>
                 <View style={styles.userDataContainer}>
-                  <Text style={styles.userDataTextField}>{user?.email}</Text>
-                </View>
-              </View>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Date of Birth </Text>
-                <View style={styles.userDataContainer}>
-                  <Text style={styles.userDataTextField}>{userRecord?.birthday}</Text>
-                </View>
-              </View>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Pronouns </Text>
-                <PronounToggle
-                  selectedIndex={selectedIdx}
-                  onChange={setSelectedIdx}
-                  clickable={false}
-                  style={{ width: '70%', flexWrap: 'wrap', }} />
-              </View>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Place of Birth </Text>
-                <View style={styles.userDataContainer}>
-                  <Text style={styles.userDataTextField}>{!userRecord?.isPlaceOfBirthUnknown ? userRecord?.placeOfBirth : "Unknown"}</Text>
-                </View>
-              </View>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Time of Birth </Text>
-                <View style={styles.userDataContainer}>
-                  <Text style={styles.userDataTextField}>{!userRecord?.isBirthTimeUnknown ? userRecord.birthtime : "Unknown"}</Text>
+                  <Text style={styles.userDataTextField}>{userRecord?.firstName}</Text>
                 </View>
               </View>
             </View>
-          </ScrollView>
-          {/* --- Move all buttons into the ScrollView so they always show --- */}
-            <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
-              <Image source={require('../assets/icons/changeThemeIcon.png')} style={styles.leftIconContainer} />
-              <Text style={styles.buttonText}>Change Color Theme</Text>
-              <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
-              <Image source={require('../assets/icons/changePasseordIcon.png')} style={styles.leftIconContainer} />
-              <Text style={styles.buttonText}>Change Password</Text>
-              <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.profileButton} onPress={handleLogout}>
-              <Image source={require('../assets/icons/logOutIcon.png')} style={styles.leftIconContainer} />
-              <Text style={styles.buttonText}>Logout</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
-              <Image source={require('../assets/icons/deleteAccountIcon.png')} style={styles.leftIconContainer} />
-              <Text style={styles.buttonText}>Delete Account</Text>
-            </TouchableOpacity>
-        </View>
-        <AlertModal
-          visible={showErrorModal}
-          message={errorMessage}
-          onClose={() => setShowErrorModal(false)}
-        />
-      </ImageBackground>
+          </View>
+          <View>
+            <View style={styles.profileInformationContainer}>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}> Last Name </Text>
+                <View style={styles.userDataContainer}>
+                  <Text style={styles.userDataTextField}>{userRecord?.lastName}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+          <View style={styles.profileInformationContainer}>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Email </Text>
+              <View style={styles.userDataContainer}>
+                <Text style={styles.userDataTextField}>{user?.email}</Text>
+              </View>
+            </View>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Date of Birth </Text>
+              <View style={styles.userDataContainer}>
+                <Text style={styles.userDataTextField}>{userRecord?.birthday}</Text>
+              </View>
+            </View>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Pronouns </Text>
+              <PronounToggle
+                selectedIndex={selectedIdx}
+                onChange={setSelectedIdx}
+                clickable={false}
+                style={{ width: '70%', flexWrap: 'wrap', }} />
+            </View>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Place of Birth </Text>
+              <View style={styles.userDataContainer}>
+                <Text style={styles.userDataTextField}>{!userRecord?.isPlaceOfBirthUnknown ? userRecord?.placeOfBirth : "Unknown"}</Text>
+              </View>
+            </View>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Time of Birth </Text>
+              <View style={styles.userDataContainer}>
+                <Text style={styles.userDataTextField}>{!userRecord?.isBirthTimeUnknown ? userRecord.birthtime : "Unknown"}</Text>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+        {/* --- Move all buttons into the ScrollView so they always show --- */}
+          <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
+            <Image source={require('../assets/icons/changeThemeIcon.png')} style={styles.leftIconContainer} />
+            <Text style={styles.buttonText}>Change Color Theme</Text>
+            <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
+            <Image source={require('../assets/icons/changePasseordIcon.png')} style={styles.leftIconContainer} />
+            <Text style={styles.buttonText}>Change Password</Text>
+            <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.profileButton} onPress={handleLogout}>
+            <Image source={require('../assets/icons/logOutIcon.png')} style={styles.leftIconContainer} />
+            <Text style={styles.buttonText}>Logout</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
+            <Image source={require('../assets/icons/deleteAccountIcon.png')} style={styles.leftIconContainer} />
+            <Text style={styles.buttonText}>Delete Account</Text>
+          </TouchableOpacity>
+      </View>
+      <AlertModal
+        visible={showErrorModal}
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
     </View>
   )
 }

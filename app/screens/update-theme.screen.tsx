@@ -1,30 +1,73 @@
 // ChangeThemeScreen.tsx
-import React, { useContext, useRef } from 'react';
-import { View, FlatList, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React, { useContext, useRef, useEffect } from 'react';
+import { View, FlatList, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 import HeaderNav from '../components/headerNav'
-import { ThemeContext, Theme } from '../../themecontext';
+import { ThemeContext } from '../themecontext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ChangeThemeScreen() {
   const { theme, setThemeKey, themes } = useContext(ThemeContext);
   const router = useRouter();
-  const originalKey = useRef(theme.key);
+  const originalKey = useRef<string | null>(null);
+
+  // Set originalKey only once on mount
+  useEffect(() => {
+    if (originalKey.current === null) {
+      originalKey.current = theme.key;
+    }
+  }, []);
 
   const handleSelect = (key: string) => setThemeKey(key);
   const handleApply = () => router.replace('/screens/profile.screen');
   const handleCancel = () => {
-    setThemeKey(originalKey.current);
+    if (originalKey.current) setThemeKey(originalKey.current);
     router.replace('/screens/profile.screen');
   };
 
-  return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+  // Helper to render background
+  function renderBackground(children: React.ReactNode) {
+    if (theme.backgroundType === 'image' && theme.backgroundImage) {
+      return (
+        <ImageBackground
+          source={theme.backgroundImage}
+          style={StyleSheet.absoluteFill}
+          resizeMode="cover"
+        >
+          {children}
+        </ImageBackground>
+      );
+    }
+    if (theme.backgroundType === 'gradient' && theme.gradient) {
+      return (
+        <LinearGradient
+          colors={theme.gradient.colors as [string, string, ...string[]]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: Math.cos((theme.gradient.angle ?? 0) * Math.PI / 180), y: Math.sin((theme.gradient.angle ?? 0) * Math.PI / 180) }}
+          style={StyleSheet.absoluteFill}
+        >
+          {children}
+        </LinearGradient>
+      );
+    }
+    // fallback to solid color
+    return (
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.background }]}>
+        {children}
+      </View>
+    );
+  }
+
+  return renderBackground(
+    <View style={[styles.container, { backgroundColor: 'transparent' }]}>
       <HeaderNav
-        title="Change Theme"
+        title="Change Color Theme"
         leftIconName="arrow-back"
         onLeftPress={handleCancel}
         rightLabel="Apply"
         onRightPress={handleApply}
+        backgroundColor={theme.colors.headerBg} 
+        textColor={theme.colors.headerText}
       />
 
       <FlatList

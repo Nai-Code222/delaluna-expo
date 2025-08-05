@@ -1,5 +1,5 @@
 // app/screens/changePassword.screen.tsx
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   StatusBar,
   StyleSheet,
   Alert,
+  ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -18,6 +19,7 @@ import {
   EmailAuthProvider,
   updatePassword,
 } from 'firebase/auth';
+import { ThemeContext } from '../themecontext';
 
 // Helper to validate new password strength
 function validatePassword(text: string): string {
@@ -37,6 +39,7 @@ export default function UpdatePasswordScreen() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { theme } = useContext(ThemeContext);
 
   const handleCancel = () => {
     router.replace('/screens/profile.screen');
@@ -90,57 +93,84 @@ export default function UpdatePasswordScreen() {
     }
   };
 
-  return (
-    <LinearGradient
-      colors={['#2D1B42', '#3B235A', '#5A3E85']}
-      locations={[0, 0.5, 1]}
-      start={{ x: 0.5, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-      style={styles.background}
-    >
-      <View style={styles.container}>
-        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.title}>Change Password</Text>
-        <View style={styles.spacer} />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Current Password"
-          placeholderTextColor="#fff"
-          secureTextEntry
-          value={currentPassword}
-          onChangeText={setCurrentPassword}
-        />
-        <View style={styles.spacer} />
-
-        <TextInput
-          style={styles.input}
-          placeholder="New Password"
-          placeholderTextColor="#fff"
-          secureTextEntry
-          value={newPassword}
-          onChangeText={setNewPassword}
-        />
-        <View style={styles.spacer} />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm New Password"
-          placeholderTextColor="#fff"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-        <View style={styles.spacer} />
-
-        <TouchableOpacity style={styles.button} onPress={handleChange}>
-          <Text style={styles.buttonText}>Save Password</Text>
-        </TouchableOpacity>
+  // Helper to render background using theme
+  function renderBackground(children: React.ReactNode) {
+    if (theme.backgroundType === 'image' && theme.backgroundImage) {
+      return (
+        <ImageBackground
+          source={theme.backgroundImage}
+          style={styles.background}
+          resizeMode="cover"
+        >
+          {children}
+        </ImageBackground>
+      );
+    }
+    if (theme.backgroundType === 'gradient' && theme.gradient) {
+      return (
+        <LinearGradient
+          colors={theme.gradient.colors as [string, string, ...string[]]}
+          start={{ x: 0, y: 0 }}
+          end={{
+            x: Math.cos((theme.gradient.angle ?? 0) * Math.PI / 180),
+            y: Math.sin((theme.gradient.angle ?? 0) * Math.PI / 180),
+          }}
+          style={styles.background}
+        >
+          {children}
+        </LinearGradient>
+      );
+    }
+    return (
+      <View style={[styles.background, { backgroundColor: theme.colors.background }]}>
+        {children}
       </View>
-    </LinearGradient>
+    );
+  }
+
+  return renderBackground(
+    <View style={styles.container}>
+      <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+        <Text style={styles.cancelButtonText}>Cancel</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.title}>Change Password</Text>
+      <View style={styles.spacer} />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Current Password"
+        placeholderTextColor="#fff"
+        secureTextEntry
+        value={currentPassword}
+        onChangeText={setCurrentPassword}
+      />
+      <View style={styles.spacer} />
+
+      <TextInput
+        style={styles.input}
+        placeholder="New Password"
+        placeholderTextColor="#fff"
+        secureTextEntry
+        value={newPassword}
+        onChangeText={setNewPassword}
+      />
+      <View style={styles.spacer} />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Confirm New Password"
+        placeholderTextColor="#fff"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
+      <View style={styles.spacer} />
+
+      <TouchableOpacity style={styles.button} onPress={handleChange}>
+        <Text style={styles.buttonText}>Save Password</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 

@@ -1,34 +1,69 @@
 // app/home/_layout.tsx
-import React from 'react'
+import React, { useContext } from 'react'
 import { Tabs } from 'expo-router'
-import { Image, StyleSheet, Platform } from 'react-native'
+import { Image, ImageBackground, StyleSheet, Platform, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { ThemeContext } from '../themecontext'
+import { LinearGradient } from 'expo-linear-gradient'
 
 export default function HomeLayout() {
   const insets = useSafeAreaInsets()
-  // define your two base heights
+  const { theme } = useContext(ThemeContext)
   const IOS_TABBAR_BASE_HEIGHT = 40
   const ANDROID_TABBAR_BASE_HEIGHT = 60
-
-  // pick the right one & compute padding
   const isIOS = Platform.OS === 'ios'
   const baseHeight = isIOS
     ? IOS_TABBAR_BASE_HEIGHT + insets.bottom
     : ANDROID_TABBAR_BASE_HEIGHT
   const paddingBottom = isIOS ? insets.bottom : 8
-  
-  return (
+
+  // Helper to render background
+  function renderBackground(children: React.ReactNode) {
+    if (theme.backgroundType === 'image' && theme.backgroundImage) {
+      return (
+        <ImageBackground
+          source={theme.backgroundImage}
+          style={styles.absoluteFill}
+          resizeMode="cover"
+        >
+          {children}
+        </ImageBackground>
+      )
+    }
+    if (theme.backgroundType === 'gradient' && theme.gradient) {
+      return (
+        <LinearGradient
+          colors={theme.gradient.colors as [string, string, ...string[]]}
+          start={{ x: 0, y: 0 }}
+          end={{
+            x: Math.cos((theme.gradient.angle ?? 0) * Math.PI / 180),
+            y: Math.sin((theme.gradient.angle ?? 0) * Math.PI / 180),
+          }}
+          style={styles.absoluteFill}
+        >
+          {children}
+        </LinearGradient>
+      )
+    }
+    return (
+      <View style={[styles.absoluteFill, { backgroundColor: theme.colors.background }]}>
+        {children}
+      </View>
+    )
+  }
+
+  return renderBackground(
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#513877',
+          backgroundColor: theme.colors.headerBg,
           borderTopColor: 'transparent',
           height: baseHeight,
           paddingBottom,
         },
-        tabBarActiveTintColor: '#fff',
-        tabBarInactiveTintColor: '#BCA8F4',
+        tabBarActiveTintColor: theme.colors.headerText,
+        tabBarInactiveTintColor: theme.colors.primary,
       }}
     >
       <Tabs.Screen
@@ -86,5 +121,8 @@ export default function HomeLayout() {
 const styles = StyleSheet.create({
   icon: {
     resizeMode: 'contain',
+  },
+  absoluteFill: {
+    flex: 1,
   },
 })
