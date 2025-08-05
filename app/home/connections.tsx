@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { ImageBackground, StyleSheet, View } from "react-native";
+import { ImageBackground, StyleSheet, View, Text } from "react-native";
 import { ThemeContext } from "../themecontext";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -50,5 +50,16 @@ export default function ConnectionsScreen() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+  },
+  placeholderText: {
+    fontSize: 18,
+    color: "#888",
+    textAlign: "center",
+    marginTop: 20,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
