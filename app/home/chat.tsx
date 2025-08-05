@@ -41,7 +41,11 @@ export default function ChatScreen() {
   }
 
   return renderBackground(
-    <></>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text style={{ color: theme.colors.text, fontSize: 16, opacity: 0.6 }}>
+        No messages yet.
+      </Text>
+    </View>
   );
 }
 
