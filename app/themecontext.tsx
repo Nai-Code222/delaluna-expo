@@ -167,7 +167,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setThemeKeySafe = (key: string) => {
     if (allThemes[key]) {
       setThemeKey(key);
-      AsyncStorage.setItem('themeKey', key).catch(() => {});
+      AsyncStorage.setItem('themeKey', key).catch((err) => {
+        console.error('Failed to persist theme key:', err);
+      });
     }
   };
 
