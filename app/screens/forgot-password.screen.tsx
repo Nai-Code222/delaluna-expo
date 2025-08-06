@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Button, StyleSheet, ImageBackground, TouchableOpacity, Platform, StatusBar } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, ImageBackground, TouchableOpacity, Platform, StatusBar, Alert } from 'react-native';
 import React from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -59,7 +59,12 @@ export default function ForgotPasswordScreen() {
                             const auth = getAuth();
                             sendPasswordResetEmail(auth, email)
                                 .then(() => {
-                                    alert('"If an account with that email exists, a password reset link has been sent.');
+
+                                    Alert.alert(
+                                        "Password Reset", // <-- Custom title
+                                        "If that email is registered, a reset link has been sent.\nIf you don't see it, please check your spam folder.",
+                                        [{ text: "OK" }]
+                                    );
                                     router.replace('/login');
                                 })
                                 .catch((error) => {
