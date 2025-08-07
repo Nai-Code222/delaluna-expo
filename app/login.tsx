@@ -32,6 +32,8 @@ export default function Login() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const { user, initializing } = useAuth();
   const router = useRouter();
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -59,11 +61,35 @@ export default function Login() {
 
 
   const handleLogin = async () => {
+    // Validate email before attempting login
+    if (!email || email.trim() === '' && !password || password.trim() === '') {
+      setEmailError('Email is required.');
+      setPasswordError('Password is required.');
+      return;
+    }else {
+      setEmailError(null);
+      setPasswordError(null);
+    }
+
+    if (!email || email.trim() === '') {
+      setEmailError('Email is required.');
+      return;
+    } else {
+      setEmailError(null);
+    }
+
+    // Validate password before attempting login
+    if (!password || password.trim() === '') {
+      setPasswordError('Password is required.');
+      return;
+    } else {
+      setPasswordError(null);
+    }
+
     try {
       await signInWithEmailAndPassword(auth, email, password)
       // 2. On success, clear attempts
       setLoginAttempts(0)
-      console.log("Current user uid:", getAuth().currentUser?.uid);
 
       router.replace('/home');
 
@@ -75,17 +101,10 @@ export default function Login() {
 
       // if under threshold, show an error modal
       if (loginAttempts < 2) {
-        if (errorCode === 'auth/wrong-password') {
-          alert('Incorrect password. Please try again.');
-        } else if (errorCode === 'auth/user-not-found') {
-          alert('No account found with that email address.');
-        } else if (errorCode === 'auth/invalid-email') {
-          alert('Please enter a valid email address.');
-        } 
-         else if (errorCode === 'auth/missing-password') {
-          alert('Please enter a password.');
-         } else {
-          alert(error.message);
+        if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/invalid-password' || errorCode === 'auth/user-not-found') {
+          Alert.alert(" ", "Incorrect email or password. Please try again.");
+        } else {
+          Alert.alert(" ", error.message);
         }
       }
       // once 3+ is hit, show the “forgot password” alert
@@ -144,16 +163,36 @@ export default function Login() {
                 placeholderTextColor="rgba(255, 255, 255, 0.5)"
                 style={styles.textField}
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={text => {
+                  setEmail(text);
+                  if (!text || text.trim() === '') {
+                    setEmailError('Email is required.');
+                  } else {
+                    setEmailError(null);
+                  }
+                }}
               />
+              {emailError && (
+                <Text style={styles.errorText}>{emailError}</Text>
+              )}
               <TextInput
                 placeholder="Password"
                 placeholderTextColor="rgba(255, 255, 255, 0.5)"
                 secureTextEntry
                 style={styles.textField}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={text => {
+                  setPassword(text);
+                  if (!text || text.trim() === '') {
+                    setPasswordError('Password is required.');
+                  } else {
+                    setPasswordError(null);
+                  }
+                }}
               />
+              {passwordError && (
+                <Text style={styles.errorText}>{passwordError}</Text>
+              )}
               <TouchableOpacity>
                 <Text style={styles.forgotPassword} onPress={() => router.replace('/screens/forgot-password.screen')}>Forgot Password?</Text>
               </TouchableOpacity>
@@ -189,22 +228,23 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   card: {
-    width: '100%',
-    height: '45%',
-    ...Platform.select({
-      ios: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 25,
-      },
-      android: {
-        backgroundColor: 'rgba(255, 255, 255, 0.24)',
-        borderRadius: 20,
-      },
-    }),
-    gap: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-  },
+  width: '100%',
+  flexGrow: 1,
+  ...Platform.select({
+    ios: {
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      borderRadius: 25,
+    },
+    android: {
+      backgroundColor: 'rgba(255, 255, 255, 0.24)',
+      borderRadius: 20,
+    },
+  }),
+  gap: 25,
+  paddingHorizontal: 20,
+  paddingVertical: 24,
+  justifyContent: 'space-between', // Important!
+},
   logo: {
     width: '70%',
     height: '50%',
@@ -287,5 +327,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Poppins',
     fontWeight: '600',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 15,
+    marginBottom: 10,
+    marginLeft: 4,
   },
 })
