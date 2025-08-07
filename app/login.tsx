@@ -66,7 +66,7 @@ export default function Login() {
       setEmailError('Email is required.');
       setPasswordError('Password is required.');
       return;
-    }else {
+    } else {
       setEmailError(null);
       setPasswordError(null);
     }
