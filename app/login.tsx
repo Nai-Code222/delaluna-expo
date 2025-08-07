@@ -62,7 +62,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     // Validate email before attempting login
-    if (!email || email.trim() === '' && !password || password.trim() === '') {
+    if ((!email || email.trim() === '') && (!password || password.trim() === '')) {
       setEmailError('Email is required.');
       setPasswordError('Password is required.');
       return;
