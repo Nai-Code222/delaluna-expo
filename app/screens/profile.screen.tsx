@@ -18,6 +18,7 @@ import type { DocumentData } from 'firebase/firestore';
 import { useIsFocused } from '@react-navigation/native';
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { format } from 'date-fns';
 const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 export default function ProfileScreen() {
@@ -225,7 +226,15 @@ export default function ProfileScreen() {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Date of Birth </Text>
               <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{userRecord?.birthday}</Text>
+                <Text style={styles.userDataTextField}>
+                  {userRecord?.birthday
+                    ? (() => {
+                        // Display as MM/dd/yyyy
+                        const dateObj = new Date(userRecord.birthday);
+                        return format(dateObj, 'MM/dd/yyyy');
+                      })()
+                    : ''}
+                </Text>
               </View>
             </View>
             <View style={styles.fieldContainer}>

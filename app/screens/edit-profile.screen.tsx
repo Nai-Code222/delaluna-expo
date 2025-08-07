@@ -390,7 +390,13 @@ export default function EditProfileScreen() {
         <Text style={styles.label}>Birthday</Text>
         <TouchableOpacity onPress={() => setShowDatePicker(true)}>
           <Text style={styles.input}>
-            {birthday ? birthday : 'Select your birthdate'}
+            {birthday
+              ? (() => {
+                  // Display as MM/dd/yyyy
+                  const dateObj = new Date(birthday);
+                  return format(dateObj, 'MM/dd/yyyy');
+                })()
+              : 'Select your birthdate'}
           </Text>
         </TouchableOpacity>
         <DateTimePickerModal
@@ -400,7 +406,8 @@ export default function EditProfileScreen() {
           maximumDate={new Date()}
           date={birthday ? new Date(birthday) : new Date()}
           onConfirm={(date: Date) => {
-            const formatted = format(date, 'yyyy-MM-dd');
+            // Save as MM/dd/yyyy
+            const formatted = format(date, 'MM/dd/yyyy');
             setBirthday(formatted);
             setShowDatePicker(false);
           }}
