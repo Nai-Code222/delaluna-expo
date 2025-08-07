@@ -406,9 +406,9 @@ export default function EditProfileScreen() {
           maximumDate={new Date()}
           date={birthday ? new Date(birthday) : new Date()}
           onConfirm={(date: Date) => {
-            // Save as MM/dd/yyyy
-            const formatted = format(date, 'MM/dd/yyyy');
-            setBirthday(formatted);
+            // Save as ISO format (yyyy-MM-dd)
+            const isoFormatted = format(date, 'yyyy-MM-dd');
+            setBirthday(isoFormatted);
             setShowDatePicker(false);
           }}
           onCancel={() => setShowDatePicker(false)}
