@@ -84,7 +84,7 @@ export default function UpdatePasswordScreen() {
       await reauthenticateWithCredential(user, cred);
       await updatePassword(user, next);
       Alert.alert('Success', 'Your password has been changed.');
-      await signOut(auth)
+      await signOut(auth);
       router.replace('/welcome')
     } catch (error: any) {
       console.error(error);
