@@ -1,32 +1,28 @@
 // /screens/edit-profile.screen.tsx
 import React, { useState, useEffect, useContext } from 'react';
-import { Alert, FlatList, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
+import { Alert, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import {
   View,
   Text,
   TextInput,
-  Pressable,
   StyleSheet,
   ImageBackground,
   Switch,
   Platform,
-  ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import PronounToggle from '../components/utils/pronounSwitch';
-import HeaderNav from '../components/headerNav';
-import { GlassButton } from '../components/utils/GlassButton';
+import HeaderNav from '../components/utils/headerNav';
+import { GlassButton } from '../components/buttons/GlassButton';
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
 import { updateUserDoc } from '../service/userService';
-import UserRecordDefault from '../model/UserRecord'
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { format } from 'date-fns';
-import LocationAutocomplete from '../components/sign up/LocationAutocomplete';
 import EditProfileLocationAutocomplete from '../components/sign up/EditProfileLocationAutocomplete';
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
+import PronounDropdown from '../components/buttons/PronounDropdown';
 const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 type Params = {
@@ -371,10 +367,9 @@ export default function EditProfileScreen() {
           onChangeText={setLastName}
         />
         {lastNameError && <Text style={styles.errorText}>{lastNameError}</Text>}
-
         {/* Email */}
         <Text style={styles.label}>Email</Text>
-        <View style={styles.emailRow}>
+        <View>
           <TextInput
             style={styles.input}
             keyboardType="email-address"
@@ -383,9 +378,8 @@ export default function EditProfileScreen() {
             onChangeText={setEmail}
           />
           {checkingEmail && <ActivityIndicator style={styles.loader} color="#fff" />}
+           {emailError && <Text style={styles.errorText}>{emailError}</Text>}
         </View>
-        {emailError && <Text style={styles.errorText}>{emailError}</Text>}
-
         {/* Birthday */}
         <Text style={styles.label}>Birthday</Text>
         <TouchableOpacity onPress={() => setShowDatePicker(true)}>
@@ -417,13 +411,10 @@ export default function EditProfileScreen() {
 
         {/* Pronouns */}
         <Text style={styles.label}>Pronouns</Text>
-        <PronounToggle
-          selectedIndex={PRONOUNS.indexOf(pronoun)}
-          onChange={i => setPronoun(PRONOUNS[i])}
-          clickable={true}
-          style={{ width: '100%', height: '8%' }}
-        />
-
+       <PronounDropdown
+         value={pronoun}
+         onChange={setPronoun}
+       />
 
         {/* Place of Birth */}
         <Text style={styles.label}>Place of Birth</Text>
@@ -432,7 +423,6 @@ export default function EditProfileScreen() {
             value={placeTextInput}
             onChange={text => {
               setPlaceTextInput(text);
-              // clear any previous error when they type
               setPlaceError(null);
               setLocationError(null);
             }}
@@ -475,8 +465,6 @@ export default function EditProfileScreen() {
           />
           <Text style={styles.toggleLabel}>I don’t know</Text>
         </View>
-
-
         {/* Time of Birth */}
         <Text style={styles.label}>Time of Birth</Text>
         {!isBirthTimeUnknown ? (
@@ -581,5 +569,38 @@ const styles = StyleSheet.create({
   },
   autocompleteList: {
     // optionally tweak width, shadows, etc.
+  },
+  dropdown: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  placeholderStyle: {
+    color: '#fff',
+  },
+  selectedTextStyle: {
+    color: '#fff',
+  },
+  inputSearchStyle: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  searchContainerStyle: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  searchTextInputStyle: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
 });

@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { auth } from '../../firebaseConfig'
 import { router } from 'expo-router'
 import AuthContext from '@/app/backend/AuthContext'
-import HeaderNav from '../components/headerNav'
+import HeaderNav from '../components/utils/headerNav'
 import ProfileScreen from '../screens/profile.screen'
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';

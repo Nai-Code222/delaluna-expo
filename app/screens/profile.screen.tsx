@@ -3,13 +3,12 @@ import React, { useContext, useEffect, useState } from 'react'
 import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, TextInput, Platform, ScrollView, Alert } from 'react-native'
 import { useAuth } from '@/app/backend/AuthContext'
 import { router } from 'expo-router'
-import HeaderNav from '../components/headerNav'
+import HeaderNav from '../components/utils/headerNav'
 import { auth } from '../../firebaseConfig'
 import { signOut } from 'firebase/auth'
 import { StatusBar } from 'expo-status-bar'
 import LoadingScreen from '@/app/components/utils/LoadingScreen'
 import AlertModal from '@/app/components/alerts/AlertModal'
-import PronounToggle from '../components/utils/pronounSwitch'
 import { getUserDocRef } from '../service/userService'
 import { deleteDoc, getDoc } from 'firebase/firestore'
 import { UserRecord } from '@/app/model/UserRecord'
@@ -18,6 +17,8 @@ import type { DocumentData } from 'firebase/firestore';
 import { useIsFocused } from '@react-navigation/native';
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { format } from 'date-fns';
+
 const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 export default function ProfileScreen() {
@@ -45,15 +46,10 @@ export default function ProfileScreen() {
 
     try {
       console.log("Current auth UID:", auth.currentUser?.email);
-
-
       const ref = getUserDocRef(user.uid);
       console.log("Fetching user doc from:", ref.path);
-
       const docSnap = await getDoc(ref);
       console.log("doc: ", docSnap)
-
-
 
       if (!docSnap.exists()) {
         throw new Error("User profile does not exist in Firestore.");
@@ -73,7 +69,6 @@ export default function ProfileScreen() {
     }
   };
 
-
   useEffect(() => {
     if (initializing) return;
     if (!user) {
@@ -83,9 +78,6 @@ export default function ProfileScreen() {
       getUserRecord();
     }
   }, [user, initializing]);
-
-
-
 
   if (initializing || !userRecord) {
     return <LoadingScreen message="Loading profile..." progress={0} />;
@@ -112,15 +104,12 @@ export default function ProfileScreen() {
   const goToUpdateTheme = () => {
     router.replace('/screens/update-theme.screen');
   }
-
   const goToChangePassword = () => {
     router.replace('/screens/update-password.screen');
   };
-
   const backToPreviousPage = () => {
     router.replace('/home')
   };
-
   const handleLogout = async () => {
     Alert.alert(
       "Confirm Logout",
@@ -146,7 +135,6 @@ export default function ProfileScreen() {
       ]
     );
   };
-
   const handleDeleteAccount = async () => {
     Alert.alert(
       "Confirm Deletion",
@@ -209,6 +197,18 @@ export default function ProfileScreen() {
     );
   }
 
+  // Helper to format birthday
+  function getFormattedBirthday(birthday?: string) {
+    if (!birthday) return '';
+    // Try to parse and format
+    const dateObj = new Date(birthday);
+    if (!isNaN(dateObj.getTime())) {
+      return format(dateObj, 'MM/dd/yyyy');
+    }
+    // fallback: show as-is
+    return birthday;
+  }
+
   return renderBackground(
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -220,30 +220,25 @@ export default function ProfileScreen() {
         onRightPress={goToEditProfile}
       />
       <View style={styles.flexFill}>
-        <ScrollView
-          contentContainerStyle={styles.profileContentContainer}
-          showsVerticalScrollIndicator={false}
+        <View
+          style={styles.profileContentContainer}
         >
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Your Profile</Text>
           </View>
-          <View>
-            <View style={styles.profileInformationContainer}>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}> First Name </Text>
-                <View style={styles.userDataContainer}>
-                  <Text style={styles.userDataTextField}>{userRecord?.firstName}</Text>
-                </View>
+          <View style={styles.profileInformationContainer}>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>First Name</Text>
+              <View style={styles.userDataContainer}>
+                <Text style={styles.userDataTextField}>{userRecord?.firstName}</Text>
               </View>
             </View>
           </View>
-          <View>
-            <View style={styles.profileInformationContainer}>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}> Last Name </Text>
-                <View style={styles.userDataContainer}>
-                  <Text style={styles.userDataTextField}>{userRecord?.lastName}</Text>
-                </View>
+          <View style={styles.profileInformationContainer}>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Last Name</Text>
+              <View style={styles.userDataContainer}>
+                <Text style={styles.userDataTextField}>{userRecord?.lastName}</Text>
               </View>
             </View>
           </View>
@@ -254,33 +249,43 @@ export default function ProfileScreen() {
                 <Text style={styles.userDataTextField}>{user?.email}</Text>
               </View>
             </View>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Date of Birth </Text>
-              <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{userRecord?.birthday}</Text>
+            <View style={styles.profileInformationContainer}>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Date of Birth </Text>
+                <View style={styles.userDataContainer}>
+                  <Text style={styles.userDataTextField}>
+                    {getFormattedBirthday(userRecord?.birthday)}
+                  </Text>
+                </View>
               </View>
             </View>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Pronouns </Text>
-              <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{userRecord?.pronouns}</Text>
+            <View style={styles.profileInformationContainer}>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Pronouns </Text>
+                <View style={styles.userDataContainer}>
+                  <Text style={styles.userDataTextField}>{userRecord?.pronouns}</Text>
+                </View>
               </View>
             </View>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Place of Birth </Text>
-              <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{!userRecord?.isPlaceOfBirthUnknown ? userRecord?.placeOfBirth : "Unknown"}</Text>
+            <View style={styles.profileInformationContainer}>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Place of Birth </Text>
+                <View style={styles.userDataContainer}>
+                  <Text style={styles.userDataTextField}>{!userRecord?.isPlaceOfBirthUnknown ? userRecord?.placeOfBirth : "Unknown"}</Text>
+                </View>
               </View>
             </View>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Time of Birth </Text>
-              <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{!userRecord?.isBirthTimeUnknown ? userRecord.birthtime : "Unknown"}</Text>
+            <View style={styles.profileInformationContainer}>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Time of Birth </Text>
+                <View style={styles.userDataContainer}>
+                  <Text style={styles.userDataTextField}>{!userRecord?.isBirthTimeUnknown ? userRecord.birthtime : "Unknown"}</Text>
+                </View>
               </View>
             </View>
           </View>
-        </ScrollView>
-        {/* --- Move all buttons into the ScrollView so they always show --- */}
+        </View>
+        <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
             <Image source={require('../assets/icons/changeThemeIcon.png')} style={styles.leftIconContainer} />
             <Text style={styles.buttonText}>Change Color Theme</Text>
@@ -295,10 +300,11 @@ export default function ProfileScreen() {
             <Image source={require('../assets/icons/logOutIcon.png')} style={styles.leftIconContainer} />
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
-            <Image source={require('../assets/icons/deleteAccountIcon.png')} style={styles.leftIconContainer} />
-            <Text style={styles.buttonText}>Delete Account</Text>
-          </TouchableOpacity>
+        </View>
+        <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
+          <Image source={require('../assets/icons/deleteAccountIcon.png')} style={styles.leftIconContainer} />
+          <Text style={styles.buttonText}>Delete Account</Text>
+        </TouchableOpacity>
       </View>
       <AlertModal
         visible={showErrorModal}
@@ -315,11 +321,11 @@ const styles = StyleSheet.create({
   flexFill: { flex: 1, paddingBottom: 10, width: '100%' },
   profileContentContainer: {
     flexGrow: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     alignItems: 'flex-start',
     width: '100%',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: 5,
+    paddingHorizontal: 15,
   },
   titleContainer: {
     borderBottomColor: '#fff',
@@ -341,8 +347,14 @@ const styles = StyleSheet.create({
     width: '70%',
     paddingHorizontal: 10,
     paddingVertical: 5,
-    
-
+  },
+  buttonContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    padding: 10,
   },
   fieldContainer: {
     display: 'flex',
@@ -351,13 +363,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
-
   },
   userDataTextField: {
     color: '#fff',
-    fontSize: 16,
     marginVertical: 5,
     width: '100%',
+    fontSize: 15,
+    marginTop: 5,
+    textAlign: 'center',
   },
   userDataPronounContainer: {
     width: '70%',
@@ -387,30 +400,30 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     marginTop: 10,
-    width: '30%',
+    width: '50%',
     textAlign: 'center',
     paddingHorizontal: 5,
   },
   profileButton: {
     display: 'flex',
     flexDirection: 'row',
-    padding: 16,
+    padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
+    gap: 10,
     width: '100%',
     color: '#fff',
-    height: 70,
+    height: 50,
   },
   profileButtonWithIcons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     display: 'flex',
-    padding: 16,
     width: '100%',
     color: '#fff',
-    height: 70,
+    height: 60,
     alignItems: 'center',
+    gap: 10,
   },
   leftIconContainer: {
     width: 20,
@@ -424,21 +437,19 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   deleteAccountButton: {
-    marginTop: 5, // more space above for separation
-    paddingHorizontal: 0, // flush with sides
+    marginTop: 5, 
     backgroundColor: '#ff4757',
-    borderRadius: 8, // slightly more rounded for modern look
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    minHeight: 50, // more touchable, but not too tall
-    height: undefined, // let content define height
+    minHeight: 50,
+    height: undefined,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.18,
     shadowRadius: 4,
-    elevation: 2, // subtle shadow for Android
+    elevation: 2,
   },
   buttonText: {
     color: '#fff',

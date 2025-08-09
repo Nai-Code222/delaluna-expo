@@ -2,7 +2,7 @@
 import React, { useContext, useRef, useEffect } from 'react';
 import { View, FlatList, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
-import HeaderNav from '../components/headerNav'
+import HeaderNav from '../components/utils/headerNav'
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
 
