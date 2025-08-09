@@ -83,7 +83,30 @@ export default function Login() {
       setPasswordError('Password is required.');
       return;
     } else {
-      setPasswordError(null);
+  // Helper functions for validation
+  const validateEmail = (email: string): string | null => {
+    if (!email || email.trim() === '') {
+      return 'Email is required.';
+    }
+    return null;
+  };
+
+  const validatePassword = (password: string): string | null => {
+    if (!password || password.trim() === '') {
+      return 'Password is required.';
+    }
+    return null;
+  };
+
+  const handleLogin = async () => {
+    const emailErr = validateEmail(email);
+    const passwordErr = validatePassword(password);
+
+    setEmailError(emailErr);
+    setPasswordError(passwordErr);
+
+    if (emailErr || passwordErr) {
+      return;
     }
 
     try {
