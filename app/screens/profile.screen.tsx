@@ -1,6 +1,6 @@
 // profile screen
 import React, { useContext, useEffect, useState } from 'react'
-import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, TextInput, Platform, ScrollView } from 'react-native'
+import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, TextInput, Platform, ScrollView, Alert } from 'react-native'
 import { useAuth } from '@/app/backend/AuthContext'
 import { router } from 'expo-router'
 import HeaderNav from '../components/headerNav'
@@ -122,24 +122,56 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth)
-      router.replace('/welcome')
-    } catch (error) {
-      setErrorMessage('Logout failed. Please try again.')
-      setShowErrorModal(true)
-    }
+    Alert.alert(
+      "Confirm Logout",
+      "Are you sure you want to log out?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Log Out",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await signOut(auth)
+              router.replace('/welcome')
+            } catch (error) {
+              setErrorMessage('Logout failed. Please try again.')
+              setShowErrorModal(true)
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleDeleteAccount = async () => {
-    try {
-      deleteDoc(getUserDocRef(user?.uid || ''))
-      await user?.delete()
-      router.replace('/welcome')
-    } catch (error) {
-      setErrorMessage('Account deletion failed. Please try again.')
-      setShowErrorModal(true)
-    }
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete your account?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              deleteDoc(getUserDocRef(user?.uid || ''))
+              await user?.delete()
+              router.replace('/welcome')
+            } catch (error) {
+              setErrorMessage('Account deletion failed. Please try again.')
+              setShowErrorModal(true)
+            }
+          }
+        }
+      ]
+    );
   };
 
   // Helper to render background
@@ -230,11 +262,9 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Pronouns </Text>
-              <PronounToggle
-                selectedIndex={selectedIdx}
-                onChange={setSelectedIdx}
-                clickable={false}
-                style={{ width: '70%', flexWrap: 'wrap', }} />
+              <View style={styles.userDataContainer}>
+                <Text style={styles.userDataTextField}>{userRecord?.pronouns}</Text>
+              </View>
             </View>
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Place of Birth </Text>
@@ -308,13 +338,10 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   userDataContainer: {
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#8e44ad',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     width: '70%',
     paddingHorizontal: 10,
     paddingVertical: 5,
+    
 
   },
   fieldContainer: {
@@ -322,8 +349,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     padding: 10,
+
   },
   userDataTextField: {
     color: '#fff',

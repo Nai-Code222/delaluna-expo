@@ -18,7 +18,9 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
   updatePassword,
+  signOut,
 } from 'firebase/auth';
+
 import { ThemeContext } from '../themecontext';
 
 // Helper to validate new password strength
@@ -81,8 +83,9 @@ export default function UpdatePasswordScreen() {
       const cred = EmailAuthProvider.credential(user.email, curr);
       await reauthenticateWithCredential(user, cred);
       await updatePassword(user, next);
-      Alert.alert('Success', 'Your password has been changed.');
-      router.replace('/screens/profile.screen');
+      Alert.alert('Success', 'Your password has been changed.', [
+        { text: 'OK', onPress: async () => { await signOut(auth); router.replace('/welcome'); } },
+      ]);
     } catch (error: any) {
       console.error(error);
       const message =

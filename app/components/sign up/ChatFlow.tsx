@@ -16,6 +16,7 @@ import { auth } from '../../../firebaseConfig'
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
 import PolicyModal from './PolicyModals';
 import { termsAndConditions, privacyPolicy } from '../../assets/legal/legalTexts';
+import { format as formatDate } from 'date-fns';
 
 
 
@@ -231,7 +232,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
       display = "I don't know";
     }
     if (s.inputType === 'date' && raw instanceof Date) {
-      display = raw.toLocaleDateString();
+      display = formatDate(raw, 'MM/dd/yyyy');
     }
     if (s.inputType === 'time') {
       display = answers.birthtimeUnknown
@@ -363,7 +364,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                     >
                       <Text style={styles.datePickerText}>
                         {answers.birthday
-                          ? answers.birthday.toLocaleDateString()
+                          ? formatDate(answers.birthday, 'MM/dd/yyyy')
                           : 'Select your birthdate'}
                       </Text>
                     </TouchableOpacity>
