@@ -474,18 +474,9 @@ export default function EditProfileScreen() {
         </View>
       </KeyboardAvoidingView>
       {showSuccessAlert && (
-        <View style={{
-          position: 'absolute',
-          top: 60,
-          left: 20,
-          right: 20,
-          backgroundColor: 'rgba(0,0,0,0.85)',
-          borderRadius: 12,
-          padding: 18,
-          zIndex: 9999,
-          alignItems: 'center'
-        }}>
-          <Text style={{ color: '#fff', fontSize: 16, textAlign: 'center' }}>
+        <View style={styles.successAlertDefault}>
+          <Text style={styles.successCheckDefault}>✓</Text>
+          <Text style={styles.successAlertTextDefault}>
             Profile updated successfully!
           </Text>
         </View>
@@ -619,5 +610,35 @@ pwdBtnText: { color: '#fff', fontWeight: '700' },
     borderRadius: 8,
     paddingHorizontal: 12,
     backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  successAlertDefault: {
+    position: 'absolute',
+    bottom: 60,
+    left: 0,
+    right: 0,
+    alignItems: 'center', // Center horizontally
+    justifyContent: 'center',
+    backgroundColor: '#222',
+    borderRadius: 16,
+    padding: 18,
+    zIndex: 9999,
+    flexDirection: 'row',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  successCheckDefault: {
+    fontSize: 26,
+    color: '#6FFFE9',
+    fontWeight: 'bold',
+    marginRight: 10,
+  },
+  successAlertTextDefault: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
