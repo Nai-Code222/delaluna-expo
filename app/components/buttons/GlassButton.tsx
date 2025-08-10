@@ -8,7 +8,7 @@ export const GlassButton: React.FC<{
 }> = ({ title, onPress }) => (
   <Pressable onPress={onPress}>
     <LinearGradient
-      colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0)']}
+      colors={['rgba(255,255,255,0.5)', 'rgba(255, 255, 255, 0.07)']}
       locations={[0.0115, 0.9891]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
@@ -38,3 +38,5 @@ const styles = StyleSheet.create<{
     fontWeight: '600',
   },
 });
+
+export default GlassButton;

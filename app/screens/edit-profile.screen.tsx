@@ -14,8 +14,6 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import HeaderNav from '../components/utils/headerNav';
 import { GlassButton } from '../components/buttons/GlassButton';
-import { fetchSignInMethodsForEmail } from 'firebase/auth';
-import { auth } from '../../firebaseConfig';
 import { updateUserDoc } from '../service/userService';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { format } from 'date-fns';
@@ -34,7 +32,6 @@ type Params = {
   isBirthTimeUnknown: string;
   placeOfBirth: string;
   isPlaceOfBirthUnknown: string;
-  email: string;
   userID: string;
 };
 
@@ -46,7 +43,6 @@ export default function EditProfileScreen() {
   const original = {
     firstName: params.firstName,
     lastName: params.lastName,
-    email: params.email,
     pronouns: params.pronouns,
     birthday: params.birthday,
     birthtime: params.birthtime,
@@ -59,9 +55,6 @@ export default function EditProfileScreen() {
   const [firstName, setFirstName] = useState(params.firstName);
   const [lastName, setLastName] = useState(params.lastName);
   const [nameError, setNameError] = useState<string | null>(null);
-  const [email, setEmail] = useState(params.email);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [checkingEmail, setCheckingEmail] = useState(false);
   const [pronoun, setPronoun] = useState(params.pronouns);
   const [birthday, setBirthday] = useState(params.birthday);
   const [birthdayError, setBirthdayError] = useState<string | null>(null);
@@ -79,12 +72,16 @@ export default function EditProfileScreen() {
   const [placeTextInput, setPlaceTextInput] = useState(placeOfBirth);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+
+  const [askPassword, setAskPassword] = useState(false);
+  const [pwd, setPwd] = useState('');
+  const [saving, setSaving] = useState(false);
 
 
   const current = {
     firstName,
     lastName,
-    email,
     pronouns: pronoun,
     birthday,
     birthtime: timeOfBirth,
@@ -97,7 +94,6 @@ export default function EditProfileScreen() {
   useEffect(() => {
     setFirstName(params.firstName);
     setLastName(params.lastName);
-    setEmail(params.email);
     setPronoun(params.pronouns);
     setBirthday(params.birthday);
     setTimeOfBirth(params.birthtime);
@@ -105,39 +101,12 @@ export default function EditProfileScreen() {
     setPlaceOfBirth(params.placeOfBirth);
     setPlaceUnknown(params.isPlaceOfBirthUnknown === 'true');
     // clear errors
-    setEmailError(null);
     setBirthdayError(null);
+    setNameError(null);
     setTimeError(null);
     setPlaceError(null);
   }, []);
-
-  useEffect(() => {
-    if (!email) {
-      setEmailError(null);
-      return;
-    }
-    const formatOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    if (!formatOk) {
-      setEmailError('Invalid email address');
-      return;
-    }
-    let active = true;
-    setCheckingEmail(true);
-
-    fetchSignInMethodsForEmail(auth, email)
-      .then(methods => {
-        if (!active) return;
-        setEmailError(methods.length ? 'Email already in use' : null);
-      })
-      .catch(() => {
-        if (active) setEmailError('Error checking email');
-      })
-      .finally(() => {
-        if (active) setCheckingEmail(false);
-      });
-    return () => { active = false; };
-  }, [email]);
-
+  
   // Birthday validation: not future, at least 18
   useEffect(() => {
     if (!birthday) {
@@ -174,7 +143,6 @@ export default function EditProfileScreen() {
       setTimeError(null);
     }
   }, [timeOfBirth, birthday, isBirthTimeUnknown]);
-
 
   // Place validation: required unless unknown
   useEffect(() => {
@@ -257,51 +225,43 @@ export default function EditProfileScreen() {
     );
   };
 
-  // Save handler: block if any errors or email check pending
   const handleSave = async () => {
-    if (
-      nameError ||
-      lastNameError ||
-      emailError ||
-      checkingEmail ||
-      birthdayError ||
-      timeError ||
-      placeError
-    ) {
+    if (nameError || lastNameError || birthdayError || timeError || placeError) {
       return;
     }
 
-    // 2. build a list of changed fields
-    const changes = Object.keys(current).reduce(
-      (acc, key) => {
-        // TypeScript: key is keyof typeof original & keyof typeof current
-        const k = key as keyof typeof original;
-        if (current[k] !== original[k]) {
-          acc.push({ field: k, value: current[k] });
-        }
-        return acc;
-      },
-      [] as { field: string; value: any }[]
-    );
+    const changes = Object.keys(current).reduce((acc, key) => {
+      const k = key as keyof typeof original;
+      if (current[k] !== original[k]) acc.push({ field: k, value: current[k] });
+      return acc;
+    }, [] as { field: string; value: any }[]);
 
-    // 3. if no changes, alert and go back
-    if (changes.length === 0) {
-      Alert.alert('No changes made', undefined, [{ text: 'OK', onPress: () => router.replace('/screens/profile.screen') }]);
+    if (!changes.length) {
+      setShowSuccessAlert(true);
+      setTimeout(() => {
+        setShowSuccessAlert(false);
+        router.replace('/screens/profile.screen');
+      }, 1500);
       return;
     }
-
-    // 4. otherwise turn into an update object
-    const updateObj = Object.fromEntries(changes.map(c => [c.field, c.value]));
-    console.log("object: ", updateObj)
 
     try {
-      await updateUserDoc(userID, updateObj);
-      router.replace('/screens/profile.screen');
-    } catch {
-      Alert.alert('Save failed', 'Please try again.');
-    }
+      setSaving(true);
+      const updateObj = Object.fromEntries(changes.map(c => [c.field, c.value]));
 
-  }
+      await updateUserDoc(userID, updateObj);
+      setShowSuccessAlert(true);
+      setTimeout(() => {
+        setShowSuccessAlert(false);
+        router.replace('/screens/profile.screen');
+      }, 1500);
+    } catch (e) {
+      console.error(e);
+      Alert.alert('Save failed', 'Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Helper to render background using theme
   function renderBackground(children: React.ReactNode) {
@@ -367,29 +327,17 @@ export default function EditProfileScreen() {
           onChangeText={setLastName}
         />
         {lastNameError && <Text style={styles.errorText}>{lastNameError}</Text>}
-        {/* Email */}
-        <Text style={styles.label}>Email</Text>
-        <View>
-          <TextInput
-            style={styles.input}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-          {checkingEmail && <ActivityIndicator style={styles.loader} color="#fff" />}
-           {emailError && <Text style={styles.errorText}>{emailError}</Text>}
-        </View>
+
         {/* Birthday */}
         <Text style={styles.label}>Birthday</Text>
         <TouchableOpacity onPress={() => setShowDatePicker(true)}>
           <Text style={styles.input}>
             {birthday
               ? (() => {
-                  // Display as MM/dd/yyyy
-                  const dateObj = new Date(birthday);
-                  return format(dateObj, 'MM/dd/yyyy');
-                })()
+                // Display as MM/dd/yyyy
+                const dateObj = new Date(birthday);
+                return format(dateObj, 'MM/dd/yyyy');
+              })()
               : 'Select your birthdate'}
           </Text>
         </TouchableOpacity>
@@ -400,8 +348,7 @@ export default function EditProfileScreen() {
           maximumDate={new Date()}
           date={birthday ? new Date(birthday) : new Date()}
           onConfirm={(date: Date) => {
-            // Save as ISO format (yyyy-MM-dd)
-            const isoFormatted = format(date, 'yyyy-MM-dd');
+            const isoFormatted = format(date, 'MM-dd-yyyy');
             setBirthday(isoFormatted);
             setShowDatePicker(false);
           }}
@@ -411,10 +358,11 @@ export default function EditProfileScreen() {
 
         {/* Pronouns */}
         <Text style={styles.label}>Pronouns</Text>
-       <PronounDropdown
-         value={pronoun}
-         onChange={setPronoun}
-       />
+        <PronounDropdown
+          value={pronoun}
+          onChange={setPronoun}
+        />
+
 
         {/* Place of Birth */}
         <Text style={styles.label}>Place of Birth</Text>
@@ -426,17 +374,7 @@ export default function EditProfileScreen() {
               setPlaceError(null);
               setLocationError(null);
             }}
-            onSelect={item => {
-              const { name, city, state, country } = item.properties;
-              const label = [name, city, state, country]
-                .filter(Boolean)
-                .join(', ');
-              setPlaceTextInput(label);
-              setPlaceOfBirth(label);
-              setPlaceUnknown(false);
-              setPlaceError(null);
-              setLocationError(null);
-            }}
+            onSelect={handlePlaceSelect}
             fetchSuggestions={q =>
               fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`)
                 .then(res => res.json())
@@ -473,14 +411,14 @@ export default function EditProfileScreen() {
               <Text style={styles.input}>
                 {timeOfBirth
                   ? (() => {
-                      // Show time in hh:mm a format
-                      const [h, m] = timeOfBirth.split(':').map(Number);
-                      if (isNaN(h) || isNaN(m)) return timeOfBirth;
-                      const date = new Date();
-                      date.setHours(h);
-                      date.setMinutes(m);
-                      return format(date, 'hh:mm a');
-                    })()
+                    // Show time in hh:mm a format
+                    const [h, m] = timeOfBirth.split(':').map(Number);
+                    if (isNaN(h) || isNaN(m)) return timeOfBirth;
+                    const date = new Date();
+                    date.setHours(h);
+                    date.setMinutes(m);
+                    return format(date, 'hh:mm a');
+                  })()
                   : 'Select time'}
               </Text>
             </TouchableOpacity>
@@ -528,24 +466,72 @@ export default function EditProfileScreen() {
           />
           <Text style={styles.toggleLabel}>I don’t know</Text>
         </View>
+        <View style={styles.saveBttnContainer}>
+          <GlassButton
+            title="Save Changes"
+            onPress={handleSave}
+          />
+        </View>
       </KeyboardAvoidingView>
-      <View style={[styles.saveBttnContainer, { position: 'absolute', bottom: 40, left: 0, right: 0, alignSelf: 'center' }]}>
-        <GlassButton
-          title="Save Changes"
-          onPress={handleSave}
-        />
-      </View>
+      {showSuccessAlert && (
+        <View style={{
+          position: 'absolute',
+          top: 60,
+          left: 20,
+          right: 20,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          borderRadius: 12,
+          padding: 18,
+          zIndex: 9999,
+          alignItems: 'center'
+        }}>
+          <Text style={{ color: '#fff', fontSize: 16, textAlign: 'center' }}>
+            Profile updated successfully!
+          </Text>
+        </View>
+      )}
+      {askPassword && (
+  <View style={styles.pwdOverlay}>
+    <View style={styles.pwdBox}>
+      <Text style={styles.pwdTitle}>Re-authenticate</Text>
+      <Text style={styles.pwdSubtitle}>Please enter your password to update your email.</Text>
+      <TextInput
+        style={styles.pwdInput}
+        secureTextEntry
+        placeholder="Password"
+        value={pwd}
+        onChangeText={setPwd}
+      />
+      <TouchableOpacity
+        style={styles.pwdBtn}
+        onPress={() => {
+          setAskPassword(false);
+          handleSave();
+        }}
+      >
+        <Text style={styles.pwdBtnText}>Continue</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+)}
     </React.Fragment>
   );
 }
 
 const styles = StyleSheet.create({
   bg: { flex: 1, width: '100%' },
-  container: { padding: 20, paddingBottom: 60 },
+  container: { 
+    padding: 20, 
+    width: '100%', 
+    justifyContent: 'center', // Center vertically
+    flex: 1,                  // Ensure container fills screen
+  },
   saveBttnContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    width: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 32, // Add more space above the button
+    marginBottom: 16, // Add some space below the button
   },
   cancel: { marginBottom: 20 },
   cancelText: { color: '#fff', fontSize: 18 },
@@ -564,12 +550,43 @@ const styles = StyleSheet.create({
   errorText: { color: 'red', marginBottom: 16 },
   autocompleteContainer: {
     marginBottom: 16,
-    // ensure the absolutely-positioned dropdown has room
     zIndex: 1000,
   },
   autocompleteList: {
     // optionally tweak width, shadows, etc.
   },
+  pwdOverlay: {
+  position: 'absolute',
+  top: 0, left: 0, right: 0, bottom: 0,
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 20,
+  zIndex: 999,
+},
+pwdBox: {
+  width: '100%',
+  maxWidth: 420,
+  backgroundColor: 'rgba(0,0,0,0.85)',
+  borderRadius: 12,
+  padding: 16,
+},
+pwdTitle: { color: '#fff', fontSize: 18, fontWeight: '700', marginBottom: 4 },
+pwdSubtitle: { color: '#fff', opacity: 0.8, marginBottom: 10 },
+pwdInput: {
+  backgroundColor: 'rgba(255,255,255,0.1)',
+  borderRadius: 8,
+  padding: 12,
+  color: '#fff',
+},
+pwdBtn: {
+  flex: 1,
+  paddingVertical: 12,
+  borderRadius: 8,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+pwdBtnText: { color: '#fff', fontWeight: '700' },
   dropdown: {
     height: 40,
     borderColor: '#ccc',

@@ -1,7 +1,7 @@
 // app/login.tsx
 import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -21,6 +21,8 @@ import { router, useRouter } from 'expo-router'
 import AlertModal from '@/app/components/alerts/AlertModal'
 import LoadingScreen from '@/app/components/utils/LoadingScreen'
 import { useAuth } from '@/app/backend/AuthContext';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { ThemeContext } from './themecontext';
 
 
 export default function Login() {
@@ -34,6 +36,8 @@ export default function Login() {
   const router = useRouter();
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const { setThemeKey } = useContext(ThemeContext);
+  const db = getFirestore();
 
 
   useEffect(() => {
@@ -58,8 +62,7 @@ export default function Login() {
   }, [router]);
 
   if (initializing) return <LoadingScreen message="Initializing..." progress={0} />;
-
-
+  
   const handleLogin = async () => {
     // Validate email before attempting login
     if ((!email || email.trim() === '') && (!password || password.trim() === '')) {
@@ -87,12 +90,16 @@ export default function Login() {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password)
-      // 2. On success, clear attempts
-      setLoginAttempts(0)
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      setLoginAttempts(0);
 
+      // Fetch and set theme before navigating
+      const userID = userCred.user.uid;
+      const userDoc = await getDoc(doc(db, 'users', userID));
+      const themeKey = userDoc.exists() && userDoc.data().themeKey ? userDoc.data().themeKey : 'default';
+      setThemeKey(themeKey);
+      console.log('Theme set to:', themeKey);
       router.replace('/home');
-
     } catch (error: any) {
       const errorCode = error.code;
 

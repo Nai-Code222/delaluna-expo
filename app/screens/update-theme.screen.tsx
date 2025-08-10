@@ -1,15 +1,23 @@
 // ChangeThemeScreen.tsx
 import React, { useContext, useRef, useEffect } from 'react';
 import { View, FlatList, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import HeaderNav from '../components/utils/headerNav'
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
-export default function ChangeThemeScreen() {
+
+type Params = {
+  userID: string;
+};
+
+export default function ChangeThemeScreen(props: { user: any, userDoc: any }) {
   const { theme, setThemeKey, themes } = useContext(ThemeContext);
   const router = useRouter();
   const originalKey = useRef<string | null>(null);
+  const db = getFirestore();
+  const params = useLocalSearchParams<Params>();
 
   // Set originalKey only once on mount
   useEffect(() => {
@@ -19,7 +27,31 @@ export default function ChangeThemeScreen() {
   }, []);
 
   const handleSelect = (key: string) => setThemeKey(key);
-  const handleApply = () => router.replace('/screens/profile.screen');
+
+  const handleApply = async () => {
+    const userID = params.userID;
+    console.log('Applying theme:', theme.key);
+    // Add or update themeKey field in Firestore for this user
+    if (userID) {
+      console.log('User ID:', userID);
+      try {
+        await setDoc(
+          doc(db, 'users', userID),
+          { themeKey: theme.key },
+          { merge: true }
+        ).finally(() => {
+          // show success message
+          console.log('Theme updated successfully');
+        });
+      } catch (err) {
+        console.error('Failed to save themeKey to user doc:', err);
+        // Optionally show an error message to the user here
+        return;
+      }
+    }
+    router.replace('/screens/profile.screen');
+  };
+
   const handleCancel = () => {
     if (originalKey.current) setThemeKey(originalKey.current);
     router.replace('/screens/profile.screen');
@@ -84,7 +116,7 @@ export default function ChangeThemeScreen() {
               <View
                 style={[
                   styles.swatch,
-                  { backgroundColor: item.colors.primary },
+                  { backgroundColor: item.colors.headerBg },
                   isSelected && { borderWidth: 2, borderColor: theme.colors.headerText },
                 ]}
               />

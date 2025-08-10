@@ -31,6 +31,7 @@ export interface AnswerRecord {
   placeOfBirthUnknown: boolean;
   email: string;
   password: string;
+  themeKey?: string;
 }
 
 export type StepConfig = {
@@ -215,7 +216,8 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
     }
     if (step === steps.length - 1) {
       setAnswers(a => {
-        onComplete(a);
+        // Always include themeKey: 'default' for new users
+        onComplete({ ...a, themeKey: 'default' });
         return a;
       });
     } else {

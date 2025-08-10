@@ -17,6 +17,7 @@ export interface UserRecord {
     isPaidMember: boolean;
     signUpDate?: string;
     lastLoginDate?: string;
+    themeKey?: string | "default";
 }
 
 const UserRecordDefault: UserRecord = {
@@ -33,6 +34,7 @@ const UserRecordDefault: UserRecord = {
     password: "",
     isEmailVerified: false,
     signUpDate: "",
+    themeKey: ""
 };
 
 export default UserRecordDefault;

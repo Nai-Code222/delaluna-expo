@@ -13,7 +13,7 @@ import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import ChatFlow, { StepConfig, AnswerRecord } from '@/app/components/sign up/ChatFlow';
 import signUp from '../app/service/Auth.service';
-import { UserCredential } from 'firebase/auth';
+import { UserCredential, sendEmailVerification } from 'firebase/auth';
 import type { UserRecord } from '@/app/model/UserRecord';
 import { createUserDoc } from '@/app/service/userService';
 import LoadingScreen from '@/app/components/utils/LoadingScreen';
@@ -144,21 +144,25 @@ export default function SignUpChatScreen() {
         lastLoginDate: new Date().toISOString(),
         isBirthTimeUnknown: answers.birthtimeUnknown,
         isPlaceOfBirthUnknown: answers.placeOfBirthUnknown,
+        themeKey: answers.themeKey || 'default', // Ensure themeKey is set
       };
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      await createUserDoc(uid, userRecord);
-      setIsLoading(true);
-      let currentProgress = 0;
+      if (userCred.user) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await createUserDoc(uid, userRecord);
+        setIsLoading(true);
+        let currentProgress = 0;
 
-      const interval = setInterval(() => {
-        currentProgress += 0.2;
-        setProgress(currentProgress);
-        if (currentProgress >= 1) {
-          clearInterval(interval);
-          router.replace('/home');
-        }
-      }, 200);
+        const interval = setInterval(() => {
+          currentProgress += 0.2;
+          setProgress(currentProgress);
+          if (currentProgress >= 1) {
+            clearInterval(interval);
+            sendEmailVerification(userCred.user);
+            router.replace('/home');
+          }
+        }, 200);
+      }
     } catch (e: any) {
       if (e.code === 'auth/email-already-in-use') {
         Alert.alert('Email already in use', 'Please go back and use a different email.');

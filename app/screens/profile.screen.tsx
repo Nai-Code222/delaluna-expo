@@ -10,7 +10,7 @@ import { StatusBar } from 'expo-status-bar'
 import LoadingScreen from '@/app/components/utils/LoadingScreen'
 import AlertModal from '@/app/components/alerts/AlertModal'
 import { getUserDocRef } from '../service/userService'
-import { deleteDoc, getDoc } from 'firebase/firestore'
+import { deleteDoc, getDoc, getFirestore, doc } from 'firebase/firestore'
 import { UserRecord } from '@/app/model/UserRecord'
 import EditProfileScreen from './edit-profile.screen'
 import type { DocumentData } from 'firebase/firestore';
@@ -23,15 +23,13 @@ const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 export default function ProfileScreen() {
   const { user, initializing } = useAuth();
+  const { theme, setThemeKey } = useContext(ThemeContext);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [textInput, setTextInput] = useState('');
   const [userRecord, setUserRecord] = useState<UserRecord | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const isFocused = useIsFocused();
   let userData: DocumentData;
-
-  const { theme } = useContext(ThemeContext);
 
   const initialIndex = user
     ? PRONOUNS.findIndex((p) => p === user.displayName)
@@ -41,25 +39,23 @@ export default function ProfileScreen() {
     initialIndex >= 0 ? initialIndex : 0
   );
 
+  const db = getFirestore();
+
   const getUserRecord = async () => {
     if (!user?.uid) return;
 
     try {
-      console.log("Current auth UID:", auth.currentUser?.email);
       const ref = getUserDocRef(user.uid);
-      console.log("Fetching user doc from:", ref.path);
       const docSnap = await getDoc(ref);
-      console.log("doc: ", docSnap)
 
       if (!docSnap.exists()) {
         throw new Error("User profile does not exist in Firestore.");
+      } else {
+        const data = docSnap.data() as UserRecord;
+        setUserRecord(data);
+        const idx = PRONOUNS.findIndex(p => p === data.pronouns);
+        if (idx >= 0) setSelectedIdx(idx);
       }
-
-      const data = docSnap.data() as UserRecord;
-      setUserRecord(data);
-
-      const idx = PRONOUNS.findIndex(p => p === data.pronouns);
-      if (idx >= 0) setSelectedIdx(idx);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       setErrorMessage('Failed to fetch user data.');
@@ -102,7 +98,12 @@ export default function ProfileScreen() {
   };
 
   const goToUpdateTheme = () => {
-    router.replace('/screens/update-theme.screen');
+    router.replace({
+      pathname: '/screens/update-theme.screen',
+      params: {
+        userID: user?.uid ?? '',
+      },
+    });
   }
   const goToChangePassword = () => {
     router.replace('/screens/update-password.screen');
@@ -437,7 +438,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   deleteAccountButton: {
-    marginTop: 5, 
+    marginTop: 5,
     backgroundColor: '#ff4757',
     flexDirection: 'row',
     justifyContent: 'center',

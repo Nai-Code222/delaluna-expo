@@ -20,6 +20,7 @@ import HeaderNav from '../components/utils/headerNav'
 import ProfileScreen from '../screens/profile.screen'
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
 export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext)
@@ -28,16 +29,31 @@ export default function HomeScreen() {
     ? StatusBar.currentHeight || 0
     : insets.top
   const HEADER_HEIGHT = 50;
-  const { theme } = useContext(ThemeContext);
-
+  const { theme, setThemeKey } = useContext(ThemeContext);
+  const [themeLoading, setThemeLoading] = useState(true);
 
   useEffect(() => {
+    async function fetchAndSetTheme() {
+      if (user?.uid) {
+        const db = getFirestore();
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          const themeKey = userDoc.exists() && userDoc.data().themeKey ? userDoc.data().themeKey : 'default';
+          await setThemeKey(themeKey);
+        } catch (err) {
+          await setThemeKey('default');
+        }
+      }
+      setThemeLoading(false);
+    }
+    fetchAndSetTheme();
+
     if (!initializing && !user) {
       router.replace('/welcome')
     }
-  }, [user, initializing])
+  }, [user, initializing]);
 
-  if (initializing) {
+  if (initializing || themeLoading) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" />
@@ -107,8 +123,8 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  background: { flex: 1 },
+  container: { flex: 1, width: '100%', height: '100%' },
+  background: { flex: 1, width: '100%', height: '100%' },
   loader: {
     flex: 1,
     justifyContent: 'center',

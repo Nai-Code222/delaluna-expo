@@ -1,10 +1,10 @@
 import LottieView from 'lottie-react-native';
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, ImageBackground, StyleSheet, Animated, Easing, Image } from 'react-native';
 import { BodyText } from '../typography/BodyText';
+import { ThemeContext } from '../../themecontext'
 const backgroundImg = require('../../assets/images/mainBackground.png');
 const splashAnimation = require('../../assets/animations/splash-animation.json'); // Replace with your animation asset
-
 type LoadingScreenProps = {
     progress: number; // 0 to 1
     message?: string;
@@ -12,6 +12,7 @@ type LoadingScreenProps = {
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ progress }) => {
     const animatedWidth = React.useRef(new Animated.Value(0)).current;
+    const { theme } = useContext(ThemeContext)
 
     React.useEffect(() => {
         Animated.timing(animatedWidth, {
@@ -23,20 +24,20 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ progress }) => {
     }, [progress]);
 
     return (
-        <ImageBackground source={backgroundImg} style={styles.background}>
+        <ImageBackground source={theme.backgroundImage} style={styles.background}>
             <View style={styles.centerContent}>
-                <View style={styles.overlay}></View>
-                <LottieView
-                    source={splashAnimation}
-                    autoPlay
-                    style={{ width: 500, height: 500 }}
-                />
-                {progress < 1 && (
-                    <BodyText>{`Loading...`}</BodyText>
-                )}
-                {progress === 1 && (
-                    <BodyText>Loading complete!</BodyText>
-                )}
+            <View style={styles.overlay}></View>
+            <LottieView
+                source={splashAnimation}
+                autoPlay
+                style={{ width: 500, height: 500 }}
+            />
+            {progress < 1 && (
+                <BodyText>{`Loading...`}</BodyText>
+            )}
+            {progress === 1 && (
+                <BodyText>Loading complete!</BodyText>
+            )}
             </View>
         </ImageBackground>
     );

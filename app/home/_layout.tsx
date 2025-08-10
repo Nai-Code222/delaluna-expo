@@ -62,8 +62,8 @@ export default function HomeLayout() {
           height: baseHeight,
           paddingBottom,
         },
-        tabBarActiveTintColor: theme.colors.headerText,
-        tabBarInactiveTintColor: theme.colors.primary,
+        tabBarActiveTintColor: theme.colors.activeTab,
+        tabBarInactiveTintColor: theme.colors.inactiveTabs,
       }}
     >
       <Tabs.Screen

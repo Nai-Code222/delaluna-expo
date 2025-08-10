@@ -20,7 +20,7 @@ import {
   updatePassword,
   signOut,
 } from 'firebase/auth';
-
+import { GlassButton } from '../components/buttons/GlassButton';
 import { ThemeContext } from '../themecontext';
 
 // Helper to validate new password strength
@@ -170,9 +170,10 @@ export default function UpdatePasswordScreen() {
       />
       <View style={styles.spacer} />
 
-      <TouchableOpacity style={styles.button} onPress={handleChange}>
-        <Text style={styles.buttonText}>Save Password</Text>
-      </TouchableOpacity>
+      <GlassButton 
+                title="Save Password"
+                onPress={handleChange}
+              />
     </View>
   );
 }
