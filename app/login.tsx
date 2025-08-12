@@ -1,172 +1,81 @@
 // app/login.tsx
-import { LinearGradient } from 'expo-linear-gradient'
-import { BlurView } from 'expo-blur'
-import React, { useContext, useEffect, useState } from 'react'
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ImageBackground,
-  Image,
-  Alert,
-  Platform,
-} from 'react-native'
-import { auth } from '../firebaseConfig'
-import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth'
-import '../firebaseConfig'
-import SecondaryButtonComponent from '@/app/components/buttons/secondaryButtonComponent'
-import { router, useRouter } from 'expo-router'
-import AlertModal from '@/app/components/alerts/AlertModal'
-import LoadingScreen from '@/app/components/utils/LoadingScreen'
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import React, { useContext, useEffect, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Image, Platform } from 'react-native';
+import { auth } from '../firebaseConfig';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import SecondaryButtonComponent from '@/app/components/buttons/secondaryButtonComponent';
+import { useRouter } from 'expo-router';
+import LoadingScreen from '@/app/components/utils/LoadingScreen';
 import { useAuth } from '@/app/backend/AuthContext';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { ThemeContext } from './themecontext';
 
-
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [loginAttempts, setLoginAttempts] = useState(0);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-  const { user, initializing } = useAuth();
-  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const { user, initializing } = useAuth();
+  const router = useRouter();
   const { setThemeKey } = useContext(ThemeContext);
   const db = getFirestore();
 
-
   useEffect(() => {
-    if (!initializing && user) {
-      router.replace('/home');
-    }
+    if (!initializing && user) router.replace('/home');
   }, [initializing, user]);
-
-  useEffect(() => {
-    setLoginAttempts(0)
-  }, [email])
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCheckingAuth(false);
-      if (user) {
-        router.replace('/home');
-      }
-    });
-
-    return () => unsubscribe();
-  }, [router]);
 
   if (initializing) return <LoadingScreen message="Initializing..." progress={0} />;
 
   const handleLogin = async () => {
-    // Validate email before attempting login
-    if ((!email || email.trim() === '') && (!password || password.trim() === '')) {
-      setEmailError('Email is required.');
-      setPasswordError('Password is required.');
-      return;
-    } else {
-      setEmailError(null);
-      setPasswordError(null);
-    }
+    if (loading) return;
+    setFormError(null);
 
-    if (!email || email.trim() === '') {
-      setEmailError('Email is required.');
-      return;
-    } else {
-      setEmailError(null);
-    }
-
-    // Validate password before attempting login
-    if (!password || password.trim() === '') {
-      setPasswordError('Password is required.');
-      return;
-    } else {
-      setPasswordError(null);
-    }
+    const emailTrim = email.trim();
+    const pwdTrim = password.trim();
+    if (!emailTrim) { setEmailError('Email is required.'); return; }
+    if (!pwdTrim) { setPasswordError('Password is required.'); return; }
+    setEmailError(null); setPasswordError(null);
 
     try {
-      const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
-
+      setLoading(true);
+      const cred = await signInWithEmailAndPassword(auth, emailTrim, pwdTrim);
       const uid = cred.user.uid;
 
-      // Navigate immediately so UI doesn't hang
+      // Navigate immediately for a seamless feel
       router.replace('/home');
 
-      // Fetch theme in background with a timeout fallback
-      const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), 5000);
-
+      // Fetch theme in background; don’t block UI
       getDoc(doc(db, 'users', uid))
         .then(snap => {
-          const themeKey = snap.exists() && snap.data().themeKey ? snap.data().themeKey : 'default';
-          setThemeKey(themeKey);
+          const key = snap.exists() && snap.data().themeKey ? snap.data().themeKey : 'default';
+          setThemeKey(key);
         })
-        .catch(err => console.log('theme fetch failed:', err?.code || err?.message))
-        .finally(() => clearTimeout(t));
-
+        .catch(() => {});
     } catch (e: any) {
-      console.log('AUTH ERROR:', e.code, e.message);
-      const errorCode = e.code;
-
-      // increment attempts
-      setLoginAttempts(prev => prev + 1)
-
-      // if under threshold, show an error modal
-      if (loginAttempts < 2) {
-        if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/invalid-password' || errorCode === 'auth/user-not-found') {
-          Alert.alert(" ", "Incorrect email or password. Please try again.");
-        } else {
-          Alert.alert(" ", e.message);
-        }
+      if (e.code === 'auth/invalid-credential' || e.code === 'auth/invalid-password' || e.code === 'auth/user-not-found') {
+        setFormError('Incorrect email or password. Please try again.');
+      } else {
+        setFormError(e.message ?? 'Login failed.');
       }
-      // once 3+ is hit, show the “forgot password” alert
-      else {
-        Alert.alert(
-          'Forgot Password?',
-          'It seems you are having trouble logging in. Would you like to reset your password?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Reset Password', onPress: () => router.replace('/screens/forgot-password.screen') },
-          ]
-        )
-      }
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <ImageBackground
-      source={require('../app/assets/images/background.jpg')}
-      style={styles.background}
-      resizeMode="cover"
-    >
-
-      <AlertModal
-        visible={showErrorModal}
-        message={errorMessage}
-        onClose={() => setShowErrorModal(false)}
-      />
-
-      {/* 1) Logo Container */}
+    <ImageBackground source={require('../app/assets/images/background.jpg')} style={styles.background} resizeMode="cover">
       <View style={styles.logoContainer}>
-        <Image
-          source={require('../app/assets/images/delaluna_logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <Image source={require('../app/assets/images/delaluna_logo.png')} style={styles.logo} resizeMode="contain" />
       </View>
 
       <BlurView intensity={90} tint="dark" style={styles.card}>
         <LinearGradient
-          colors={[
-            'rgba(255,255,255,0.05)',
-            'rgba(128,128,128,0.05)',
-            'rgba(0,0,0,0.05)',
-          ]}
+          colors={['rgba(255,255,255,0.05)', 'rgba(128,128,128,0.05)', 'rgba(0,0,0,0.05)']}
           locations={[0, 0.49, 1]}
           start={[0, 0]}
           end={[0, 1]}
@@ -176,182 +85,80 @@ export default function Login() {
             <Text style={styles.welcomeText}>Welcome!</Text>
             <View style={styles.form}>
               <TextInput
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
                 placeholder="Email"
                 placeholderTextColor="rgba(255, 255, 255, 0.5)"
                 style={styles.textField}
                 value={email}
-                onChangeText={text => {
-                  setEmail(text);
-                  if (!text || text.trim() === '') {
-                    setEmailError('Email is required.');
-                  } else {
-                    setEmailError(null);
-                  }
-                }}
+                onChangeText={t => setEmail(t)}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
               />
-              {emailError && (
-                <Text style={styles.errorText}>{emailError}</Text>
-              )}
+              {emailError && <Text style={styles.errorText}>{emailError}</Text>}
+
               <TextInput
                 placeholder="Password"
                 placeholderTextColor="rgba(255, 255, 255, 0.5)"
                 secureTextEntry
                 style={styles.textField}
                 value={password}
-                onChangeText={text => {
-                  setPassword(text);
-                  if (!text || text.trim() === '') {
-                    setPasswordError('Password is required.');
-                  } else {
-                    setPasswordError(null);
-                  }
-                }}
+                onChangeText={t => setPassword(t)}
               />
-              {passwordError && (
-                <Text style={styles.errorText}>{passwordError}</Text>
-              )}
-              <TouchableOpacity>
-                <Text style={styles.forgotPassword} onPress={() => router.replace('/screens/forgot-password.screen')}>Forgot Password?</Text>
+              {passwordError && <Text style={styles.errorText}>{passwordError}</Text>}
+              {formError && <Text style={styles.errorText}>{formError}</Text>}
+
+              <TouchableOpacity onPress={() => router.replace('/screens/forgot-password.screen')}>
+                <Text style={styles.forgotPassword}>Forgot Password?</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Login</Text>
+
+            <TouchableOpacity style={[styles.loginButton, loading && { opacity: 0.6 }]} onPress={handleLogin} disabled={loading}>
+              <Text style={styles.loginButtonText}>{loading ? 'Signing in…' : 'Login'}</Text>
             </TouchableOpacity>
+
             <SecondaryButtonComponent
               title="Not a member? "
-              linkString='Sign up'
+              linkString="Sign up"
               onPress={() => router.replace('/signup')}
             />
           </View>
         </LinearGradient>
       </BlurView>
     </ImageBackground>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 2,
-    alignItems: 'center',
-    backgroundColor: '#2D1B42',
-    justifyContent: 'space-between',
-    gap: 35,
-  },
-  logoContainer: {
-    flex: 1,
-    width: '100%',
-    height: '60%',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
+  background: { flex: 2, alignItems: 'center', backgroundColor: '#2D1B42', justifyContent: 'space-between', gap: 35 },
+  logoContainer: { flex: 1, width: '100%', height: '60%', alignItems: 'center', justifyContent: 'flex-end' },
   card: {
     width: '100%',
     flexGrow: 1,
     ...Platform.select({
-      ios: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 25,
-      },
-      android: {
-        backgroundColor: 'rgba(255, 255, 255, 0.24)',
-        borderRadius: 20,
-      },
+      ios: { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 25 },
+      android: { backgroundColor: 'rgba(255, 255, 255, 0.24)', borderRadius: 20 },
     }),
-    gap: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    justifyContent: 'space-between', // Important!
+    gap: 25, paddingHorizontal: 20, paddingVertical: 24, justifyContent: 'space-between',
   },
-  logo: {
-    width: '70%',
-    height: '50%',
-  },
-  bodyContainer: {
-    width: '100%',
-    marginTop: 24,
-    marginBottom: 24,
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'space-between',
-  },
+  logo: { width: '70%', height: '50%' },
+  bodyContainer: { width: '100%', marginTop: 24, marginBottom: 24, alignItems: 'center', flex: 1, justifyContent: 'space-between' },
   welcomeText: {
     color: 'white',
     fontFamily: 'Poppins',
-    ...Platform.select({
-      ios: {
-        fontSize: 40,
-      },
-      android: {
-        fontSize: 30,
-      },
-    }),
+    ...Platform.select({ ios: { fontSize: 40 }, android: { fontSize: 30 } }),
     fontWeight: '500',
     marginBottom: 24,
   },
-  form: {
-    width: '90%',
-  },
+  form: { width: '90%' },
   textField: {
-    ...Platform.select({
-      ios: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      },
-      android: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      },
-    }),
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(142, 68, 173, 0.6)',
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    height: 48,
-    color: 'white',
+    ...Platform.select({ ios: { backgroundColor: 'rgba(255, 255, 255, 0.1)' }, android: { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }),
+    borderRadius: 12, borderWidth: 1, borderColor: 'rgba(142, 68, 173, 0.6)', marginBottom: 16, paddingHorizontal: 16, height: 48, color: 'white',
   },
-  input: {
-    color: 'white',
-    fontSize: 14,
-    fontFamily: 'Inter',
-  },
-  forgotPassword: {
-    color: 'white',
-    fontSize: 13,
-    fontFamily: 'Inter',
-    fontWeight: '600',
-    textAlign: 'right',
-    margin: 8,
-  },
+  forgotPassword: { color: 'white', fontSize: 13, fontFamily: 'Inter', fontWeight: '600', textAlign: 'right', margin: 8 },
   loginButton: {
-    width: '80%',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 40,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginBottom: 16,
-    justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        marginTop: 10,
-      },
-      android: {
-        marginTop: 20,
-      },
-    }),
-
+    width: '80%', backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: 40, paddingVertical: 12, alignItems: 'center', marginBottom: 16, justifyContent: 'center',
+    ...Platform.select({ ios: { marginTop: 10 }, android: { marginTop: 20 } }),
   },
-  loginButtonText: {
-    color: 'white',
-    fontSize: 20,
-    fontFamily: 'Poppins',
-    fontWeight: '600',
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 15,
-    marginBottom: 10,
-    marginLeft: 4,
-  },
-})
+  loginButtonText: { color: 'white', fontSize: 20, fontFamily: 'Poppins', fontWeight: '600' },
+  errorText: { color: 'red', fontSize: 15, marginBottom: 10, marginLeft: 4 },
+});

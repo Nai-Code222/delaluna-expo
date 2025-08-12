@@ -1,95 +1,90 @@
-// screens/HomeScreen.tsx
-import 'react-native-gesture-handler'; 
-import 'expo-router/entry';
-import React, { useContext, useEffect, useState } from 'react'
+// app/screens/HomeScreen.tsx
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   ImageBackground,
   Platform,
   StatusBar,
-} from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { auth } from '../../firebaseConfig'
-import { router } from 'expo-router'
-import AuthContext from '@/app/backend/AuthContext'
-import HeaderNav from '../components/utils/headerNav'
-import ProfileScreen from '../screens/profile.screen'
+  Animated,
+  Easing,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import AuthContext from '@/app/backend/AuthContext';
+import HeaderNav from '../components/utils/headerNav';
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
 export default function HomeScreen() {
-  const { user, initializing } = useContext(AuthContext)
-  const insets = useSafeAreaInsets()
-  const safeOffset = Platform.OS === 'android'
-    ? StatusBar.currentHeight || 0
-    : insets.top
-  const HEADER_HEIGHT = 50;
+  const { user, initializing } = useContext(AuthContext);
+  const insets = useSafeAreaInsets();
+  const safeOffset = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : insets.top;
+
   const { theme, setThemeKey } = useContext(ThemeContext);
   const [themeLoading, setThemeLoading] = useState(true);
 
+  // Cross-fade when theme/content becomes ready
+  const fade = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    async function fetchAndSetTheme() {
-      if (user?.uid) {
-        const db = getFirestore();
-        try {
-          if (auth.currentUser?.uid) {
-            const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-            const themeKey = userDoc.exists() && userDoc.data().themeKey ? userDoc.data().themeKey : 'default';
-            await setThemeKey(themeKey);
-          } else {
-            await setThemeKey('default');
-          }
-        } catch (err) {
+    Animated.timing(fade, {
+      toValue: 1,
+      duration: 220,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [theme]);
+
+  // Fetch server theme in background; always fall back to default
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        if (user?.uid) {
+          const db = getFirestore();
+          const snap = await getDoc(doc(db, 'users', user.uid));
+          const key = snap.exists() && snap.data().themeKey ? snap.data().themeKey : 'default';
+          if (!cancelled) await setThemeKey(key);
+        } else if (!cancelled) {
           await setThemeKey('default');
         }
+      } catch {
+        if (!cancelled) await setThemeKey('default');
+      } finally {
+        if (!cancelled) setThemeLoading(false);
       }
-      setThemeLoading(false);
-    }
-    fetchAndSetTheme();
+    };
 
-    if (!initializing && !user) {
-      router.replace('/welcome')
-    }
-  }, [user, initializing]);
+    run();
 
-  if (initializing || themeLoading) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" />
-      </View>
-    )
-  }
+    if (!initializing && !user) router.replace('/welcome');
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid, initializing]);
 
-  function goToProfile(): void {
-    router.replace('/screens/profile.screen')
-  }
-
-  // Helper to render background using theme
-  function renderBackground(children: React.ReactNode) {
+  // Helper to render background using current theme
+  const renderBackground = (children: React.ReactNode) => {
     if (theme.backgroundType === 'image' && theme.backgroundImage) {
       return (
-        <ImageBackground
-          source={theme.backgroundImage}
-          style={styles.background}
-          resizeMode="cover"
-        >
+        <ImageBackground source={theme.backgroundImage} style={styles.background} resizeMode="cover">
           {children}
         </ImageBackground>
       );
     }
     if (theme.backgroundType === 'gradient' && theme.gradient) {
+      const angle = theme.gradient.angle ?? 0;
       return (
         <LinearGradient
           colors={theme.gradient.colors as [string, string, ...string[]]}
           start={{ x: 0, y: 0 }}
           end={{
-            x: Math.cos((theme.gradient.angle ?? 0) * Math.PI / 180),
-            y: Math.sin((theme.gradient.angle ?? 0) * Math.PI / 180),
+            x: Math.cos((angle * Math.PI) / 180),
+            y: Math.sin((angle * Math.PI) / 180),
           }}
           style={styles.background}
         >
@@ -97,15 +92,22 @@ export default function HomeScreen() {
         </LinearGradient>
       );
     }
-    return (
-      <View style={[styles.background, { backgroundColor: theme.colors.background }]}>
-        {children}
+    return <View style={[styles.background, { backgroundColor: theme.colors.background }]}>{children}</View>;
+  };
+
+  // 🔑 IMPORTANT: even while loading, wrap the spinner with renderBackground
+  if (initializing || themeLoading) {
+    return renderBackground(
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" />
       </View>
     );
   }
 
+  const goToProfile = () => router.replace('/screens/profile.screen');
+
   return renderBackground(
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { opacity: fade }]}>
       <HeaderNav
         title="Home"
         leftIconName={undefined}
@@ -113,16 +115,11 @@ export default function HomeScreen() {
         rightIconSource={require('../assets/icons/Avatar.png')}
         onRightPress={goToProfile}
       />
-
       <View style={styles.content}>
         <Text style={styles.title}>Welcome Home!</Text>
-        <Text style={styles.email}>
-          {user
-            ? `Logged in as: ${user.email}`
-            : 'No user logged in.'}
-        </Text>
+        <Text style={styles.email}>{user ? `Logged in as: ${user.email}` : 'No user logged in.'}</Text>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -133,22 +130,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    // no background here — the parent renderBackground provides it
   },
-  menuItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  menuText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
+  content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   title: { fontSize: 24, marginBottom: 8, color: '#fff' },
   email: { fontSize: 16, marginBottom: 20, color: '#ddd' },
-})
-
+});
