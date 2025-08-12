@@ -3,6 +3,7 @@ import React, { createContext, useState, ReactNode, useEffect } from 'react';
 import type { ColorValue, ImageSourcePropType } from 'react-native';
 import { useAuth } from './backend/AuthContext';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth } from '@/firebaseConfig';
 
 // Import your default background image
 const mainBg = require('./assets/images/mainBackground.png');
@@ -173,7 +174,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     async function fetchTheme() {
       if (user?.uid) {
         try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          const userDoc = await getDoc(doc(db, 'users', auth.currentUser!.uid));
           const themeKeyFromDb = userDoc.exists() ? userDoc.data().themeKey : 'default';
           setThemeKey(themeKeyFromDb && allThemes[themeKeyFromDb] ? themeKeyFromDb : 'default');
         } catch (e) {
@@ -193,7 +194,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setThemeKey(key);
       if (user?.uid) {
         try {
-          await setDoc(doc(db, 'users', user.uid), { themeKey: key }, { merge: true });
+          await setDoc(doc(db, 'users', auth.currentUser!.uid), { themeKey: key }, { merge: true });
         } catch (err) {
           console.error('Failed to persist theme key:', err);
         }
