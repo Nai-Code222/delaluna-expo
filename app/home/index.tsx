@@ -1,5 +1,5 @@
 // app/screens/HomeScreen.tsx
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -15,21 +15,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AuthContext from '@/app/backend/AuthContext';
 import HeaderNav from '../components/utils/headerNav';
-import { ThemeContext } from '../themecontext';
+import { ThemeContext } from '@/app/themecontext'; // 👈 use the exact same path/case
 import { LinearGradient } from 'expo-linear-gradient';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
 export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext);
   const insets = useSafeAreaInsets();
   const safeOffset = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : insets.top;
 
-  const { theme, setThemeKey } = useContext(ThemeContext);
-  const [themeLoading, setThemeLoading] = useState(true);
+  const { theme } = useContext(ThemeContext);
 
   // Cross-fade when theme/content becomes ready
   const fade = useRef(new Animated.Value(0)).current;
   useEffect(() => {
+    fade.setValue(0);
     Animated.timing(fade, {
       toValue: 1,
       duration: 220,
@@ -38,36 +37,12 @@ export default function HomeScreen() {
     }).start();
   }, [theme]);
 
-  // Fetch server theme in background; always fall back to default
+  // Auth guard (ThemeProvider already hydrated before first paint)
   useEffect(() => {
-    let cancelled = false;
-
-    const run = async () => {
-      try {
-        if (user?.uid) {
-          const db = getFirestore();
-          const snap = await getDoc(doc(db, 'users', user.uid));
-          const key = snap.exists() && snap.data().themeKey ? snap.data().themeKey : 'default';
-          if (!cancelled) await setThemeKey(key);
-        } else if (!cancelled) {
-          await setThemeKey('default');
-        }
-      } catch {
-        if (!cancelled) await setThemeKey('default');
-      } finally {
-        if (!cancelled) setThemeLoading(false);
-      }
-    };
-
-    run();
-
     if (!initializing && !user) router.replace('/welcome');
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.uid, initializing]);
+  }, [initializing, user]);
 
-  // Helper to render background using current theme
+  // Render helpers
   const renderBackground = (children: React.ReactNode) => {
     if (theme.backgroundType === 'image' && theme.backgroundImage) {
       return (
@@ -95,8 +70,8 @@ export default function HomeScreen() {
     return <View style={[styles.background, { backgroundColor: theme.colors.background }]}>{children}</View>;
   };
 
-  // 🔑 IMPORTANT: even while loading, wrap the spinner with renderBackground
-  if (initializing || themeLoading) {
+  // While auth is initializing, keep spinner inside the themed background (no white flash)
+  if (initializing) {
     return renderBackground(
       <View style={styles.loader}>
         <ActivityIndicator size="large" />
@@ -126,12 +101,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, width: '100%', height: '100%' },
   background: { flex: 1, width: '100%', height: '100%' },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // no background here — the parent renderBackground provides it
-  },
+  loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   title: { fontSize: 24, marginBottom: 8, color: '#fff' },
   email: { fontSize: 16, marginBottom: 20, color: '#ddd' },

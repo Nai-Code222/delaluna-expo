@@ -38,6 +38,7 @@ export default {
     },
 
     android: {
+      softwareKeyboardLayoutMode: 'resize',
       adaptiveIcon: {
         foregroundImage: './app/assets/images/Delaluna_App_Icon.png',
       },

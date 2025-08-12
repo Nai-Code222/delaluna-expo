@@ -1,11 +1,11 @@
 // app/ThemeContext.tsx
-import React, { createContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import type { ColorValue, ImageSourcePropType } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './backend/AuthContext';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth } from '@/firebaseConfig';
 
-// Import your default background image
+// ===== Images =====
 const mainBg = require('./assets/images/mainBackground.png');
 const blueBg = require('./assets/images/blueTheme.png');
 const greenBg = require('./assets/images/greenTheme.png');
@@ -14,23 +14,18 @@ const redBg = require('./assets/images/redTheme.png');
 const yellowBg = require('./assets/images/yellowTheme.png');
 const pinkBg = require('./assets/images/pinkTheme.png');
 
-// 2) Define your Theme shape
+// ===== Types =====
 export interface ThemeColors {
-  background: ColorValue;             // solid background color for the theme
+  background: ColorValue;
   headerBg: string;
   headerText: string;
   primary: string;
   activeTab: string;
   inactiveTabs: string;
   text: string;
-  overlay?: string; // optional overlay color for themes that need it
+  overlay?: string;
 }
-
-export interface ThemeGradient {
-  colors: string[];
-  angle: number; // degrees
-}
-
+export interface ThemeGradient { colors: string[]; angle: number; }
 export interface Theme {
   key: string;
   colors: ThemeColors;
@@ -40,7 +35,7 @@ export interface Theme {
   blendMode: 'difference';
 }
 
-// 3) Declare all theme variants
+// ===== Themes (unchanged) =====
 const allThemes: Record<string, Theme> = {
   default: {
     key: 'default',
@@ -54,13 +49,13 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: mainBg, // uses app/assets/images/mainBackground.png
+    backgroundImage: mainBg,
     blendMode: 'difference',
   },
   yellow: {
     key: 'yellow',
     colors: {
-      background: '#b79606ff', // main color from gradient
+      background: '#b79606ff',
       headerBg: '#fbc810ff',
       headerText: '#fbfbfbff',
       primary: '#cda120ff',
@@ -69,8 +64,8 @@ const allThemes: Record<string, Theme> = {
       text: '#e5e4e4ff',
     },
     backgroundType: 'image',
-    backgroundImage: yellowBg, // uses app/assets/images/yellowTheme.png
-    blendMode: 'difference',    
+    backgroundImage: yellowBg,
+    blendMode: 'difference',
   },
   pink: {
     key: 'pink',
@@ -84,7 +79,7 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: pinkBg, // uses app/assets/images/pinkTheme.png
+    backgroundImage: pinkBg,
     blendMode: 'difference',
   },
   blue: {
@@ -99,7 +94,7 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: blueBg, // uses app/assets/images/blueTheme.png
+    backgroundImage: blueBg,
     blendMode: 'difference',
   },
   green: {
@@ -114,7 +109,7 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: greenBg, // uses app/assets/images/greenTheme.png
+    backgroundImage: greenBg,
     blendMode: 'difference',
   },
   orange: {
@@ -129,7 +124,7 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: orangeBg, // uses app/assets/images/orangeTheme.png
+    backgroundImage: orangeBg,
     blendMode: 'difference',
   },
   red: {
@@ -144,82 +139,121 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: redBg, // uses app/assets/images/redTheme.png
+    backgroundImage: redBg,
     blendMode: 'difference',
   },
 };
 
-// 4) Context definition
+// ===== Storage keys & helpers =====
+const GLOBAL_KEY = 'themeKey';
+const UID_KEY = (uid: string) => `themeKey:uid:${uid}`;
+
+export async function getCachedThemeForUid(uid: string): Promise<string | null> {
+  try { return await AsyncStorage.getItem(UID_KEY(uid)); } catch { return null; }
+}
+
+// ===== Context =====
 export interface ThemeContextType {
   theme: Theme;
-  setThemeKey: (key: string) => void;
+  themeKey: string;
+  setThemeKey: (key: string, uid?: string) => Promise<void>;
   themes: Record<string, Theme>;
 }
 
 export const ThemeContext = createContext<ThemeContextType>({
   theme: allThemes.default,
-  setThemeKey: () => { },
+  themeKey: 'default',
+  setThemeKey: async () => {},
   themes: allThemes,
 });
 
-// 5) Provider component
+// ===== Provider =====
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [themeKey, setThemeKey] = useState<string>('default');
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const db = getFirestore();
 
-  // Load theme key from Firestore when user changes
+  const [hydrated, setHydrated] = useState(false);
+  const [themeKey, _setThemeKey] = useState<string>('default');
+
+  // Set + persist (global + per-uid) and sync to Firestore (best effort)
+  const setThemeKey = useCallback(
+    async (key: string, uid?: string) => {
+      if (!allThemes[key]) return;
+      _setThemeKey(key);
+
+      try {
+        await AsyncStorage.setItem(GLOBAL_KEY, key);        // global fallback
+        const u = uid ?? user?.uid;
+        if (u) await AsyncStorage.setItem(UID_KEY(u), key); // per-uid cache
+      } catch {}
+
+      const targetUid = uid ?? user?.uid;
+      if (targetUid) {
+        try { await setDoc(doc(db, 'users', targetUid), { themeKey: key }, { merge: true }); } catch {}
+      }
+    },
+    [db, user?.uid]
+  );
+
+  // Hydrate before first paint / when user changes:
+  // 1) try per-uid cache, 2) Firestore, 3) global cache, 4) default
   useEffect(() => {
-    async function fetchTheme() {
-      if (user?.uid) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', auth.currentUser!.uid));
-          const themeKeyFromDb = userDoc.exists() ? userDoc.data().themeKey : 'default';
-          setThemeKey(themeKeyFromDb && allThemes[themeKeyFromDb] ? themeKeyFromDb : 'default');
-        } catch (e) {
-          setThemeKey('default');
-        }
-      } else {
-        setThemeKey('default');
-      }
-      setLoading(false);
-    }
-    fetchTheme();
-  }, [user]);
+    let cancelled = false;
 
-  // Save theme key to Firestore whenever it changes
-  const setThemeKeySafe = async (key: string) => {
-    if (allThemes[key]) {
-      setThemeKey(key);
-      if (user?.uid) {
-        try {
-          await setDoc(doc(db, 'users', auth.currentUser!.uid), { themeKey: key }, { merge: true });
-        } catch (err) {
-          console.error('Failed to persist theme key:', err);
-        }
-      }
-    }
-  };
+    (async () => {
+      let key = 'default';
 
-  if (loading) {
-    return null;
-  }
+      try {
+        if (user?.uid) {
+          const cachedUid = await AsyncStorage.getItem(UID_KEY(user.uid));
+          if (cachedUid && allThemes[cachedUid]) {
+            key = cachedUid; // instant, no flash
+          } else {
+            // fetch from Firestore (first login on this device)
+            try {
+              const snap = await getDoc(doc(db, 'users', user.uid));
+              const k = snap.exists() ? String(snap.data().themeKey) : undefined;
+              if (k && allThemes[k]) key = k;
+            } catch {}
+          }
+        } else {
+          const cachedGlobal = await AsyncStorage.getItem(GLOBAL_KEY);
+          if (cachedGlobal && allThemes[cachedGlobal]) key = cachedGlobal;
+        }
+      } catch {}
+
+      if (!cancelled) {
+        _setThemeKey(key);
+        setHydrated(true);
+      }
+
+      // Optional background sync: if we used cache, check Firestore and update for next time
+      if (user?.uid) {
+        getDoc(doc(db, 'users', user.uid))
+          .then(snap => {
+            const k = snap.exists() ? String(snap.data().themeKey) : undefined;
+            if (k && allThemes[k] && k !== key && !cancelled) {
+              _setThemeKey(k);
+              AsyncStorage.setItem(UID_KEY(user.uid!), k).catch(() => {});
+              AsyncStorage.setItem(GLOBAL_KEY, k).catch(() => {});
+            }
+          })
+          .catch(() => {});
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [user?.uid, db]);
+
+  if (!hydrated) return null; // keeps splash showing until theme is ready
 
   return (
-    <ThemeContext.Provider
-      value={{
-        theme: allThemes[themeKey],
-        setThemeKey: setThemeKeySafe,
-        themes: allThemes,
-      }}
-    >
+    <ThemeContext.Provider value={{ theme: allThemes[themeKey], themeKey, setThemeKey, themes: allThemes }}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
-// 6) Export themes map
+// Export map for pickers
 export const themes = allThemes;
-
 export default ThemeProvider;
