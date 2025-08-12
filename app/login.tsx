@@ -14,7 +14,7 @@ import {
   Platform,
 } from 'react-native'
 import { auth } from '../firebaseConfig'
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth'
+import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth'
 import '../firebaseConfig'
 import SecondaryButtonComponent from '@/app/components/buttons/secondaryButtonComponent'
 import { router, useRouter } from 'expo-router'
@@ -62,7 +62,7 @@ export default function Login() {
   }, [router]);
 
   if (initializing) return <LoadingScreen message="Initializing..." progress={0} />;
-  
+
   const handleLogin = async () => {
     // Validate email before attempting login
     if ((!email || email.trim() === '') && (!password || password.trim() === '')) {
@@ -90,18 +90,28 @@ export default function Login() {
     }
 
     try {
-      const userCred = await signInWithEmailAndPassword(auth, email, password);
-      setLoginAttempts(0);
+      const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
 
-      // Fetch and set theme before navigating
-      const userID = userCred.user.uid;
-      const userDoc = await getDoc(doc(db, 'users', userID));
-      const themeKey = userDoc.exists() && userDoc.data().themeKey ? userDoc.data().themeKey : 'default';
-      setThemeKey(themeKey);
-      console.log('Theme set to:', themeKey);
+      const uid = cred.user.uid;
+
+      // Navigate immediately so UI doesn't hang
       router.replace('/home');
-    } catch (error: any) {
-      const errorCode = error.code;
+
+      // Fetch theme in background with a timeout fallback
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 5000);
+
+      getDoc(doc(db, 'users', uid))
+        .then(snap => {
+          const themeKey = snap.exists() && snap.data().themeKey ? snap.data().themeKey : 'default';
+          setThemeKey(themeKey);
+        })
+        .catch(err => console.log('theme fetch failed:', err?.code || err?.message))
+        .finally(() => clearTimeout(t));
+
+    } catch (e: any) {
+      console.log('AUTH ERROR:', e.code, e.message);
+      const errorCode = e.code;
 
       // increment attempts
       setLoginAttempts(prev => prev + 1)
@@ -111,7 +121,7 @@ export default function Login() {
         if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/invalid-password' || errorCode === 'auth/user-not-found') {
           Alert.alert(" ", "Incorrect email or password. Please try again.");
         } else {
-          Alert.alert(" ", error.message);
+          Alert.alert(" ", e.message);
         }
       }
       // once 3+ is hit, show the “forgot password” alert
@@ -166,6 +176,9 @@ export default function Login() {
             <Text style={styles.welcomeText}>Welcome!</Text>
             <View style={styles.form}>
               <TextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
                 placeholder="Email"
                 placeholderTextColor="rgba(255, 255, 255, 0.5)"
                 style={styles.textField}
@@ -235,23 +248,23 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   card: {
-  width: '100%',
-  flexGrow: 1,
-  ...Platform.select({
-    ios: {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      borderRadius: 25,
-    },
-    android: {
-      backgroundColor: 'rgba(255, 255, 255, 0.24)',
-      borderRadius: 20,
-    },
-  }),
-  gap: 25,
-  paddingHorizontal: 20,
-  paddingVertical: 24,
-  justifyContent: 'space-between', // Important!
-},
+    width: '100%',
+    flexGrow: 1,
+    ...Platform.select({
+      ios: {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: 25,
+      },
+      android: {
+        backgroundColor: 'rgba(255, 255, 255, 0.24)',
+        borderRadius: 20,
+      },
+    }),
+    gap: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    justifyContent: 'space-between', // Important!
+  },
   logo: {
     width: '70%',
     height: '50%',

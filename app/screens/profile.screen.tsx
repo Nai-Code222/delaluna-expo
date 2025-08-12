@@ -45,7 +45,7 @@ export default function ProfileScreen() {
     if (!user?.uid) return;
 
     try {
-      const ref = getUserDocRef(user.uid);
+      const ref = getUserDocRef(auth.currentUser!.uid);
       const docSnap = await getDoc(ref);
 
       if (!docSnap.exists()) {
