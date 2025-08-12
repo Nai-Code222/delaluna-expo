@@ -35,7 +35,6 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.app.delaluna-answers',
-      googleServicesFile: './GoogleService-Info.plist',
     },
 
     android: {
@@ -43,7 +42,6 @@ export default {
         foregroundImage: './app/assets/images/Delaluna_App_Icon.png',
       },
       package: 'com.app.delaluna_answers',
-      googleServicesFile: './google-services.json',
     },
 
     web: {
