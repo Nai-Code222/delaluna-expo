@@ -6,13 +6,14 @@ import HeaderNav from '../components/utils/headerNav'
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { auth } from '@/firebaseConfig';
 
 
 type Params = {
   userID: string;
 };
 
-export default function ChangeThemeScreen(props: { user: any, userDoc: any }) {
+export default function ChangeThemeScreen() {
   const { theme, setThemeKey, themes } = useContext(ThemeContext);
   const router = useRouter();
   const originalKey = useRef<string | null>(null);
@@ -36,7 +37,7 @@ export default function ChangeThemeScreen(props: { user: any, userDoc: any }) {
       console.log('User ID:', userID);
       try {
         await setDoc(
-          doc(db, 'users', userID),
+          doc(db, 'users', auth.currentUser!.uid),
           { themeKey: theme.key },
           { merge: true }
         ).finally(() => {
