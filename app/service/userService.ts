@@ -27,7 +27,7 @@ export async function createUserDoc(
 ): Promise<void> {
   try {
     // Create a new document in the "users" collection with the userId as the document ID
-    const userDocRef = doc(db, 'users', userId);
+    const userDocRef = doc(db, 'users', auth.currentUser!.uid);
     await setDoc(userDocRef, userData);
     console.log('User document created successfully:', userId);
   } catch (error) {
@@ -61,7 +61,7 @@ export async function updateUserDoc(
   try {
     const userDocRef = getUserDocRef(userId);
     await setDoc(userDocRef, userData, { merge: true });
-    console.log('User document updated successfully:', userId);
+    console.log('User document updated successfully:', auth.currentUser!.uid);
     return Promise.resolve();
   } catch (error) {
     console.error('Error updating user document:', error);
