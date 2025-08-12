@@ -37,9 +37,13 @@ export default function HomeScreen() {
       if (user?.uid) {
         const db = getFirestore();
         try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          const themeKey = userDoc.exists() && userDoc.data().themeKey ? userDoc.data().themeKey : 'default';
-          await setThemeKey(themeKey);
+          if (auth.currentUser?.uid) {
+            const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+            const themeKey = userDoc.exists() && userDoc.data().themeKey ? userDoc.data().themeKey : 'default';
+            await setThemeKey(themeKey);
+          } else {
+            await setThemeKey('default');
+          }
         } catch (err) {
           await setThemeKey('default');
         }
