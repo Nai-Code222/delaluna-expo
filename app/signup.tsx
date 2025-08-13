@@ -8,6 +8,7 @@ import {
   ImageBackground,
   Platform,
   Modal,
+  useWindowDimensions,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
@@ -19,6 +20,7 @@ import { createUserDoc } from '@/app/service/userService';
 import LoadingScreen from '@/app/components/utils/LoadingScreen';
 import { useAuth } from '@/app/backend/AuthContext';
 import { StatusBar } from 'expo-status-bar';
+import { scale, verticalScale, moderateScale } from '../src/utils/responsive';
 
 function formatTime12Hour(date: Date | null | undefined): string {
   if (!(date instanceof Date)) return '';
@@ -39,6 +41,8 @@ export default function SignUpChatScreen() {
   const { user, initializing } = useAuth();
   const [confirmVisible, setConfirmVisible] = useState(false);
   const hasAnyAnswer = step > 0;
+  const { width } = useWindowDimensions();
+  const modalCardWidth = width > 640 ? '55%' : width > 480 ? '70%' : '86%';
 
   useEffect(() => {
     if (!initializing && user) {
@@ -156,10 +160,10 @@ export default function SignUpChatScreen() {
           </TouchableOpacity>
         </View>
 
-        <ChatFlow steps={steps} onComplete={handleComplete} step={step} setStep={setStep} />
+        <View style={styles.chatFlowWrapper}>
+          <ChatFlow steps={steps} onComplete={handleComplete} step={step} setStep={setStep} />
+        </View>
       </BlurView>
-
-      {/* Confirm Cancel Modal */}
       <Modal
         visible={confirmVisible}
         transparent
@@ -167,7 +171,7 @@ export default function SignUpChatScreen() {
         onRequestClose={dismissCancel} // Android back button
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+          <View style={[styles.modalCard, { width: modalCardWidth }]}>
             <Text style={styles.modalTitle}>Discard signup?</Text>
             <Text style={styles.modalBody}>
               Your answers will be lost. You can start again anytime.
@@ -190,18 +194,23 @@ export default function SignUpChatScreen() {
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  overlay: { flex: 1, paddingTop: Platform.OS === 'ios' ? 60 : 40 },
+  overlay: { 
+    flex: 1, 
+    paddingTop: verticalScale(Platform.OS === 'ios' ? 60 : 40),
+    paddingHorizontal: scale(0),
+    width: '100%',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingHorizontal: 16,
-    marginBottom: 8,
+    paddingHorizontal: scale(16),
+    marginBottom: verticalScale(8),
     position: 'relative',
   },
-  cancelButton: { position: 'absolute', right: 16 },
-  goBackText: { color: '#6FFFE9', fontSize: 18, fontWeight: '500' },
-  cancelText: { color: '#6FFFE9', fontSize: 18, fontWeight: '500' },
+  cancelButton: { position: 'absolute', right: scale(16) },
+  goBackText: { color: '#6FFFE9', fontSize: moderateScale(18), fontWeight: '500' },
+  cancelText: { color: '#6FFFE9', fontSize: moderateScale(18), fontWeight: '500' },
 
   // modal
   modalOverlay: {
@@ -209,19 +218,27 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: scale(12),
   },
   modalCard: {
-    width: '86%',
-    borderRadius: 14,
-    padding: 16,
+    // width overridden dynamically
+    borderRadius: scale(14),
+    paddingVertical: verticalScale(16),
+    paddingHorizontal: scale(16),
     backgroundColor: 'rgba(20,20,24,0.92)',
+    maxWidth: scale(500),
   },
-  modalTitle: { color: '#fff', fontSize: 18, fontWeight: '700', marginBottom: 6, textAlign: 'center' },
-  modalBody: { color: '#cfd3dc', fontSize: 14, textAlign: 'center', marginBottom: 16 },
-  modalActions: { flexDirection: 'row', gap: 12, justifyContent: 'center' },
-  modalBtn: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, minWidth: 140, alignItems: 'center' },
+  modalTitle: { color: '#fff', fontSize: moderateScale(18), fontWeight: '700', marginBottom: verticalScale(6), textAlign: 'center' },
+  modalBody: { color: '#cfd3dc', fontSize: moderateScale(14), textAlign: 'center', marginBottom: verticalScale(16) },
+  modalActions: { flexDirection: 'row', gap: scale(12), justifyContent: 'center' },
+  modalBtn: { paddingVertical: verticalScale(10), paddingHorizontal: scale(14), borderRadius: scale(10), minWidth: scale(140), alignItems: 'center' },
   btnGhost: { backgroundColor: 'rgba(255,255,255,0.08)' },
   btnGhostText: { color: '#e6e9f0', fontWeight: '600' },
   btnDanger: { backgroundColor: '#ff4d4f' },
   btnDangerText: { color: '#fff', fontWeight: '700' },
+  chatFlowWrapper: {
+    flex: 1,
+    width: '100%',
+    alignSelf: 'stretch',
+  },
 });
