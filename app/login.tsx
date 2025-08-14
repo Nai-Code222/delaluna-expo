@@ -14,8 +14,6 @@ import { useAuth } from '@/app/backend/AuthContext';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeContext } from './themecontext'; 
-import ZoomOut from '@/app/utils/ZoomOut';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -106,34 +104,25 @@ export default function Login() {
   };
 
   return (
-  <SafeAreaView style={{ flex: 1 }} pointerEvents="none">
-    {/* Background only decorates; don't steal touches */}
-    <ImageBackground
-      source={require('../app/assets/images/background.jpg')}
-      style={styles.background}
-      resizeMode="cover"
-      
-    />
-    {/* Foreground interactive layer */}
-    <View pointerEvents="auto" style={StyleSheet.absoluteFill}>
-      <ZoomOut baseWidth={390} baseHeight={780} minScale={0.85} keyboardAwareIOS>
+    <ImageBackground source={require('../app/assets/images/background.jpg')} style={styles.background} resizeMode="cover">
+      <View style={styles.logoContainer}>
+        <Image source={require('../app/assets/images/delaluna_logo.png')} style={styles.logo} resizeMode="contain" />
+      </View>
+
+      <KeyboardAvoidingView
+        style={{ flex: 1, width: '100%' }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={60}
+      >
         <BlurView intensity={90} tint="dark" style={styles.card}>
           <LinearGradient
             colors={['rgba(255,255,255,0.05)', 'rgba(128,128,128,0.05)', 'rgba(0,0,0,0.05)']}
             locations={[0, 0.49, 1]}
             start={[0, 0]}
             end={[0, 1]}
-            style={{ flex: 1, borderRadius: Platform.OS === 'ios' ? 25 : 20, overflow: 'hidden' }}
+            style={StyleSheet.absoluteFillObject}
           >
             <View style={styles.bodyContainer}>
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require('../app/assets/images/delaluna_logo.png')}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              </View>
-
               <Text style={styles.welcomeText}>Welcome!</Text>
 
               <View style={styles.form}>
@@ -171,80 +160,54 @@ export default function Login() {
                 </TouchableOpacity>
               </View>
 
-              <View style={{ alignItems: 'center', gap: 10 }}>
-                <TouchableOpacity style={[styles.loginButton, loading && { opacity: 0.6 }]} onPress={handleLogin} disabled={loading}>
-                  <Text style={styles.loginButtonText}>{loading ? 'Signing in…' : 'Login'}</Text>
-                </TouchableOpacity>
+              <TouchableOpacity style={[styles.loginButton, loading && { opacity: 0.6 }]} onPress={handleLogin} disabled={loading}>
+                <Text style={styles.loginButtonText}>{loading ? 'Signing in…' : 'Login'}</Text>
+              </TouchableOpacity>
 
-                <SecondaryButtonComponent
-                  title="Not a member? "
-                  linkString="Sign up"
-                  onPress={() => router.replace('/signup')}
-                />
-              </View>
+              <SecondaryButtonComponent
+                title="Not a member? "
+                linkString="Sign up"
+                onPress={() => router.replace('/signup')}
+              />
             </View>
           </LinearGradient>
         </BlurView>
-      </ZoomOut>
-    </View>
-  </SafeAreaView>
-);
+      </KeyboardAvoidingView>
+    </ImageBackground>
+  );
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 1, backgroundColor: '#2D1B42' },
-
-  // This fills the 390x780 "design canvas" and will be uniformly scaled
+  background: { flex: 2, alignItems: 'center', backgroundColor: '#2D1B42', justifyContent: 'space-between', gap: 35 },
+  logoContainer: { flex: 1, width: '100%', height: '60%', alignItems: 'center', justifyContent: 'flex-end' },
   card: {
-    width: 390,
-    height: 780,
-    backgroundColor: Platform.OS === 'ios' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.24)',
-    borderRadius: Platform.OS === 'ios' ? 25 : 20,
+    width: '100%', flexGrow: 1,
+    ...Platform.select({
+      ios: { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 25 },
+      android: { backgroundColor: 'rgba(255, 255, 255, 0.24)', borderRadius: 20 },
+    }),
+    gap: 25, paddingHorizontal: 20, paddingVertical: 24, justifyContent: 'space-between',
   },
-
-  bodyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    gap: 20, // avoid space-between; the baseHeight defines layout
-  },
-
-  // Keep the logo from hogging vertical space
-  logoContainer: { width: '100%', alignItems: 'center', justifyContent: 'flex-end', maxHeight: 140 },
-  logo: { width: '70%', aspectRatio: 3.2 },
-
+  logo: { width: '70%', height: '50%' },
+  bodyContainer: { width: '100%', marginTop: 24, marginBottom: 24, alignItems: 'center', flex: 1, justifyContent: 'space-between' },
   welcomeText: {
     color: 'white',
     fontFamily: 'Poppins',
     ...Platform.select({ ios: { fontSize: 40 }, android: { fontSize: 30 } }),
     fontWeight: '500',
+    marginBottom: 24,
   },
-
   form: { width: '90%' },
-
   textField: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(142, 68, 173, 0.6)',
-    marginBottom: 12,
-    paddingHorizontal: 16,
-    height: 56, // Base touch target (scales down to ~48 at minScale 0.85)
-    color: 'white',
+    ...Platform.select({ ios: { backgroundColor: 'rgba(255, 255, 255, 0.1)' }, android: { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }),
+    borderRadius: 12, borderWidth: 1, borderColor: 'rgba(142, 68, 173, 0.6)', marginBottom: 16, paddingHorizontal: 16, height: 48, color: 'white',
   },
-
   forgotPassword: { color: 'white', fontSize: 13, fontFamily: 'Inter', fontWeight: '600', textAlign: 'right', margin: 8 },
-
   loginButton: {
-    width: '80%',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 40,
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 56, // base; after 0.85 scale ≈ 47.6 (still tappable)
+    width: '80%', backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: 40, paddingVertical: 12, alignItems: 'center', marginBottom: 16, justifyContent: 'center',
+    ...Platform.select({ ios: { marginTop: 10 }, android: { marginTop: 20 } }),
   },
   loginButtonText: { color: 'white', fontSize: 20, fontFamily: 'Poppins', fontWeight: '600' },
-  errorText: { color: 'red', fontSize: 15, marginBottom: 8, marginLeft: 4 },
+  errorText: { color: 'red', fontSize: 15, marginBottom: 10, marginLeft: 4 },
+  signUpText: { color: 'white', fontSize: 15, fontFamily: 'Inter', fontWeight: '600', textAlign: 'center', margin: 8 },
 });
