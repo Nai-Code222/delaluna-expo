@@ -147,7 +147,7 @@ export default function SignUpChatScreen() {
       style={styles.background}
       resizeMode="cover"
     >
-      <StatusBar style={'light'} />
+
       <BlurView intensity={10} tint="dark" style={styles.overlay}>
         <View style={styles.header}>
           {step > 0 && (

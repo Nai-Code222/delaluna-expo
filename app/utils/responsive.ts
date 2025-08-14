@@ -6,7 +6,7 @@ const ResponsiveShim = () => null;
 export default ResponsiveShim;
 // Base sizes from a common device (iPhone 14 / 390x844)
 const GUIDELINE_BASE_WIDTH = 390;
-const GUIDELINE_BASE_HEIGHT = 844;
+const GUIDELINE_BASE_HEIGHT = 600;
 
 // Get screen dimensions (using React Native Dimensions API)
 import { Dimensions } from 'react-native';
