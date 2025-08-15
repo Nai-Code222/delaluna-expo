@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import React, { useContext, useEffect, useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Image, Platform, KeyboardAvoidingView,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Image, KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { auth } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -14,6 +14,8 @@ import { useAuth } from '@/app/backend/AuthContext';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeContext } from './themecontext'; 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useHeaderHeight } from '@react-navigation/elements';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -29,6 +31,19 @@ export default function Login() {
   const { setThemeKey } = useContext(ThemeContext);
   const db = getFirestore();
   const passwordRef = React.useRef<TextInput>(null);
+  const insets = useSafeAreaInsets();
+  const headerHeight = (typeof useHeaderHeight === 'function' ? useHeaderHeight() : 0) || 0;
+  const KVO = headerHeight || insets.top; // offset for iOS
+
+  // Track keyboard visibility
+  const [kbVisible, setKbVisible] = useState(false);
+  useEffect(() => {
+    const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const s1 = Keyboard.addListener(showEvt, () => setKbVisible(true));
+    const s2 = Keyboard.addListener(hideEvt, () => setKbVisible(false));
+    return () => { s1.remove(); s2.remove(); };
+  }, []);
 
   // Only auto-redirect if we're NOT in the middle of our controlled login flow
   useEffect(() => {
@@ -104,24 +119,32 @@ export default function Login() {
   };
 
   return (
-    <ImageBackground source={require('../app/assets/images/background.jpg')} style={styles.background} resizeMode="cover">
-      <View style={styles.logoContainer}>
-        <Image source={require('../app/assets/images/delaluna_logo.png')} style={styles.logo} resizeMode="contain" />
-      </View>
-
       <KeyboardAvoidingView
-        style={{ flex: 1, width: '100%' }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={60}
+        style={{ flex: 1, backgroundColor: '#2D1B42' }}
+        behavior={kbVisible && Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={KVO}
       >
-        <BlurView intensity={90} tint="dark" style={styles.card}>
-          <LinearGradient
-            colors={['rgba(255,255,255,0.05)', 'rgba(128,128,128,0.05)', 'rgba(0,0,0,0.05)']}
-            locations={[0, 0.49, 1]}
-            start={[0, 0]}
-            end={[0, 1]}
-            style={StyleSheet.absoluteFillObject}
-          >
+        {/* Layer a full-bleed background so it also covers KAV padding */}
+        <View style={{ flex: 1 }}>
+          <ImageBackground
+            source={require('../app/assets/images/background.jpg')}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+          />
+          {/* Foreground content stays the same */}
+          <View style={{ flex: 1 }}>
+            <View style={styles.logoContainer}>
+              <Image source={require('../app/assets/images/delaluna_logo.png')} style={styles.logo} resizeMode="contain" />
+            </View>
+
+            <BlurView intensity={90} tint="dark" style={styles.card}>
+              <LinearGradient
+                colors={['rgba(255,255,255,0.05)', 'rgba(128,128,128,0.05)', 'rgba(0,0,0,0.05)']}
+                locations={[0, 0.49, 1]}
+                start={[0, 0]}
+                end={[0, 1]}
+                style={StyleSheet.absoluteFillObject}
+              >
             <View style={styles.bodyContainer}>
               <Text style={styles.welcomeText}>Welcome!</Text>
 
@@ -171,14 +194,21 @@ export default function Login() {
               />
             </View>
           </LinearGradient>
-        </BlurView>
+            </BlurView>
+          </View>
+        </View>
       </KeyboardAvoidingView>
-    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 2, alignItems: 'center', backgroundColor: '#2D1B42', justifyContent: 'space-between', gap: 35 },
+  background: {
+    // normalize the backdrop container and center the scaled canvas
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2D1B42',
+  },
   logoContainer: { flex: 1, width: '100%', height: '60%', alignItems: 'center', justifyContent: 'flex-end' },
   card: {
     width: '100%', flexGrow: 1,
@@ -189,7 +219,7 @@ const styles = StyleSheet.create({
     gap: 25, paddingHorizontal: 20, paddingVertical: 24, justifyContent: 'space-between',
   },
   logo: { width: '70%', height: '50%' },
-  bodyContainer: { width: '100%', marginTop: 24, marginBottom: 24, alignItems: 'center', flex: 1, justifyContent: 'space-between' },
+  bodyContainer: { width: '100%', marginTop: 24, marginBottom: 30, alignItems: 'center', flex: 1, justifyContent: 'space-between' },
   welcomeText: {
     color: 'white',
     fontFamily: 'Poppins',
