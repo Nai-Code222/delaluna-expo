@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import React, { useContext, useEffect, useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Image, KeyboardAvoidingView, Platform, Keyboard,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Image, KeyboardAvoidingView, Platform, Keyboard, Alert,
 } from 'react-native';
 import { auth } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -13,16 +13,13 @@ import LoadingScreen from '@/app/components/utils/LoadingScreen';
 import { useAuth } from '@/app/backend/AuthContext';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemeContext } from './themecontext'; 
+import { ThemeContext } from './themecontext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [skipAutoRedirect, setSkipAutoRedirect] = useState(false); // prevents race with useAuth redirect
 
@@ -79,38 +76,39 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (loading) return;
-    setFormError(null);
+
     const emailTrim = email.trim();
     const pwdTrim = password.trim();
-    // Show both errors if both fields are empty
+
     if (!emailTrim && !pwdTrim) {
-      setEmailError('Email is required.');
-      setPasswordError('Password is required.');
+      Alert.alert('Invalid Login', 'Email and password are required.');
       return;
     }
-    if (!emailTrim) { setEmailError('Email is required.'); return; }
-    if (!pwdTrim) { setPasswordError('Password is required.'); return; }
-    setEmailError(null); setPasswordError(null);
+    if (!emailTrim) { Alert.alert('Invalid Login', 'Please enter your email.'); return; }
+    if (!pwdTrim) { Alert.alert('Invalid Login', 'Please enter your password.'); return; }
 
     try {
       setLoading(true);
-      setSkipAutoRedirect(true); // temporarily disable the auto-redirect effect
-
-      // 1) Sign in
+      setSkipAutoRedirect(true);
       const cred = await signInWithEmailAndPassword(auth, emailTrim, pwdTrim);
       const uid = cred.user.uid;
-
-      // 2) Resolve the FINAL theme BEFORE navigating (no visual switch)
       const key = await resolveThemeBeforeNavigate(uid);
-
-      // 3) Apply theme (context persists it); then navigate
-      await Promise.resolve(setThemeKey(key)); // in case your setter becomes async later
+      await Promise.resolve(setThemeKey(key));
       router.replace('/home');
     } catch (e: any) {
-      if (e?.code === 'auth/invalid-credential' || e?.code === 'auth/invalid-password' || e?.code === 'auth/user-not-found') {
-        setFormError('Incorrect email or password. Please try again.');
+      const code = e?.code ?? '';
+      const invalidCredCodes = new Set([
+        'auth/invalid-credential',
+        'auth/invalid-login-credentials',
+        'auth/wrong-password',
+        'auth/invalid-password',
+        'auth/user-not-found',
+        'auth/invalid-email',
+      ]);
+      if (invalidCredCodes.has(code)) {
+        Alert.alert('Login failed', 'Incorrect email or password. Please try again.', [{ text: 'OK' }], { cancelable: true });
       } else {
-        setFormError(e?.message ?? 'Login failed.');
+        Alert.alert('Login failed', e?.message ?? 'Login failed.');
       }
     } finally {
       setLoading(false);
@@ -119,85 +117,82 @@ export default function Login() {
   };
 
   return (
-      <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: '#2D1B42' }}
-        behavior={kbVisible && Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={KVO}
-      >
-        {/* Layer a full-bleed background so it also covers KAV padding */}
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: '#2D1B42' }}
+      behavior={kbVisible && Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={KVO}
+    >
+      {/* Layer a full-bleed background so it also covers KAV padding */}
+      <View style={{ flex: 1 }}>
+        <ImageBackground
+          source={require('../app/assets/images/background.jpg')}
+          style={StyleSheet.absoluteFill}
+          resizeMode="cover"
+        />
+        {/* Foreground content stays the same */}
         <View style={{ flex: 1 }}>
-          <ImageBackground
-            source={require('../app/assets/images/background.jpg')}
-            style={StyleSheet.absoluteFill}
-            resizeMode="cover"
-          />
-          {/* Foreground content stays the same */}
-          <View style={{ flex: 1 }}>
-            <View style={styles.logoContainer}>
-              <Image source={require('../app/assets/images/delaluna_logo.png')} style={styles.logo} resizeMode="contain" />
-            </View>
-
-            <BlurView intensity={90} tint="dark" style={styles.card}>
-              <LinearGradient
-                colors={['rgba(255,255,255,0.05)', 'rgba(128,128,128,0.05)', 'rgba(0,0,0,0.05)']}
-                locations={[0, 0.49, 1]}
-                start={[0, 0]}
-                end={[0, 1]}
-                style={StyleSheet.absoluteFillObject}
-              >
-            <View style={styles.bodyContainer}>
-              <Text style={styles.welcomeText}>Welcome!</Text>
-
-              <View style={styles.form}>
-                <TextInput
-                  placeholder="Email"
-                  placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                  style={styles.textField}
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  keyboardType="email-address"
-                  returnKeyType="next"
-                  onSubmitEditing={() => passwordRef.current?.focus()}
-                  blurOnSubmit={false}
-                />
-                {emailError && <Text style={styles.errorText}>{emailError}</Text>}
-
-                <TextInput
-                  ref={passwordRef}
-                  placeholder="Password"
-                  placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                  secureTextEntry
-                  style={styles.textField}
-                  value={password}
-                  onChangeText={setPassword}
-                  returnKeyType="done"
-                  onSubmitEditing={handleLogin}
-                />
-                {passwordError && <Text style={styles.errorText}>{passwordError}</Text>}
-                {formError && <Text style={styles.errorText}>{formError}</Text>}
-
-                <TouchableOpacity onPress={() => router.replace('/screens/forgot-password.screen')}>
-                  <Text style={styles.forgotPassword}>Forgot Password?</Text>
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity style={[styles.loginButton, loading && { opacity: 0.6 }]} onPress={handleLogin} disabled={loading}>
-                <Text style={styles.loginButtonText}>{loading ? 'Signing in…' : 'Login'}</Text>
-              </TouchableOpacity>
-
-              <SecondaryButtonComponent
-                title="Not a member? "
-                linkString="Sign up"
-                onPress={() => router.replace('/signup')}
-              />
-            </View>
-          </LinearGradient>
-            </BlurView>
+          <View style={styles.logoContainer}>
+            <Image source={require('../app/assets/images/delaluna_logo.png')} style={styles.logo} resizeMode="contain" />
           </View>
+
+          <BlurView intensity={90} tint="dark" style={styles.card}>
+            <LinearGradient
+              colors={['rgba(255,255,255,0.05)', 'rgba(128,128,128,0.05)', 'rgba(0,0,0,0.05)']}
+              locations={[0, 0.49, 1]}
+              start={[0, 0]}
+              end={[0, 1]}
+              style={StyleSheet.absoluteFillObject}
+            >
+              <View style={styles.bodyContainer}>
+                <Text style={styles.welcomeText}>Welcome!</Text>
+
+                <View style={styles.form}>
+                  <TextInput
+                    placeholder="Email"
+                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                    style={styles.textField}
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                    returnKeyType="next"
+                    onSubmitEditing={() => passwordRef.current?.focus()}
+                    blurOnSubmit={false}
+                  />
+
+                  <TextInput
+                    ref={passwordRef}
+                    placeholder="Password"
+                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                    secureTextEntry
+                    style={styles.textField}
+                    value={password}
+                    onChangeText={setPassword}
+                    returnKeyType="done"
+                    onSubmitEditing={handleLogin}
+                  />
+
+                  <TouchableOpacity onPress={() => router.replace('/screens/forgot-password.screen')}>
+                    <Text style={styles.forgotPassword}>Forgot Password?</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity style={[styles.loginButton, loading && { opacity: 0.6 }]} onPress={handleLogin} disabled={loading}>
+                  <Text style={styles.loginButtonText}>{loading ? 'Signing in…' : 'Login'}</Text>
+                </TouchableOpacity>
+
+                <SecondaryButtonComponent
+                  title="Not a member? "
+                  linkString="Sign up"
+                  onPress={() => router.replace('/signup')}
+                />
+              </View>
+            </LinearGradient>
+          </BlurView>
         </View>
-      </KeyboardAvoidingView>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -238,6 +233,5 @@ const styles = StyleSheet.create({
     ...Platform.select({ ios: { marginTop: 10 }, android: { marginTop: 20 } }),
   },
   loginButtonText: { color: 'white', fontSize: 20, fontFamily: 'Poppins', fontWeight: '600' },
-  errorText: { color: 'red', fontSize: 15, marginBottom: 10, marginLeft: 4 },
   signUpText: { color: 'white', fontSize: 15, fontFamily: 'Inter', fontWeight: '600', textAlign: 'center', margin: 8 },
 });
