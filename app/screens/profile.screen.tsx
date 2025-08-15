@@ -1,6 +1,6 @@
 // profile screen
 import React, { useContext, useEffect, useState } from 'react'
-import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, TextInput, Platform, ScrollView, Alert } from 'react-native'
+import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, TextInput, Platform, ScrollView, Alert, useWindowDimensions } from 'react-native'
 import { useAuth } from '@/app/backend/AuthContext'
 import { router } from 'expo-router'
 import HeaderNav from '../components/utils/headerNav'
@@ -18,6 +18,13 @@ import { useIsFocused } from '@react-navigation/native';
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { format } from 'date-fns';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Base canvas + scaling clamps
+const BASE_W = 390;
+const BASE_H = 900;    // adjust if your content needs more vertical room
+const MIN_SCALE = 0.87;
+const MAX_SCALE = 1.12;
 
 const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
@@ -74,6 +81,10 @@ export default function ProfileScreen() {
       getUserRecord();
     }
   }, [user, initializing]);
+
+  // Moved here: hooks must run before any early return
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
   if (initializing || !userRecord) {
     return <LoadingScreen message="Loading profile..." progress={0} />;
@@ -210,8 +221,24 @@ export default function ProfileScreen() {
     return birthday;
   }
 
+  // scale calc (can stay here; not a hook)
+  const availW = Math.max(0, width - insets.left - insets.right);
+  const availH = Math.max(0, height - insets.top - insets.bottom);
+  const sW = availW / BASE_W;
+  const sH = availH / BASE_H;
+  let scale = sW;
+  if (BASE_H * scale > availH) scale = Math.min(sW, sH);
+  scale = Math.min(Math.max(scale, MIN_SCALE), MAX_SCALE);
+
   return renderBackground(
-    <View style={styles.container}>
+    <ScrollView
+      style={{ flex: 1, width: '100%' }}
+      contentContainerStyle={{ paddingBottom: insets.bottom }} // removed paddingTop
+      contentInsetAdjustmentBehavior="never"                   // prevent iOS auto-inset
+      automaticallyAdjustContentInsets={false}                 // prevent RN auto-inset
+      automaticallyAdjustsScrollIndicatorInsets={false}        // keep indicators aligned
+      showsVerticalScrollIndicator={false}
+    >
       <StatusBar style="light" />
       <HeaderNav
         title="Profile"
@@ -220,99 +247,103 @@ export default function ProfileScreen() {
         rightLabel="Edit"
         onRightPress={goToEditProfile}
       />
-      <View style={styles.flexFill}>
-        <View
-          style={styles.profileContentContainer}
-        >
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>Your Profile</Text>
-          </View>
-          <View style={styles.profileInformationContainer}>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>First Name</Text>
-              <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{userRecord?.firstName}</Text>
-              </View>
-            </View>
-          </View>
-          <View style={styles.profileInformationContainer}>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Last Name</Text>
-              <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{userRecord?.lastName}</Text>
-              </View>
-            </View>
-          </View>
-          <View style={styles.profileInformationContainer}>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Email </Text>
-              <View style={styles.userDataContainer}>
-                <Text style={styles.userDataTextField}>{user?.email}</Text>
-              </View>
+      <View style={styles.container}>
+        
+        <View style={styles.flexFill}>
+          <View
+            style={styles.profileContentContainer}
+          >
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>Your Profile</Text>
             </View>
             <View style={styles.profileInformationContainer}>
               <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Date of Birth </Text>
+                <Text style={styles.fieldLabel}>First Name</Text>
                 <View style={styles.userDataContainer}>
-                  <Text style={styles.userDataTextField}>
-                    {getFormattedBirthday(userRecord?.birthday)}
-                  </Text>
+                  <Text style={styles.userDataTextField}>{userRecord?.firstName}</Text>
                 </View>
               </View>
             </View>
             <View style={styles.profileInformationContainer}>
               <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Pronouns </Text>
+                <Text style={styles.fieldLabel}>Last Name</Text>
                 <View style={styles.userDataContainer}>
-                  <Text style={styles.userDataTextField}>{userRecord?.pronouns}</Text>
+                  <Text style={styles.userDataTextField}>{userRecord?.lastName}</Text>
                 </View>
               </View>
             </View>
             <View style={styles.profileInformationContainer}>
               <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Place of Birth </Text>
+                <Text style={styles.fieldLabel}>Email </Text>
                 <View style={styles.userDataContainer}>
-                  <Text style={styles.userDataTextField}>{!userRecord?.isPlaceOfBirthUnknown ? userRecord?.placeOfBirth : "Unknown"}</Text>
+                  <Text style={styles.userDataTextField}>{user?.email}</Text>
                 </View>
               </View>
-            </View>
-            <View style={styles.profileInformationContainer}>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Time of Birth </Text>
-                <View style={styles.userDataContainer}>
-                  <Text style={styles.userDataTextField}>{!userRecord?.isBirthTimeUnknown ? userRecord.birthtime : "Unknown"}</Text>
+              <View style={styles.profileInformationContainer}>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}>Date of Birth </Text>
+                  <View style={styles.userDataContainer}>
+                    <Text style={styles.userDataTextField}>
+                      {getFormattedBirthday(userRecord?.birthday)}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.profileInformationContainer}>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}>Pronouns </Text>
+                  <View style={styles.userDataContainer}>
+                    <Text style={styles.userDataTextField}>{userRecord?.pronouns}</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.profileInformationContainer}>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}>Place of Birth </Text>
+                  <View style={styles.userDataContainer}>
+                    <Text style={styles.userDataTextField}>{!userRecord?.isPlaceOfBirthUnknown ? userRecord?.placeOfBirth : "Unknown"}</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.profileInformationContainer}>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}>Time of Birth </Text>
+                  <View style={styles.userDataContainer}>
+                    <Text style={styles.userDataTextField}>{!userRecord?.isBirthTimeUnknown ? userRecord.birthtime : "Unknown"}</Text>
+                  </View>
                 </View>
               </View>
             </View>
           </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
+              <Image source={require('../assets/icons/changeThemeIcon.png')} style={styles.leftIconContainer} />
+              <Text style={styles.buttonText}>Change Color Theme</Text>
+              <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
+              <Image source={require('../assets/icons/changePasseordIcon.png')} style={styles.leftIconContainer} />
+              <Text style={styles.buttonText}>Change Password</Text>
+              <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.profileButton} onPress={handleLogout}>
+              <Image source={require('../assets/icons/logOutIcon.png')} style={styles.leftIconContainer} />
+              <Text style={styles.buttonText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
+            <Image source={require('../assets/icons/deleteAccountIcon.png')} style={styles.leftIconContainer} />
+            <Text style={styles.buttonText}>Delete Account</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
-            <Image source={require('../assets/icons/changeThemeIcon.png')} style={styles.leftIconContainer} />
-            <Text style={styles.buttonText}>Change Color Theme</Text>
-            <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
-            <Image source={require('../assets/icons/changePasseordIcon.png')} style={styles.leftIconContainer} />
-            <Text style={styles.buttonText}>Change Password</Text>
-            <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.profileButton} onPress={handleLogout}>
-            <Image source={require('../assets/icons/logOutIcon.png')} style={styles.leftIconContainer} />
-            <Text style={styles.buttonText}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
-          <Image source={require('../assets/icons/deleteAccountIcon.png')} style={styles.leftIconContainer} />
-          <Text style={styles.buttonText}>Delete Account</Text>
-        </TouchableOpacity>
+        <AlertModal
+          visible={showErrorModal}
+          message={errorMessage}
+          onClose={() => setShowErrorModal(false)}
+        />
       </View>
-      <AlertModal
-        visible={showErrorModal}
-        message={errorMessage}
-        onClose={() => setShowErrorModal(false)}
-      />
-    </View>
+      {/* --- end unchanged content --- */}
+    </ScrollView>
   )
 }
 
@@ -322,7 +353,7 @@ const styles = StyleSheet.create({
   flexFill: { flex: 1, paddingBottom: 10, width: '100%' },
   profileContentContainer: {
     flexGrow: 1,
-    justifyContent: 'space-between',
+    gap: 12,
     alignItems: 'flex-start',
     width: '100%',
     paddingVertical: 5,

@@ -29,7 +29,7 @@ export default function Login() {
   const db = getFirestore();
   const passwordRef = React.useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
-  const headerHeight = (typeof useHeaderHeight === 'function' ? useHeaderHeight() : 0) || 0;
+  const headerHeight = useHeaderHeight(); // unconditionally call the hook
   const KVO = headerHeight || insets.top; // offset for iOS
 
   // Track keyboard visibility
