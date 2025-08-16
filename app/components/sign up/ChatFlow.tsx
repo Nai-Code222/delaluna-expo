@@ -9,6 +9,7 @@ import {
   Platform,
   ActivityIndicator,
   Keyboard,
+  StatusBar,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LocationAutocomplete from './LocationAutocomplete';
@@ -753,6 +754,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
 
   return (
     <>
+      <StatusBar barStyle="light-content" backgroundColor="#1C2541" />
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.container}

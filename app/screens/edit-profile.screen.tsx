@@ -1,6 +1,6 @@
 // /screens/edit-profile.screen.tsx
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { Alert, KeyboardAvoidingView, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { Alert, KeyboardAvoidingView, TouchableOpacity, TouchableWithoutFeedback, Keyboard, StatusBar } from 'react-native';
 import {
   View,
   Text,
@@ -16,7 +16,7 @@ import HeaderNav from '../components/utils/headerNav';
 import { GlassButton } from '../components/buttons/GlassButton';
 import { updateUserDoc } from '../service/userService';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { format } from 'date-fns';
+import { format, parse, parseISO, isValid } from 'date-fns';
 import EditProfileLocationAutocomplete from '../components/sign up/EditProfileLocationAutocomplete';
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -35,6 +35,19 @@ type Params = {
   placeOfBirth: string;
   isPlaceOfBirthUnknown: string;
   userID: string;
+};
+
+// Add safe birthday parser near top of file
+const parseBirthday = (s?: string | null): Date | null => {
+  if (!s) return null;
+  let d = parseISO(s);
+  if (isValid(d)) return d;
+  const bases = ['MM-dd-yyyy', 'MM/dd/yyyy', 'M/d/yyyy'];
+  for (const mask of bases) {
+    d = parse(s, mask, new Date());
+    if (isValid(d)) return d;
+  }
+  return null;
 };
 
 export default function EditProfileScreen() {
@@ -123,12 +136,13 @@ export default function EditProfileScreen() {
     setFirstName(params.firstName);
     setLastName(params.lastName);
     setPronoun(params.pronouns);
-    setBirthday(params.birthday);
+    // Normalize to ISO once so future renders are stable
+    const parsed = parseBirthday(params.birthday);
+    setBirthday(parsed ? format(parsed, 'yyyy-MM-dd') : '');
     setTimeOfBirth(params.birthtime);
     setisBirthTimeUnknown(params.isBirthTimeUnknown === 'true');
     setPlaceOfBirth(params.placeOfBirth);
     setPlaceUnknown(params.isPlaceOfBirthUnknown === 'true');
-    // clear errors
     setBirthdayError(null);
     setNameError(null);
     setTimeError(null);
@@ -153,31 +167,30 @@ export default function EditProfileScreen() {
       setBirthdayError(null);
       return;
     }
-    const date = new Date(birthday);
+    const d = parseBirthday(birthday);
+    if (!d) { setBirthdayError('Invalid date'); return; }
     const today = new Date();
-    if (date > today) {
+    if (d > today) {
       setBirthdayError('Date cannot be in the future');
-    } else {
-      const age = today.getFullYear() - date.getFullYear() - (
-        today.getMonth() < date.getMonth() ||
-          (today.getMonth() === date.getMonth() && today.getDate() < date.getDate())
-          ? 1 : 0);
-      setBirthdayError(age < 18 ? 'You must be at least 18' : null);
+      return;
     }
+    const age =
+      today.getFullYear() - d.getFullYear()
+      - (today.getMonth() < d.getMonth() ||
+         (today.getMonth() === d.getMonth() && today.getDate() < d.getDate()) ? 1 : 0);
+    setBirthdayError(age < 18 ? 'You must be at least 18' : null);
   }, [birthday]);
 
   // Time validation: not future if today
   useEffect(() => {
     if (!birthday || !timeOfBirth || isBirthTimeUnknown) return;
-    const today = new Date();
-    const birthDate = new Date(birthday);
+    const d = parseBirthday(birthday);
+    if (!d) return;
     const [h, m] = timeOfBirth.split(':').map(Number);
-    const birthTimeDate = new Date();
-    birthTimeDate.setHours(h);
-    birthTimeDate.setMinutes(m);
-
-    if (birthDate.toDateString() === today.toDateString() &&
-      (h > today.getHours() || (h === today.getHours() && m > today.getMinutes()))) {
+    if (Number.isNaN(h) || Number.isNaN(m)) { setTimeError('Invalid time'); return; }
+    const today = new Date();
+    if (d.toDateString() === today.toDateString() &&
+        (h > today.getHours() || (h === today.getHours() && m > today.getMinutes()))) {
       setTimeError('Time cannot be in the future');
     } else {
       setTimeError(null);
@@ -346,8 +359,12 @@ export default function EditProfileScreen() {
     );
   }
 
+  // Before JSX, derive parsed birthday date
+  const birthdayDate = parseBirthday(birthday);
+
   return renderBackground(
     <View style={{ flex: 1 }}>
+      <StatusBar barStyle="light-content" backgroundColor="#1C2541" />
       <HeaderNav
         title="Edit Profile"
         leftLabel="Cancel"
@@ -396,19 +413,14 @@ export default function EditProfileScreen() {
             {/* Birthday */}
             <Text style={styles.label}>Birthday</Text>
             <TouchableOpacity
-              onPress={() => {
-                setOpenPanel('date'); // NEW: mark date panel active
+              onPressIn={() => {
+                Keyboard.dismiss();
+                setOpenPanel('date');
                 setShowDatePicker(true);
               }}
             >
               <Text style={styles.input}>
-                {birthday
-                  ? (() => {
-                    // Display as MM/dd/yyyy
-                    const dateObj = new Date(birthday);
-                    return format(dateObj, 'MM/dd/yyyy');
-                  })()
-                  : 'Select your birthdate'}
+                {birthdayDate ? format(birthdayDate, 'MM/dd/yyyy') : 'Select your birthdate'}
               </Text>
             </TouchableOpacity>
             <DateTimePickerModal
@@ -416,16 +428,15 @@ export default function EditProfileScreen() {
               mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               maximumDate={new Date()}
-              date={birthday ? new Date(birthday) : new Date()}
+              date={birthdayDate ?? new Date()}
               onConfirm={(date: Date) => {
-                const isoFormatted = format(date, 'MM-dd-yyyy');
-                setBirthday(isoFormatted);
+                setBirthday(format(date, 'yyyy-MM-dd')); // Store as ISO
                 setShowDatePicker(false);
-                setOpenPanel('none'); // NEW
+                setOpenPanel('none');
               }}
               onCancel={() => {
                 setShowDatePicker(false);
-                setOpenPanel('none'); // NEW
+                setOpenPanel('none');
               }}
             />
             {birthdayError && <Text style={styles.errorText}>{birthdayError}</Text>}
@@ -434,16 +445,16 @@ export default function EditProfileScreen() {
             <Text style={styles.label}>Pronouns</Text>
             <View
               onTouchStart={() => {
-                // when pronouns open, hide any other overlay (like location list)
-                setOpenPanel('pronoun'); // NEW
+                Keyboard.dismiss();
+                setOpenPanel('pronoun');
               }}
             >
               <PronounDropdown
-                key={`pronoun-${openPanel}`} // NEW: remount to force-close when other panels open
+                key={`pronoun-${openPanel}`}
                 value={pronoun}
                 onChange={(val) => {
                   setPronoun(val);
-                  setOpenPanel('none'); // NEW: close after choosing
+                  setOpenPanel('none');
                 }}
               />
             </View>
@@ -505,57 +516,39 @@ export default function EditProfileScreen() {
             {!isBirthTimeUnknown ? (
               <>
                 <TouchableOpacity
-                  onPress={() => {
-                    setOpenPanel('time'); // NEW: mark time panel active
+                  onPressIn={() => {
+                    Keyboard.dismiss();
+                    setOpenPanel('time');
                     setShowTimePicker(true);
                   }}
                 >
                   <Text style={styles.input}>
-                    {timeOfBirth
-                      ? (() => {
-                        // Show time in hh:mm a format
-                        const [h, m] = timeOfBirth.split(':').map(Number);
-                        if (isNaN(h) || isNaN(m)) return timeOfBirth;
-                        const date = new Date();
-                        date.setHours(h);
-                        date.setMinutes(m);
-                        return format(date, 'hh:mm a');
-                      })()
-                      : 'Select time'}
+                    {(() => {
+                      if (!timeOfBirth) return 'Select time';
+                      const [h, m] = timeOfBirth.split(':').map(Number);
+                      if (Number.isNaN(h) || Number.isNaN(m)) return timeOfBirth;
+                      const d = new Date();
+                      d.setHours(h, m, 0, 0);
+                      return format(d, 'hh:mm a');
+                    })()}
                   </Text>
                 </TouchableOpacity>
                 <DateTimePickerModal
                   isVisible={showTimePicker}
                   mode="time"
                   display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  date={
-                    (() => {
-                      // Parse timeOfBirth to Date if possible, else use now
-                      if (timeOfBirth) {
-                        const [h, m] = timeOfBirth.split(':').map(Number);
-                        if (!isNaN(h) && !isNaN(m)) {
-                          const d = new Date();
-                          d.setHours(h);
-                          d.setMinutes(m);
-                          d.setSeconds(0);
-                          d.setMilliseconds(0);
-                          return d;
-                        }
-                      }
-                      return new Date();
-                    })()
-                  }
+                  date={(() => {
+                    const [h, m] = (timeOfBirth ?? '00:00').split(':').map(Number);
+                    const d = new Date();
+                    if (!Number.isNaN(h) && !Number.isNaN(m)) d.setHours(h, m, 0, 0);
+                    return d;
+                  })()}
                   onConfirm={(date: Date) => {
-                    // Save as hh:mm a (12-hour with AM/PM)
-                    const formatted = format(date, 'hh:mm a');
-                    setTimeOfBirth(formatted);
+                    setTimeOfBirth(format(date, 'HH:mm')); // Store 24h value
                     setShowTimePicker(false);
-                    setOpenPanel('none'); // NEW
+                    setOpenPanel('none');
                   }}
-                  onCancel={() => {
-                    setShowTimePicker(false);
-                    setOpenPanel('none'); // NEW
-                  }}
+                  onCancel={() => { setShowTimePicker(false); setOpenPanel('none'); }}
                 />
                 {timeError && <Text style={styles.errorText}>{timeError}</Text>}
               </>
@@ -581,19 +574,14 @@ export default function EditProfileScreen() {
               />
               <Text style={styles.toggleLabel}>I don’t know</Text>
             </View>
-          </View>
 
-          {/* Sticky Save button above keyboard/safe area */}
-          <View
-            pointerEvents="box-none"
-            style={[
-              styles.stickySave,
-              {
-                bottom: Math.max(insets.bottom + 16, keyboardInset + 16),
-              },
-            ]}
-          >
-            <GlassButton title="Save Changes" onPress={handleSave} />
+            {/* Move Save button here, inline in the form */}
+            <View style={styles.saveBttnContainer}>
+              <GlassButton
+                title="Save Changes"
+                onPress={handleSave}
+              />
+            </View>
           </View>
 
           {/* Success toast + pwd overlay can stay as you had them */}
@@ -767,12 +755,5 @@ pwdBtnText: { color: '#fff', fontWeight: '700' },
     fontSize: 17,
     fontWeight: '600',
     textAlign: 'center',
-  },
-  stickySave: {
-    position: 'absolute',
-    left: 20,
-    right: 20,
-    alignItems: 'center',
-    // GlassButton defines height
   },
 });
