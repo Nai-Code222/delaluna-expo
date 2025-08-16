@@ -7,6 +7,7 @@ import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { auth } from '@/firebaseConfig';
+import { StatusBar } from 'expo-status-bar'; // added
 
 
 type Params = {
@@ -93,6 +94,7 @@ export default function ChangeThemeScreen() {
 
   return renderBackground(
     <View style={[styles.container, { backgroundColor: 'transparent' }]}>
+      <StatusBar style="light" translucent backgroundColor="transparent" />
       <HeaderNav
         title="Change Color Theme"
         leftIconName="arrow-back"

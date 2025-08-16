@@ -147,17 +147,22 @@ export default function SignUpChatScreen() {
       style={styles.background}
       resizeMode="cover"
     >
-
+      <StatusBar style="light" translucent backgroundColor="transparent" />
       <BlurView intensity={10} tint="dark" style={styles.overlay}>
+        {/* New cancel bar stacked above */}
+        <View style={styles.cancelBar}>
+          <TouchableOpacity onPress={onCancelPress}>
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Keep Go Back on its own row below the cancel bar */}
         <View style={styles.header}>
           {step > 0 && (
             <TouchableOpacity onPress={() => setStep(step - 1)}>
               <Text style={styles.goBackText}>← Go Back</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity onPress={onCancelPress} style={styles.cancelButton}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </TouchableOpacity>
         </View>
 
         <View style={styles.chatFlowWrapper}>
@@ -200,6 +205,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(0),
     width: '100%',
   },
+  // New: full-width bar for Cancel button
+  cancelBar: {
+    width: '100%',
+    paddingHorizontal: scale(15),
+    marginTop: verticalScale(10),
+    marginBottom: verticalScale(15), // small gap above chat/header
+    alignItems: 'flex-end',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -208,7 +221,6 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(8),
     position: 'relative',
   },
-  cancelButton: { position: 'absolute', right: scale(16) },
   goBackText: { color: '#6FFFE9', fontSize: moderateScale(18), fontWeight: '500' },
   cancelText: { color: '#6FFFE9', fontSize: moderateScale(18), fontWeight: '500' },
 
@@ -240,5 +252,8 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     alignSelf: 'stretch',
+    // Optionally add a tiny top/left inset if needed:
+    // paddingTop: verticalScale(5),
+    // paddingLeft: scale(5),
   },
 });

@@ -1,12 +1,19 @@
-import { View, Text, TextInput, Button, StyleSheet, ImageBackground, TouchableOpacity, Platform, StatusBar, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, ImageBackground, TouchableOpacity, Platform, StatusBar as RNStatusBar, Alert } from 'react-native';
 import React from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useWindowDimensions } from 'react-native';
 
 // app/screens/forgotPassword.screen.tsx
 export default function ForgotPasswordScreen() {
     var email = '';
+
+    const insets = useSafeAreaInsets();
+    const { height } = useWindowDimensions();
+    const cancelTop = insets.top + (height < 700 ? 4 : 16);
 
     const handleCancel = () => {
         router.replace('/login');
@@ -19,9 +26,10 @@ export default function ForgotPasswordScreen() {
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}
             style={styles.background}>
+            <StatusBar style="light" translucent backgroundColor="transparent" />
             <View style={styles.container}>
                 <TouchableOpacity
-                    style={styles.cancelButton}
+                    style={[styles.cancelButton, { top: cancelTop }]}
                     onPress={handleCancel}>
                     <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
@@ -142,7 +150,7 @@ const styles = StyleSheet.create({
     },
     cancelButton: {
         position: 'absolute',
-        top: Platform.OS === 'android' ? StatusBar.currentHeight || 20 : 50,
+        top: 5,
         left: 20,
         padding: 10,
     },

@@ -3252,6 +3252,27 @@ PODS:
     - React-logger
     - React-perflogger
     - React-utils (= 0.76.9)
+  - ReactNativeAvoidSoftinput (7.0.2):
+    - DoubleConversion
+    - glog
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RecaptchaInterop (101.0.0)
   - RNCAsyncStorage (1.23.1):
     - DoubleConversion
@@ -3467,6 +3488,7 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - ReactNativeAvoidSoftinput (from `../node_modules/react-native-avoid-softinput`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
@@ -3677,6 +3699,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  ReactNativeAvoidSoftinput:
+    :path: "../node_modules/react-native-avoid-softinput"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNDateTimePicker:
@@ -3802,6 +3826,7 @@ SPEC CHECKSUMS:
   React-utils: d909b44031ca5ca7119b20e8086041b9ce929a74
   ReactCodegen: 36ed054376494dd17f856a3fb9d9cc405439ae12
   ReactCommon: 45f16970c979b3110a2115eca4fbc22d17c70b85
+  ReactNativeAvoidSoftinput: b341b818dff390f93ae78d2773233502bae8a8d0
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   RNCAsyncStorage: 500f13dc304990a72324c0580e3acd4b7a1aa6af
   RNDateTimePicker: e98aa448cb4ac04aeaaf938f467e449222e34647

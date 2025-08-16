@@ -6,6 +6,7 @@ import { View, StyleSheet, ImageBackground } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/app/backend/AuthContext';
+import { StatusBar } from 'expo-status-bar'; // added
 
 
 export default function SplashScreen() {
@@ -36,6 +37,7 @@ export default function SplashScreen() {
 
       resizeMode="cover"
     >
+      <StatusBar style="light" translucent backgroundColor="transparent" />
       <View style={styles.overlay}>
         <LottieView
           ref={animationRef}

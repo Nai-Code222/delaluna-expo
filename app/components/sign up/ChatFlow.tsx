@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Platform,
   ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LocationAutocomplete from './LocationAutocomplete';
@@ -276,7 +277,10 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                   <TouchableOpacity
                     style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
                     disabled={!textInput}
-                    onPress={() => saveAndNext(textInput)}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      saveAndNext(textInput);
+                    }}
                   >
                     <Text style={styles.sendText}>➔</Text>
                   </TouchableOpacity>
@@ -293,6 +297,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                 } else {
                   setError('');
                   setError(null);
+                  Keyboard.dismiss();
                   setAnswers((a) => ({ ...a, password: textInput }));
                   saveAndNext(textInput);
                 }
@@ -333,7 +338,10 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                         styles.choiceButton,
                         (answers as any)[current.key] === opt && styles.choiceSelected,
                       ]}
-                      onPress={() => saveAndNext(opt)}
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        saveAndNext(opt);
+                      }}
                     >
                       <Text
                         style={[
@@ -363,7 +371,10 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                   <View style={styles.inputRow}>
                     <TouchableOpacity
                       style={styles.datePickerButton}
-                      onPress={() => setShowDatePicker(true)}
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        setShowDatePicker(true);
+                      }}
                     >
                       <Text style={styles.datePickerText}>
                         {answers.birthday
@@ -374,7 +385,10 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                     <TouchableOpacity
                       style={[styles.sendButton, { opacity: selected && !isFuture ? 1 : 0.5 }]}
                       disabled={!selected || isFuture || isUnder18}
-                      onPress={() => saveAndNext(selected!)}
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        saveAndNext(selected!);
+                      }}
                     >
                       <Text style={styles.sendText}>➔</Text>
                     </TouchableOpacity>
@@ -417,6 +431,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                   setLocationError('Please pick a location from the list or tap “I don’t know.”');
                   return;
                 }
+                Keyboard.dismiss();
                 setLocationError(null);
                 setAnswers(a => ({
                   ...a,
@@ -427,6 +442,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
               };
 
               const handleUnknown = () => {
+                Keyboard.dismiss();
                 setTextInput('');
                 setSuggestions([]);
                 setLocationError(null);
@@ -437,6 +453,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                 }));
                 saveAndNext('I don’t know');
               };
+
               return (
                 <View style={styles.inputContainer}>
                   {!!locationError && (
@@ -452,6 +469,8 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                         setTextInput(text);
                         setAnswers(a => ({ ...a, placeOfBirthUnknown: false }));
                         setLocationError(null);
+                        // Clear stale selection so typed-only input can't be sent
+                        setSuggestions([]);
                       }}
                       onResultsVisibilityChange={visible =>
                         setShowSendButton(!visible && !!textInput.trim())
@@ -469,10 +488,10 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                           placeOfBirth: label,
                           placeOfBirthUnknown: false,
                         }));
+                        Keyboard.dismiss(); // blur after selecting a suggestion
                       }}
                     />
 
-                    {/* Always render the arrow, but disable it when !canSendLocation */}
                     <TouchableOpacity
                       style={[
                         styles.sendButton,
@@ -496,7 +515,6 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                 </View>
               );
             }
-
             case 'time': {
               const now = new Date();
               const birthDate = answers.birthday;
@@ -518,7 +536,10 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                   <View style={styles.inputRow}>
                     <TouchableOpacity
                       style={styles.datePickerButton}
-                      onPress={() => setShowTimePicker(true)}
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        setShowTimePicker(true);
+                      }}
                     >
                       <Text style={styles.datePickerText}>
                         {birthTime
@@ -529,17 +550,18 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                     <TouchableOpacity
                       style={[styles.sendButton, { opacity: birthTime && !isFutureTime ? 1 : 0.5 }]}
                       disabled={!birthTime || isFutureTime}
-                      onPress={() => saveAndNext(birthTime!)}
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        saveAndNext(birthTime!);
+                      }}
                     >
                       <Text style={styles.sendText}>➔</Text>
                     </TouchableOpacity>
                   </View>
                   <TouchableOpacity
-                    style={[
-                      styles.choiceButton,
-                      { alignSelf: 'center', marginTop: 16 },
-                    ]}
+                    style={[styles.choiceButton, { alignSelf: 'center', marginTop: 16 }]}
                     onPress={() => {
+                      Keyboard.dismiss();
                       saveAndNext('I don’t know');
                     }}
                   >
@@ -567,9 +589,6 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
               );
             }
             case 'email': {
-              const isValidEmail = (email: string) =>
-                /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/.test(email);
-
               const handleSend = async () => {
                 if (!isValidEmail(textInput)) {
                   setError('Please enter a valid email address.');
@@ -586,6 +605,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                     return;
                   }
                   setAnswers(a => ({ ...a, email: textInput }));
+                  Keyboard.dismiss();
                   saveAndNext(textInput);
                 } catch (firebaseErr: any) {
                   console.error(firebaseErr);

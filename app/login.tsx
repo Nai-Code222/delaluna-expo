@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeContext } from './themecontext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
+import { StatusBar } from 'expo-status-bar'; // added
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -122,6 +123,7 @@ export default function Login() {
       behavior={kbVisible && Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={KVO}
     >
+      <StatusBar style="light" translucent backgroundColor="transparent" />
       {/* Layer a full-bleed background so it also covers KAV padding */}
       <View style={{ flex: 1 }}>
         <ImageBackground
@@ -173,7 +175,10 @@ export default function Login() {
                     onSubmitEditing={handleLogin}
                   />
 
-                  <TouchableOpacity onPress={() => router.replace('/screens/forgot-password.screen')}>
+                  <TouchableOpacity
+                    style={styles.forgotPasswordButton}
+                    onPress={() => router.replace('/screens/forgot-password.screen')}
+                  >
                     <Text style={styles.forgotPassword}>Forgot Password?</Text>
                   </TouchableOpacity>
                 </View>
@@ -228,6 +233,10 @@ const styles = StyleSheet.create({
     borderRadius: 12, borderWidth: 1, borderColor: 'rgba(142, 68, 173, 0.6)', marginBottom: 16, paddingHorizontal: 16, height: 48, color: 'white',
   },
   forgotPassword: { color: 'white', fontSize: 13, fontFamily: 'Inter', fontWeight: '600', textAlign: 'right', margin: 8 },
+  // NEW: make touchable only as wide as its content and align it to the right
+  forgotPasswordButton: {
+    alignSelf: 'flex-end',
+  },
   loginButton: {
     width: '80%', backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: 40, paddingVertical: 12, alignItems: 'center', marginBottom: 16, justifyContent: 'center',
     ...Platform.select({ ios: { marginTop: 10 }, android: { marginTop: 20 } }),

@@ -17,6 +17,7 @@ import AuthContext from '@/app/backend/AuthContext';
 import HeaderNav from '../components/utils/headerNav';
 import { ThemeContext } from '@/app/themecontext'; // 👈 use the exact same path/case
 import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 
 export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext);
@@ -83,6 +84,7 @@ export default function HomeScreen() {
 
   return renderBackground(
     <Animated.View style={[styles.container, { opacity: fade }]}>
+      <ExpoStatusBar style="light" />
       <HeaderNav
         title="Home"
         leftIconName={undefined}
@@ -90,6 +92,7 @@ export default function HomeScreen() {
         rightIconSource={require('../assets/icons/Avatar.png')}
         onRightPress={goToProfile}
       />
+      
       <View style={styles.content}>
         <Text style={styles.title}>Welcome Home!</Text>
         <Text style={styles.email}>{user ? `Logged in as: ${user.email}` : 'No user logged in.'}</Text>
