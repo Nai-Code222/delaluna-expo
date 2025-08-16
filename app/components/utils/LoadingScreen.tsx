@@ -1,6 +1,6 @@
 import LottieView from 'lottie-react-native';
 import React, { useContext } from 'react';
-import { View, ImageBackground, StyleSheet, Animated, Easing, Image } from 'react-native';
+import { View, ImageBackground, StyleSheet, Animated, Easing, Image, StatusBar } from 'react-native';
 import { BodyText } from '../typography/BodyText';
 import { ThemeContext } from '../../themecontext'
 const backgroundImg = require('../../assets/images/mainBackground.png');
@@ -25,6 +25,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ progress }) => {
 
     return (
         <ImageBackground source={theme.backgroundImage} style={styles.background}>
+            <StatusBar barStyle="light-content" backgroundColor="#1C2541" />
             <View style={styles.centerContent}>
             <View style={styles.overlay}></View>
             <LottieView
