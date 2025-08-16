@@ -9,6 +9,8 @@ import {
   Platform,
   Modal,
   useWindowDimensions,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
@@ -147,28 +149,34 @@ export default function SignUpChatScreen() {
       style={styles.background}
       resizeMode="cover"
     >
-      <StatusBar style="light" translucent backgroundColor="transparent" />
-      <BlurView intensity={10} tint="dark" style={styles.overlay}>
-        {/* New cancel bar stacked above */}
-        <View style={styles.cancelBar}>
-          <TouchableOpacity onPress={onCancelPress}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
+      <TouchableWithoutFeedback
+        onPress={() => Keyboard.dismiss()}
+        accessible={false}
+      >
+        <View style={{ flex: 1 }}>
+          <StatusBar style="light" translucent backgroundColor="transparent" />
+          <BlurView intensity={10} tint="dark" style={styles.overlay}>
+            {/* Single header row: Go Back (left) and Cancel (right) */}
+            <View style={styles.header}>
+              {step > 0 ? (
+                <TouchableOpacity onPress={() => setStep(step - 1)}>
+                  <Text style={styles.goBackText}>← Go Back</Text>
+                </TouchableOpacity>
+              ) : (
+                <View />
+              )}
+              <TouchableOpacity onPress={onCancelPress}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
 
-        {/* Keep Go Back on its own row below the cancel bar */}
-        <View style={styles.header}>
-          {step > 0 && (
-            <TouchableOpacity onPress={() => setStep(step - 1)}>
-              <Text style={styles.goBackText}>← Go Back</Text>
-            </TouchableOpacity>
-          )}
+            <View style={styles.chatFlowWrapper}>
+              <ChatFlow steps={steps} onComplete={handleComplete} step={step} setStep={setStep} />
+            </View>
+          </BlurView>
         </View>
+      </TouchableWithoutFeedback>
 
-        <View style={styles.chatFlowWrapper}>
-          <ChatFlow steps={steps} onComplete={handleComplete} step={step} setStep={setStep} />
-        </View>
-      </BlurView>
       <Modal
         visible={confirmVisible}
         transparent
@@ -205,18 +213,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(0),
     width: '100%',
   },
-  // New: full-width bar for Cancel button
-  cancelBar: {
-    width: '100%',
-    paddingHorizontal: scale(15),
-    marginTop: verticalScale(10),
-    marginBottom: verticalScale(15), // small gap above chat/header
-    alignItems: 'flex-end',
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between', // changed from flex-start
     paddingHorizontal: scale(16),
     marginBottom: verticalScale(8),
     position: 'relative',

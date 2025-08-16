@@ -84,6 +84,8 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [locationError, setLocationError] = useState<string | null>(null);
+  // NEW: track if user has selected a suggestion
+  const [placeSelected, setPlaceSelected] = useState(false);
 
   const current = steps[step];
 
@@ -422,13 +424,13 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
               );
             }
             case 'location': {
+              // Only allow sending if a suggestion has been selected
               const canSendLocation =
-                !answers.placeOfBirthUnknown &&
-                suggestions.includes(textInput.trim());
+                !answers.placeOfBirthUnknown && placeSelected;
 
               const handleSend = () => {
                 if (!canSendLocation) {
-                  setLocationError('Please pick a location from the list or tap “I don’t know.”');
+                  setLocationError('Please pick a location from suggestions or tap “I don’t know.”');
                   return;
                 }
                 Keyboard.dismiss();
@@ -446,6 +448,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                 setTextInput('');
                 setSuggestions([]);
                 setLocationError(null);
+                setPlaceSelected(false); // NEW: reset selection
                 setAnswers(a => ({
                   ...a,
                   placeOfBirth: null,
@@ -469,8 +472,9 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                         setTextInput(text);
                         setAnswers(a => ({ ...a, placeOfBirthUnknown: false }));
                         setLocationError(null);
-                        // Clear stale selection so typed-only input can't be sent
                         setSuggestions([]);
+                        // If user types after selection, mark as not selected
+                        setPlaceSelected(false);
                       }}
                       onResultsVisibilityChange={visible =>
                         setShowSendButton(!visible && !!textInput.trim())
@@ -488,7 +492,8 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                           placeOfBirth: label,
                           placeOfBirthUnknown: false,
                         }));
-                        Keyboard.dismiss(); // blur after selecting a suggestion
+                        setPlaceSelected(true); // NEW: mark as selected
+                        Keyboard.dismiss();
                       }}
                     />
 
