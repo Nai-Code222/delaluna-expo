@@ -48,8 +48,7 @@ export default function SplashScreen() {
         />
       </View>
     </ImageBackground>
-  );
-}
+  );}
 
 const styles = StyleSheet.create({
   background: {

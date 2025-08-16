@@ -58,6 +58,9 @@ export default {
           ios: {
             useFrameworks: 'static',
           },
+          android: {
+            kotlinVersion: '1.9.24', // must match Compose Compiler requirements
+          },
         },
       ],
       'expo-dev-client',
