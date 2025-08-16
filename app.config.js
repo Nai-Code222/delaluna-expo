@@ -5,19 +5,16 @@ export default {
     name: 'delaluna-expo',
     slug: 'delaluna-expo',
     jsEngine: 'jsc',
-    ios: { jsEngine: 'jst' },
-    android: { jsEngine: 'jst' },
+
     version: '2.0.0',
     orientation: 'portrait',
     icon: './app/assets/images/Delaluna_App_Icon.png',
     scheme: 'myapp',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
-    owner: "naicode022",
-    updates: {
-      url: "https://u.expo.dev/24610560-82da-4ee8-99d3-e51db4e8401c"
-    },
-    runtimeVersion: "2.0.0",
+    owner: 'naicode022',
+    updates: { url: 'https://u.expo.dev/24610560-82da-4ee8-99d3-e51db4e8401c' },
+    runtimeVersion: '2.0.0',
 
     extra: {
       FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
@@ -27,21 +24,19 @@ export default {
       FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID,
       FIREBASE_APP_ID: process.env.FIREBASE_APP_ID,
       FIREBASE_MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID,
-      eas: {
-        projectId: '24610560-82da-4ee8-99d3-e51db4e8401c',
-      },
+      eas: { projectId: '24610560-82da-4ee8-99d3-e51db4e8401c' },
     },
 
     ios: {
+      jsEngine: 'jsc',
       supportsTablet: true,
       bundleIdentifier: 'com.app.delaluna-answers',
     },
 
     android: {
+      jsEngine: 'jsc',
       softwareKeyboardLayoutMode: 'resize',
-      adaptiveIcon: {
-        foregroundImage: './app/assets/images/Delaluna_App_Icon.png',
-      },
+      adaptiveIcon: { foregroundImage: './app/assets/images/Delaluna_App_Icon.png' },
       package: 'com.app.delaluna_answers',
     },
 
@@ -52,32 +47,20 @@ export default {
     },
 
     plugins: [
-      [
-        'expo-build-properties',
-        {
-          ios: {
-            useFrameworks: 'static',
-          },
-          android: {
-            kotlinVersion: '1.9.24', // must match Compose Compiler requirements
-          },
-        },
-      ],
+      ['expo-build-properties', {
+        ios: { useFrameworks: 'static' },
+        android: { kotlinVersion: '1.9.24' },   // <— keep this
+      }],
       'expo-dev-client',
       'expo-router',
-      [
-        'expo-splash-screen',
-        {
-          image: './app/assets/images/Delaluna_App_Icon.png',
-          imageWidth: 200,
-          resizeMode: 'contain',
-          backgroundColor: '#ffffff',
-        },
-      ],
+      ['expo-splash-screen', {
+        image: './app/assets/images/Delaluna_App_Icon.png',
+        imageWidth: 200,
+        resizeMode: 'contain',
+        backgroundColor: '#ffffff',
+      }],
     ],
 
-    experiments: {
-      typedRoutes: true,
-    },
+    experiments: { typedRoutes: true },
   },
 };
