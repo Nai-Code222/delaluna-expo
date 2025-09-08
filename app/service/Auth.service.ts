@@ -1,5 +1,5 @@
 // src/services/authService.ts
-import UserRecord from '@/app/model/UserRecord';
+import UserRecord from '../model/UserRecord';
 import { auth, db } from '../../firebaseConfig';
 import {
   createUserWithEmailAndPassword,
@@ -23,9 +23,6 @@ export default function signUp(
 ): Promise<UserCredential> {
   return createUserWithEmailAndPassword(auth, email, password);
 }
-
-
-
 
 /**
  * Sign in an existing user with email & password.

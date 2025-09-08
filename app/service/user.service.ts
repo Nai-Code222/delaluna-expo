@@ -1,5 +1,5 @@
 import { auth } from '../../firebaseConfig';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, FieldValue } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import {
   createUserWithEmailAndPassword,
