@@ -7,16 +7,20 @@ import {
 } from 'react-native';
 import { auth } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import SecondaryButtonComponent from '@/app/components/buttons/secondaryButtonComponent';
+import SecondaryButtonComponent from './components/buttons/secondaryButtonComponent';
 import { useRouter } from 'expo-router';
-import LoadingScreen from '@/app/components/utils/LoadingScreen';
-import { useAuth } from '@/app/backend/AuthContext';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import LoadingScreen from './components/utils/LoadingScreen';
+import { useAuth } from './backend/AuthContext';
+import { getFirestore, doc, getDoc, serverTimestamp } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeContext } from './themecontext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { StatusBar } from 'expo-status-bar'; // added
+import PasswordInputField from './components/utils/passwordInputField';
+import { updateUserDoc } from './service/user.service';
+import { FieldValue } from 'firebase/firestore';
+import { DateTime } from 'luxon';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -93,6 +97,8 @@ export default function Login() {
       setSkipAutoRedirect(true);
       const cred = await signInWithEmailAndPassword(auth, emailTrim, pwdTrim);
       const uid = cred.user.uid;
+      const nowUtc = DateTime.utc();
+      await updateUserDoc(uid, { lastLoginDate: nowUtc.toJSDate() });
       const key = await resolveThemeBeforeNavigate(uid);
       await Promise.resolve(setThemeKey(key));
       router.replace('/home');
@@ -163,14 +169,12 @@ export default function Login() {
                     blurOnSubmit={false}
                   />
 
-                  <TextInput
-                    ref={passwordRef}
-                    placeholder="Password"
-                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                    secureTextEntry
+                  <PasswordInputField
                     style={styles.textField}
                     value={password}
                     onChangeText={setPassword}
+                    placeholder="Password"
+                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
                     returnKeyType="done"
                     onSubmitEditing={handleLogin}
                   />
@@ -233,7 +237,6 @@ const styles = StyleSheet.create({
     borderRadius: 12, borderWidth: 1, borderColor: 'rgba(142, 68, 173, 0.6)', marginBottom: 16, paddingHorizontal: 16, height: 48, color: 'white',
   },
   forgotPassword: { color: 'white', fontSize: 13, fontFamily: 'Inter', fontWeight: '600', textAlign: 'right', margin: 8 },
-  // NEW: make touchable only as wide as its content and align it to the right
   forgotPasswordButton: {
     alignSelf: 'flex-end',
   },
