@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "~14.0.4",
+    "@photostructure/tz-lookup": "^11.2.1",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-firebase/app": "^22.2.0",
@@ -26,6 +27,7 @@
     "@react-navigation/native-stack": "^7.2.0",
     "@rneui/themed": "^4.0.0-rc.8",
     "@xmldom/xmldom": "^0.8.10",
+    "astronomy-engine": "^2.1.19",
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
     "expo": "~52.0.46",
@@ -46,7 +48,9 @@
     "expo-web-browser": "~14.0.2",
     "firebase": "^12.0.0",
     "hermes-engine": "^0.11.0",
+    "intl": "^1.2.5",
     "lottie-react-native": "7.1.0",
+    "luxon": "^3.7.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.9",
@@ -64,6 +68,7 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/jest": "^29.5.12",
+    "@types/luxon": "^3.7.1",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.3.0",
     "babel-preset-expo": "^13.2.3",
