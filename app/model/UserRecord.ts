@@ -14,13 +14,21 @@ export interface UserRecord {
   // auth/membership
   email: string;
   isPaidMember: boolean;
-  signUpDate?: Timestamp | ServerTimestamp;
-  lastLoginDate?: Date | Timestamp;
+
+  // ✅ human-readable strings for UI
+  signUpDate?: string;        // "MM/DD/YYYY hh:mm:ss AM UTC-5"
+  lastLoginDate?: string;     // "MM/DD/YYYY hh:mm:ss AM UTC-5"
+
+  // ✅ machine-sortable timestamps for queries/ordering
+  signUpAt?: Timestamp | ServerTimestamp;
+  lastLoginAt?: Timestamp | ServerTimestamp;
+
   themeKey?: string; // e.g., 'default'
 
   // astrology (inputs for display)
-  birthday: string;           // 'YYYY-MM-DD'
-  birthtime?: string;         // e.g., '03:15 PM'
+  birthday: string;           // "MM/DD/YYYY"
+  birthtime?: string;         // "hh:mm AM"
+  birthTimezone?: string;     // IANA, e.g. "Europe/Rome"
   placeOfBirth?: string | null;
 
   // UX flags
@@ -30,9 +38,9 @@ export interface UserRecord {
   // canonical astro inputs (math)
   birthLat?: number;
   birthLon?: number;
-  birthTimezone?: string;     // IANA
-  birthTimeLocal?: string;    // 'HH:mm'
-  birthDateTimeUTC?: Date | Timestamp;
+
+  // ✅ canonical UTC string (no local)
+  birthDateTimeUTC?: string;  // "MM/DD/YYYY - hh:mm:ss AM UTC-6"
 
   // outputs
   zodiacSign?: Nullable<string>;
@@ -40,7 +48,7 @@ export interface UserRecord {
   moonSign?: Nullable<string>;
 }
 
-// keep a lean default for UI state (don’t fake timestamps)
+// keep a lean default for UI state
 export const UserRecordDefault: Partial<UserRecord> = {
   firstName: '',
   lastName: '',
@@ -51,6 +59,7 @@ export const UserRecordDefault: Partial<UserRecord> = {
 
   birthday: '',
   birthtime: '',
+  birthTimezone: undefined,
   placeOfBirth: null,
 
   isBirthTimeUnknown: false,
