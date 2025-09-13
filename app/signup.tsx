@@ -1,4 +1,7 @@
 // screens/SignUpChatScreen.tsx
+import 'intl';
+import 'intl/locale-data/jsonp/en';
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -14,26 +17,22 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
-import ChatFlow, { StepConfig, AnswerRecord } from '@/app/components/sign up/ChatFlow';
-import signUp from '../app/service/Auth.service';
+import ChatFlow, { StepConfig, FinalSignupPayload } from './components/sign up/ChatFlow';
+import signUp from './service/auth.service';
 import { UserCredential, sendEmailVerification } from 'firebase/auth';
-import type { UserRecord } from '@/app/model/UserRecord';
-import { createUserDoc } from '@/app/service/userService';
-import LoadingScreen from '@/app/components/utils/LoadingScreen';
-import { useAuth } from '@/app/backend/AuthContext';
+import type { UserRecord } from './model/UserRecord';
+import { createUserDoc } from './service/user.service';
+import LoadingScreen from './components/utils/LoadingScreen';
+import { useAuth } from './backend/AuthContext';
 import { StatusBar } from 'expo-status-bar';
 import { scale, verticalScale, moderateScale } from '../src/utils/responsive';
+import { DateTime } from 'luxon';
+import { getBigThree } from '../app/service/astro.service'; // adjust path if needed
 
-function formatTime12Hour(date: Date | null | undefined): string {
-  if (!(date instanceof Date)) return '';
-  let hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours === 0 ? 12 : hours;
-  const minStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
-  return `${hours}:${minStr} ${ampm}`;
-}
+// ----- Defaults for "I don't know" -----
+const FALLBACK_PLACE_LABEL = 'Greenwich, London, United Kingdom';
+const FALLBACK_LAT = 51.4779;
+const FALLBACK_LON = 0.0015;
 
 export default function SignUpChatScreen() {
   const router = useRouter();
@@ -42,7 +41,6 @@ export default function SignUpChatScreen() {
   const [progress, setProgress] = useState(0);
   const { user, initializing } = useAuth();
   const [confirmVisible, setConfirmVisible] = useState(false);
-  const hasAnyAnswer = step > 0;
   const { width } = useWindowDimensions();
   const modalCardWidth = width > 640 ? '55%' : width > 480 ? '70%' : '86%';
 
@@ -64,43 +62,106 @@ export default function SignUpChatScreen() {
     { key: 'final', renderQuestion: () => `Your secrets are safe with us 🔐`, inputType: 'final' },
   ];
 
-  const setStepToKey = (key: keyof AnswerRecord) => {
-    const index = steps.findIndex(s => s.key === key);
+  const setStepToKey = (key: StepConfig['key']) => {
+    const index = steps.findIndex((s) => s.key === key);
     if (index !== -1) setStep(index);
   };
 
-  const handleComplete = async (answers: AnswerRecord) => {
+  // Parse "MM/DD/YYYY - hh:mm:ss AM UTC-6[:MM]" -> Luxon UTC DateTime
+  const parseBirthUtcFromString = (s: string): DateTime | null => {
+    const re = /^(\d{2})\/(\d{2})\/(\d{4})\s*-\s*(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)\s*UTC([+-])(\d{1,2})(?::(\d{2}))?$/i;
+    const m = re.exec(s.trim());
+    if (!m) return null;
+
+    const [, MM, DD, YYYY, hStr, mStr, sStr, ampm, sign, ohStr, omStr] = m;
+    let hour = parseInt(hStr, 10);
+    const minute = parseInt(mStr, 10);
+    const second = parseInt(sStr, 10);
+    const month = parseInt(MM, 10);
+    const day = parseInt(DD, 10);
+    const year = parseInt(YYYY, 10);
+
+    // convert to 24h
+    const isPM = ampm.toUpperCase() === 'PM';
+    if (isPM && hour < 12) hour += 12;
+    if (!isPM && hour === 12) hour = 0;
+
+    const offMin =
+      (sign === '-' ? -1 : 1) *
+      (parseInt(ohStr, 10) * 60 + (omStr ? parseInt(omStr, 10) : 0));
+
+    // Treat parsed clock as "local" then convert to UTC using the offset
+    const localAsUTC = DateTime.fromObject(
+      { year, month, day, hour, minute, second, millisecond: 0 },
+      { zone: 'UTC' }
+    );
+    return localAsUTC.minus({ minutes: offMin }).toUTC();
+  };
+
+  const handleComplete = async (answers: FinalSignupPayload) => {
     try {
-      let userCred: UserCredential = await signUp(answers.email!.trim(), answers.password!);
+      // Pull normalized strings (already formatted by ChatFlow)
+      const {
+        firstName,
+        lastName,
+        pronouns,
+        email: rawEmail,
+        password,
+        themeKey,
+
+        birthday,               // "MM/DD/YYYY"
+        birthtime,              // "hh:mm AM"
+        birthTimezone,          // "Europe/Rome"
+        birthLat = FALLBACK_LAT,
+        birthLon = FALLBACK_LON,
+        placeOfBirth = FALLBACK_PLACE_LABEL,
+        isBirthTimeUnknown,
+        isPlaceOfBirthUnknown,
+
+        birthDateTimeUTC,       // "MM/DD/YYYY - hh:mm:ss AM UTC-6"
+        lastLoginDate,          // "MM/DD/YYYY hh:mm:ss AM UTC-5"
+        signUpDate,             // same format
+      } = answers;
+
+      const email = String(rawEmail ?? '').trim();
+
+      // Build UTC Date for astronomy from birthDateTimeUTC string
+      const dtUtc = parseBirthUtcFromString(birthDateTimeUTC) ?? DateTime.utc();
+      const dateUtcForChart: Date = dtUtc.toJSDate();
+
+      // Auth
+      const userCred: UserCredential = await signUp(email, password);
       const uid = userCred.user.uid;
 
+      // Persist user record with your new shapes (all strings where requested)
       const userRecord: UserRecord = {
         id: uid,
-        firstName: answers.firstName!,
-        lastName: answers.lastName,
-        pronouns: answers.pronouns!,
-        birthday: answers.birthday!.toISOString().slice(0, 10),
-        birthtime:
-          answers.birthtime instanceof Date
-            ? formatTime12Hour(answers.birthtime)
-            : typeof answers.birthtime === 'string'
-              ? answers.birthtime
-              : '',
-        placeOfBirth: answers.placeOfBirth!,
-        zodiacSign: null,
-        risingSign: null,
-        moonSign: null,
-        email: answers.email,
+        firstName,
+        lastName,
+        pronouns,
+        birthday,                // "MM/DD/YYYY"
+        birthtime,               // "hh:mm AM"
+        placeOfBirth,
+        // zodiacSign: sun.sign,
+        // risingSign: rising.sign,
+        // moonSign: moon.sign,
+        email,
         isPaidMember: false,
-        signUpDate: new Date().toISOString(),
-        lastLoginDate: new Date().toISOString(),
-        isBirthTimeUnknown: answers.birthtimeUnknown,
-        isPlaceOfBirthUnknown: answers.placeOfBirthUnknown,
-        themeKey: answers.themeKey || 'default',
+        signUpDate,              // "MM/DD/YYYY hh:mm:ss AM UTC-5"
+        lastLoginDate,           // "MM/DD/YYYY hh:mm:ss AM UTC-5"
+        isBirthTimeUnknown,
+        isPlaceOfBirthUnknown,
+        themeKey: themeKey || 'default',
+        birthLat,
+        birthLon,
+        birthTimezone,           // "Europe/Rome"
+        birthDateTimeUTC,        // "MM/DD/YYYY - hh:mm:ss AM UTC-6"
       };
 
       if (userCred.user) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // (Optional) tiny pause for UX continuity with the loading bar
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+       
         await createUserDoc(uid, userRecord);
         setIsLoading(true);
         let currentProgress = 0;
@@ -116,25 +177,20 @@ export default function SignUpChatScreen() {
         }, 200);
       }
     } catch (e: any) {
-      // keep your existing email-in-use handling, but avoid native Alert if you prefer
-      if (e.code === 'auth/email-already-in-use') {
-        // navigate back to email step
+      if (e?.code === 'auth/email-already-in-use') {
         setStepToKey('email');
         return;
       } else {
-        // surface a generic error UI in ChatFlow if you have one
         console.warn('Signup error:', e?.message ?? e);
       }
     }
   };
 
-  // Handle Cancel
+  // Cancel flow
   const onCancelPress = () => setConfirmVisible(true);
   const confirmCancel = () => {
     setConfirmVisible(false);
-    // reset local progress/step so returning to signup is clean
     setStep(0);
-    // navigate after modal closes to avoid UI tearing
     setTimeout(() => router.replace('/welcome'), 0);
   };
   const dismissCancel = () => setConfirmVisible(false);
@@ -149,14 +205,10 @@ export default function SignUpChatScreen() {
       style={styles.background}
       resizeMode="cover"
     >
-      <TouchableWithoutFeedback
-        onPress={() => Keyboard.dismiss()}
-        accessible={false}
-      >
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()} accessible={false}>
         <View style={{ flex: 1 }}>
           <StatusBar style="light" translucent backgroundColor="transparent" />
           <BlurView intensity={10} tint="dark" style={styles.overlay}>
-            {/* Single header row: Go Back (left) and Cancel (right) */}
             <View style={styles.header}>
               {step > 0 ? (
                 <TouchableOpacity onPress={() => setStep(step - 1)}>
@@ -177,18 +229,11 @@ export default function SignUpChatScreen() {
         </View>
       </TouchableWithoutFeedback>
 
-      <Modal
-        visible={confirmVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={dismissCancel} // Android back button
-      >
+      <Modal visible={confirmVisible} transparent animationType="fade" onRequestClose={dismissCancel}>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { width: modalCardWidth }]}>
             <Text style={styles.modalTitle}>Discard signup?</Text>
-            <Text style={styles.modalBody}>
-              Your answers will be lost. You can start again anytime.
-            </Text>
+            <Text style={styles.modalBody}>Your answers will be lost. You can start again anytime.</Text>
 
             <View style={styles.modalActions}>
               <TouchableOpacity onPress={dismissCancel} style={[styles.modalBtn, styles.btnGhost]}>
@@ -207,8 +252,8 @@ export default function SignUpChatScreen() {
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  overlay: { 
-    flex: 1, 
+  overlay: {
+    flex: 1,
     paddingTop: verticalScale(Platform.OS === 'ios' ? 60 : 40),
     paddingHorizontal: scale(0),
     width: '100%',
@@ -216,7 +261,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between', // changed from flex-start
+    justifyContent: 'space-between',
     paddingHorizontal: scale(16),
     marginBottom: verticalScale(8),
     position: 'relative',
@@ -224,7 +269,6 @@ const styles = StyleSheet.create({
   goBackText: { color: '#6FFFE9', fontSize: moderateScale(18), fontWeight: '500' },
   cancelText: { color: '#6FFFE9', fontSize: moderateScale(18), fontWeight: '500' },
 
-  // modal
   modalOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.45)',
@@ -233,17 +277,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(12),
   },
   modalCard: {
-    // width overridden dynamically
     borderRadius: scale(14),
     paddingVertical: verticalScale(16),
     paddingHorizontal: scale(16),
     backgroundColor: 'rgba(20,20,24,0.92)',
     maxWidth: scale(500),
   },
-  modalTitle: { color: '#fff', fontSize: moderateScale(18), fontWeight: '700', marginBottom: verticalScale(6), textAlign: 'center' },
+  modalTitle: {
+    color: '#fff',
+    fontSize: moderateScale(18),
+    fontWeight: '700',
+    marginBottom: verticalScale(6),
+    textAlign: 'center',
+  },
   modalBody: { color: '#cfd3dc', fontSize: moderateScale(14), textAlign: 'center', marginBottom: verticalScale(16) },
   modalActions: { flexDirection: 'row', gap: scale(12), justifyContent: 'center' },
-  modalBtn: { paddingVertical: verticalScale(10), paddingHorizontal: scale(14), borderRadius: scale(10), minWidth: scale(140), alignItems: 'center' },
+  modalBtn: {
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: scale(14),
+    borderRadius: scale(10),
+    minWidth: scale(140),
+    alignItems: 'center',
+  },
   btnGhost: { backgroundColor: 'rgba(255,255,255,0.08)' },
   btnGhostText: { color: '#e6e9f0', fontWeight: '600' },
   btnDanger: { backgroundColor: '#ff4d4f' },
@@ -252,8 +307,5 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     alignSelf: 'stretch',
-    // Optionally add a tiny top/left inset if needed:
-    // paddingTop: verticalScale(5),
-    // paddingLeft: scale(5),
   },
 });
