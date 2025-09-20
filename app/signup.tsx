@@ -187,10 +187,16 @@ export default function SignUpChatScreen() {
   };
 
   // Cancel flow
-  const onCancelPress = () => setConfirmVisible(true);
+  const onCancelPress = () => {
+    if (step !== 0) {
+      setConfirmVisible(true);
+    } else {
+      setConfirmVisible(false);
+    setTimeout(() => router.replace('/welcome'), 0);
+    }
+  };
   const confirmCancel = () => {
     setConfirmVisible(false);
-    setStep(0);
     setTimeout(() => router.replace('/welcome'), 0);
   };
   const dismissCancel = () => setConfirmVisible(false);
