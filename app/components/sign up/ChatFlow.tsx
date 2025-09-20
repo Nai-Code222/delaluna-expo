@@ -1,4 +1,4 @@
-// ChatFlow.tsx  (UPDATED)
+// ChatFlow.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import {
   ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Keyboard, StatusBar,
@@ -393,6 +393,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
               <View style={styles.inputContainer}>
                 <View style={styles.inputRow}>
                   <PasswordInputField
+                  style={[styles.textInput, styles.passwordWidth]}
                     value={textInput}
                     onChangeText={setTextInput}
                     placeholder={current.placeholder}
@@ -759,4 +760,5 @@ const styles = StyleSheet.create({
   errorText: { color: 'red', marginTop: verticalScale(4), marginLeft: scale(12), textAlign: 'center', fontSize: moderateScale(15), fontWeight: 'bold' },
   backButton: { alignSelf: 'flex-start', paddingHorizontal: scale(12), paddingVertical: verticalScale(8), marginBottom: 0, marginLeft: scale(8), justifyContent: 'center' },
   backText: { fontSize: moderateScale(18), color: '#fff', fontWeight: 'bold' },
+  passwordWidth: { flex: 1, width: '100%'}
 });
