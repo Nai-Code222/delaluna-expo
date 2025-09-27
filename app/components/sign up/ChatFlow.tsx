@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Keyboard, StatusBar,
+  KeyboardAvoidingView,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LocationAutocomplete from './LocationAutocomplete';
@@ -14,6 +15,11 @@ import { format as formatDate } from 'date-fns';
 import { scale, verticalScale, moderateScale } from '../../../src/utils/responsive';
 import PasswordInputField from '../utils/passwordInputField';
 import { DateTime } from 'luxon';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const INPUT_H = verticalScale(50);
+const FIELD_BORDER = 'rgba(142, 68, 173, 0.6)';
+const LEADING_WS_RE = /^[\s\u00A0\u2007\u202F]+/u;
 
 // canonical fallback place (Royal Observatory, Greenwich)
 const DEFAULT_PLACE = {
@@ -28,6 +34,11 @@ const DEFAULT_TIME_HOUR = 12;
 const DEFAULT_TIME_MIN = 0;
 const defaultNoon = new Date();
 defaultNoon.setHours(DEFAULT_TIME_HOUR, DEFAULT_TIME_MIN, 0, 0);
+const isIDK = (s?: string | null) => {
+  const t = (s || '').trim().toLowerCase();
+  return t === "i don't know" || t === 'i don’t know';
+};
+
 
 // -------------------- types --------------------
 export interface AnswerRecord {
@@ -82,9 +93,10 @@ export type StepConfig = {
 
 type ChatFlowProps = {
   steps: StepConfig[];
-  onComplete: (finalized: FinalSignupPayload) => void;   // 👈 updated
+  onComplete: (finalized: FinalSignupPayload) => void;
   step: number;
   setStep: React.Dispatch<React.SetStateAction<number>>;
+  keyboardOffset?: number;
 };
 
 type SelectedPlace = { label: string; lat: number; lon: number; timezone: string };
@@ -180,8 +192,23 @@ const buildFinalPayload = (a: AnswerRecord): FinalSignupPayload => {
   };
 };
 
+const submitProps = (enabled: boolean, onSubmit: () => void) => ({
+  onSubmitEditing: () => { if (enabled) onSubmit(); },
+  returnKeyType: Platform.select({ ios: 'done', android: 'send' }) as any,
+  blurOnSubmit: true,
+  enablesReturnKeyAutomatically: true, // iOS hides Send until enabled
+});
+
 // -------------------- component --------------------
-export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowProps) {
+export default function ChatFlow({
+  steps,
+  onComplete,
+  step,
+  setStep,
+  keyboardOffset = 0,   // ← destructure with a default
+}: ChatFlowProps) {
+  const insets = useSafeAreaInsets();
+
   const [answers, setAnswers] = useState<AnswerRecord>({
     firstName: '',
     lastName: '',
@@ -223,15 +250,69 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
     setAnswers(a => ({ ...a, [key]: value }));
   };
 
-  useEffect(() => {
-    if (current.inputType === 'location') setTextInput(answers.placeOfBirth || '');
-    else if (current.inputType === 'email') setTextInput(answers.email || '');
-    else setTextInput('');
+  const fieldLabelFor = (key: StepConfig['key'], placeholder?: string) => {
+    if (placeholder) return placeholder;
+    switch (key) {
+      case 'firstName': return 'First name';
+      case 'lastName': return 'Last name';
+      case 'pronouns': return 'Pronouns';
+      default: return 'This field';
+    }
+  };
 
-    setError(null);
-    setLocationError(null);
+
+  useEffect(() => {
+    if (current.inputType === 'text' && isAnswerKey(current.key)) {
+      const saved = (answers as any)[current.key];
+      setTextInput(typeof saved === 'string' ? saved : '');
+      setSelectedPlace(null);
+      return;
+    }
+
+    if (current.inputType === 'email') {
+      setTextInput(answers.email || '');
+      setSelectedPlace(null);
+      return;
+    }
+
+    if (current.inputType === 'location') {
+      if (answers.placeOfBirthUnknown) {
+        // show "I don't know" rather than default place label
+        setTextInput("I don't know");
+        setSelectedPlace(null);
+      } else {
+        setTextInput(answers.placeOfBirth || '');
+        // Rehydrate selected place if we have coords/tz
+        if (answers.placeOfBirth) {
+          setSelectedPlace({
+            label: answers.placeOfBirth,
+            lat: answers.birthLat ?? DEFAULT_PLACE.lat,
+            lon: answers.birthLon ?? DEFAULT_PLACE.lon,
+            timezone: answers.birthTimezone ?? DEFAULT_PLACE.timezone,
+          });
+        } else {
+          setSelectedPlace(null);
+        }
+      }
+      return;
+    }
+
+    // time step doesn't use textInput, just ensure no leftover selection
+    setTextInput('');
     setSelectedPlace(null);
-  }, [current.key]);
+  }, [
+    current.key,
+    current.inputType,
+    answers.firstName,
+    answers.lastName,
+    answers.pronouns,
+    answers.email,
+    answers.placeOfBirth,
+    answers.placeOfBirthUnknown,
+    answers.birthLat,
+    answers.birthLon,
+    answers.birthTimezone,
+  ]);
 
   // Live email validation
   useEffect(() => {
@@ -284,6 +365,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
   const capitalizeName = (name: string) =>
     name.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
 
+
   const saveAndNext = (value?: any) => {
     switch (current.inputType) {
       case 'text': {
@@ -312,17 +394,26 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
         break;
       }
       case 'time': {
-        const unknown = value === 'I don’t know';
+        const unknown = typeof value === 'string' && isIDK(value);
         updateAnswer('birthtime', unknown ? defaultNoon : (value as Date));
         updateAnswer('birthtimeUnknown', unknown);
         setShowTimePicker(false);
         break;
       }
       case 'location': {
-        const unknown = value === 'I don’t know';
-        updateAnswer('placeOfBirth', unknown ? DEFAULT_PLACE.label : (value as string));
-        updateAnswer('placeOfBirthUnknown', unknown);
-        setTextInput('');
+        const unknown = typeof value === 'string' && isIDK(value);
+        if (unknown) {
+          // store canonical fallback + unknown flag
+          updateAnswer('placeOfBirth', DEFAULT_PLACE.label);
+          updateAnswer('placeOfBirthUnknown', true);
+          updateAnswer('birthLat', DEFAULT_PLACE.lat);
+          updateAnswer('birthLon', DEFAULT_PLACE.lon);
+          updateAnswer('birthTimezone', DEFAULT_PLACE.timezone);
+          setTextInput("I don't know"); // keep the visible text consistent
+        } else {
+          updateAnswer('placeOfBirth', value as string);
+          updateAnswer('placeOfBirthUnknown', false);
+        }
         break;
       }
     }
@@ -344,7 +435,6 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
     if (idx >= step || s.inputType === 'final') return null;
     const raw = (answers as any)[s.key];
     let display = raw;
-
     if (s.key === 'placeOfBirth' && answers.placeOfBirthUnknown) display = "I don't know";
     if (s.inputType === 'date' && raw instanceof Date) display = formatDate(raw, 'MM/dd/yyyy');
     if (s.inputType === 'time') display = answers.birthtimeUnknown ? "I don't know" : formatTime12Hour(raw);
@@ -362,26 +452,66 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
     <View>
       {(() => {
         switch (current.inputType) {
-          case 'text':
+          case 'text': {
+            const label = current.placeholder || (current.key === 'firstName' ? 'First name' :
+              current.key === 'lastName' ? 'Last name' : 'This field');
+            const isBlank = !textInput.trim();
+
+            const handleSend = () => {
+              if (LEADING_WS_RE.test(textInput)) { setError('Cannot begin with a space'); return; }
+              const trimmed = textInput.trim();
+              if (!trimmed) { setError(`${label} is required`); return; }
+              setError(null);
+              Keyboard.dismiss();
+              updateAnswer(current.key as keyof AnswerRecord, trimmed as any);
+              setTextInput('');
+              setStep(s => s + 1);
+            };
+
             return (
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder={current.placeholder}
-                  placeholderTextColor="#fff"
-                  value={textInput}
-                  onChangeText={setTextInput}
-                />
-                <TouchableOpacity
-                  style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
-                  disabled={!textInput}
-                  onPress={() => { Keyboard.dismiss(); saveAndNext(textInput); }}
-                >
-                  <Text style={styles.sendText}>➔</Text>
-                </TouchableOpacity>
+              <View style={styles.inputContainer}>
+                <View style={styles.inputRow}>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder={current.placeholder}
+                    placeholderTextColor="#fff"
+                    value={textInput}
+                    onChangeText={(val) => {
+                      if (LEADING_WS_RE.test(val)) {
+                        setError('Cannot begin with a space');
+                        setTextInput(val.replace(LEADING_WS_RE, ''));
+                        return;
+                      }
+                      if (error === 'Cannot begin with a space') setError(null);
+                      setTextInput(val);
+                      if (!val.trim()) setError(`${label} is required`);
+                      else if (error && error !== 'Cannot begin with a space') setError(null);
+                    }}
+                    onBlur={() => {
+                      if (error === 'Cannot begin with a space') return;
+                      if (!textInput.trim()) setError(`${label} is required`);
+                    }}
+                    keyboardType={Platform.OS === 'ios' ? 'ascii-capable' : 'default'}
+                    autoCapitalize="sentences"
+                    autoCorrect
+                    {...submitProps(!isBlank, handleSend)}
+                  />
+                  <TouchableOpacity
+                    style={[styles.sendButton, { opacity: isBlank ? 0.5 : 1 }]}
+                    disabled={isBlank}
+                    onPress={handleSend}
+                  >
+                    <Text style={styles.sendText}>➔</Text>
+                  </TouchableOpacity>
+                </View>
+                {!!error && (
+                  <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                )}
               </View>
             );
-
+          }
           case 'secure': {
             const handleSend = () => {
               if (!textInput) setError('Please enter a password.');
@@ -390,24 +520,23 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
               else { setError(null); Keyboard.dismiss(); updateAnswer('password', textInput); saveAndNext(textInput); }
             };
             return (
-              <View style={styles.inputContainer}>
-                <View style={styles.inputRow}>
+              <View style={[styles.inputContainer]}>
+                <View style={[styles.inputRow, { width: '90%' }]}>
                   <PasswordInputField
-                  style={[styles.textInput, styles.passwordWidth]}
+                    style={[styles.textInput, styles.passwordStyle, { height: 90 }]}  // rounded shell
+                    inputStyle={{}}                                   // (optional) text styling
                     value={textInput}
                     onChangeText={setTextInput}
-                    placeholder={current.placeholder}
+                    placeholder="Password..."
                     placeholderTextColor="#fff"
                   />
+
                   <TouchableOpacity style={[styles.sendButton, { opacity: 1 }]} onPress={handleSend}>
                     <Text style={styles.sendText}>➔</Text>
                   </TouchableOpacity>
                 </View>
-                {error && (
-                  <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{error}</Text>
-                  </View>
-                )}
+                {error && <View style={styles.errorContainer}><Text style={styles.errorText}>{error}</Text></View>}
+
               </View>
             );
           }
@@ -435,16 +564,16 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
             const isFuture = selected ? selected > today : false;
             const isUnder18 = selected
               ? today.getFullYear() - selected.getFullYear() < 18 ||
-                (today.getFullYear() - selected.getFullYear() === 18 &&
-                  (today.getMonth() < selected.getMonth() ||
-                    (today.getMonth() === selected.getMonth() && today.getDate() < selected.getDate())))
+              (today.getFullYear() - selected.getFullYear() === 18 &&
+                (today.getMonth() < selected.getMonth() ||
+                  (today.getMonth() === selected.getMonth() && today.getDate() < selected.getDate())))
               : false;
 
             return (
               <View style={styles.inputContainer}>
                 <View style={styles.inputRow}>
                   <TouchableOpacity
-                    style={styles.datePickerButton}
+                    style={[styles.datePickerButton, styles.textInput]}
                     onPress={() => { Keyboard.dismiss(); setShowDatePicker(true); }}
                   >
                     <Text style={styles.datePickerText}>
@@ -480,10 +609,17 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
           }
 
           case 'location': {
-            const canSendLocation = !!selectedPlace && !answers.placeOfBirthUnknown;
+            const isUnknownLoc = answers.placeOfBirthUnknown;
+            const canProceedLocation = isUnknownLoc || !!selectedPlace; // ✅ allow proceed when unknown
 
             const handleSend = () => {
-              if (!canSendLocation || !selectedPlace) {
+              if (isUnknownLoc) {
+                Keyboard.dismiss();
+                // Keep stored defaults + unknown flag; just advance
+                saveAndNext("I don't know");
+                return;
+              }
+              if (!selectedPlace) {
                 setLocationError('Please pick a location from suggestions or tap “I don’t know.”');
                 return;
               }
@@ -501,22 +637,18 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
 
             const handleUnknown = () => {
               Keyboard.dismiss();
-              setSelectedPlace({
-                label: DEFAULT_PLACE.label,
-                lat: DEFAULT_PLACE.lat,
-                lon: DEFAULT_PLACE.lon,
-                timezone: DEFAULT_PLACE.timezone,
-              });
-              setTextInput(DEFAULT_PLACE.label);
+              setSelectedPlace(null);
+              setTextInput("I don't know");                  // ✅ show "I don't know" in field
               setLocationError(null);
 
+              // Keep defaults in answers, but mark unknown
               updateAnswer('placeOfBirth', DEFAULT_PLACE.label);
               updateAnswer('placeOfBirthUnknown', true);
               updateAnswer('birthLat', DEFAULT_PLACE.lat);
               updateAnswer('birthLon', DEFAULT_PLACE.lon);
               updateAnswer('birthTimezone', DEFAULT_PLACE.timezone);
 
-              saveAndNext('I don’t know');
+              saveAndNext("I don't know");
             };
 
             return (
@@ -528,14 +660,37 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                 <View style={styles.inputRow}>
                   <LocationAutocomplete
                     value={textInput}
-                    onInputChange={text => {
+                    onInputChange={(text) => {
                       setTextInput(text);
-                      setSelectedPlace(null);
-                      updateAnswer('placeOfBirthUnknown', false);
                       setLocationError(null);
+
+                      if (text === '') {
+                        // User cleared the field: treat as switching away from “unknown”
+                        // so send button is disabled until they select a place.
+                        updateAnswer('placeOfBirthUnknown', false);
+                        updateAnswer('placeOfBirth', '');
+                        updateAnswer('birthLat', undefined);
+                        updateAnswer('birthLon', undefined);
+                        updateAnswer('birthTimezone', undefined);
+                        setSelectedPlace(null);
+                        return;
+                      }
+
+                      if (isIDK(text)) {
+                        // Explicitly typed "I don't know"
+                        updateAnswer('placeOfBirthUnknown', true);
+                        setSelectedPlace(null);
+                        return;
+                      }
+
+                      // Typing anything else → not unknown
+                      updateAnswer('placeOfBirthUnknown', false);
+                      setSelectedPlace(null);
                     }}
-                    onResultsVisibilityChange={visible => setShowSendButton(!visible && !!(textInput || '').trim())}
-                    onSelect={place => {
+                    onResultsVisibilityChange={visible =>
+                      setShowSendButton(!visible && !!(textInput || '').trim())
+                    }
+                    onSelect={(place) => {
                       setSelectedPlace(place);
                       setTextInput(place.label);
                       setLocationError(null);
@@ -548,11 +703,12 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
 
                       Keyboard.dismiss();
                     }}
+                    onSubmitRequest={handleSend}
                   />
 
                   <TouchableOpacity
-                    style={[styles.sendButton, { opacity: canSendLocation ? 1 : 0.5 }]}
-                    disabled={!canSendLocation}
+                    style={[styles.sendButton, { opacity: canProceedLocation ? 1 : 0.5 }]}
+                    disabled={!canProceedLocation}
                     onPress={handleSend}
                   >
                     <Text style={styles.sendText}>➔</Text>
@@ -570,14 +726,19 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
             const now = new Date();
             const birthDate = answers.birthday;
             const birthTime = answers.birthtime;
+            const isUnknownTime = !!answers.birthtimeUnknown;            // ✅
             const isBirthdayToday = birthDate?.toDateString() === now.toDateString();
             const isFutureTime =
-              birthTime != null &&
+              !isUnknownTime && birthTime != null &&
               isBirthdayToday &&
               (birthTime instanceof Date
                 ? (birthTime.getHours() > now.getHours() ||
                   (birthTime.getHours() === now.getHours() && birthTime.getMinutes() > now.getMinutes()))
                 : false);
+
+            const displayTime = isUnknownTime
+              ? "I don't know"                                            // ✅ show text, not a time
+              : (birthTime ? formatTime12Hour(birthTime) : formatTime12Hour(null));
 
             return (
               <View style={styles.inputContainer}>
@@ -585,28 +746,43 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                   <View style={styles.errorContainer}><Text style={styles.errorText}>Please select a valid time not in the future.</Text></View>
                 )}
                 <View style={styles.inputRow}>
-                  <TouchableOpacity style={styles.datePickerButton} onPress={() => { Keyboard.dismiss(); setShowTimePicker(true); }}>
-                    <Text style={styles.datePickerText}>
-                      {birthTime ? formatTime12Hour(birthTime) : formatTime12Hour(null)}
-                    </Text>
+                  <TouchableOpacity
+                    style={[styles.datePickerButton, styles.textInput]}
+                    onPress={() => { Keyboard.dismiss(); setShowTimePicker(true); }}
+                  >
+                    <Text style={styles.datePickerText}>{displayTime}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.sendButton, { opacity: birthTime && !isFutureTime ? 1 : 0.5 }]}
-                    disabled={!birthTime || isFutureTime}
-                    onPress={() => { Keyboard.dismiss(); saveAndNext(birthTime!); }}
+                    style={[styles.sendButton, { opacity: (isUnknownTime || (!!birthTime && !isFutureTime)) ? 1 : 0.5 }]}
+                    disabled={!(isUnknownTime || (!!birthTime && !isFutureTime))}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      if (isUnknownTime) {
+                        saveAndNext("I don't know");                      // ✅ keep unknown flag
+                      } else {
+                        saveAndNext(birthTime!);
+                      }
+                    }}
                   >
                     <Text style={styles.sendText}>➔</Text>
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={[styles.choiceButton, { alignSelf: 'center', marginTop: 16 }]} onPress={() => { Keyboard.dismiss(); saveAndNext('I don’t know'); }}>
-                  <Text style={[styles.choiceText, birthTime === undefined && { color: '#fff' }]}>I don’t know</Text>
+
+                <TouchableOpacity
+                  style={[styles.choiceButton, { alignSelf: 'center', marginTop: 16 }]}
+                  onPress={() => { Keyboard.dismiss(); saveAndNext("I don’t know"); }}
+                >
+                  <Text style={[styles.choiceText, isUnknownTime && { color: '#fff', fontWeight: '700' }]}>
+                    I don’t know
+                  </Text>
                 </TouchableOpacity>
+
                 <DateTimePickerModal
                   isVisible={showTimePicker}
                   mode="time"
                   display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                   date={birthTime instanceof Date ? birthTime : new Date()}
-                  onConfirm={time => { updateAnswer('birthtime', time); setShowTimePicker(false); }}
+                  onConfirm={time => { updateAnswer('birthtime', time); updateAnswer('birthtimeUnknown', false); setShowTimePicker(false); }}
                   onCancel={() => setShowTimePicker(false)}
                 />
               </View>
@@ -623,8 +799,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                 updateAnswer('email', textInput);
                 Keyboard.dismiss();
                 saveAndNext(textInput);
-              } catch (firebaseErr: any) {
-                console.error(firebaseErr);
+              } catch {
                 setError('Network error—please try again.');
               }
             };
@@ -642,6 +817,7 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
                     autoCapitalize="none"
                     value={textInput}
                     onChangeText={setTextInput}
+                    {...submitProps(!!textInput, handleSend)}
                   />
                   <TouchableOpacity
                     style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
@@ -700,7 +876,6 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
               </View>
             );
           }
-
           default:
             return null;
         }
@@ -711,16 +886,21 @@ export default function ChatFlow({ steps, onComplete, step, setStep }: ChatFlowP
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor="#1C2541" />
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.container} onContentSizeChange={handleContentSizeChange}>
-        {steps.slice(0, step + 1).map((s, i) => (
-          <View key={i} style={styles.bubbleContainer}>
-            <Text style={styles.bubbleText}>{s.renderQuestion(answers)}</Text>
-            {renderAnswerBubble(s, i)}
-          </View>
-        ))}
-      </ScrollView>
-      {renderInputArea()}
-
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={insets.top + keyboardOffset} // ← now defined
+      >
+        <ScrollView ref={scrollRef} contentContainerStyle={styles.container} onContentSizeChange={handleContentSizeChange}>
+          {steps.slice(0, step + 1).map((s, i) => (
+            <View key={i} style={styles.bubbleContainer}>
+              <Text style={styles.bubbleText}>{s.renderQuestion(answers)}</Text>
+              {renderAnswerBubble(s, i)}
+            </View>
+          ))}
+        </ScrollView>
+        {renderInputArea()}
+      </KeyboardAvoidingView>
       <PolicyModal
         visible={isPolicyModalVisible}
         onClose={closePolicyModal}
@@ -738,10 +918,19 @@ const styles = StyleSheet.create({
   answerBubble: { alignSelf: 'flex-end', backgroundColor: '#5BC0BE', padding: scale(12), borderRadius: scale(12), marginTop: verticalScale(8), maxWidth: '75%' },
   answerText: { color: '#000' },
   inputContainer: { flexDirection: 'column', padding: scale(15), backgroundColor: '#1C2541', width: '100%' },
-  inputRow: { flexDirection: 'row', padding: scale(15), backgroundColor: '#1C2541', width: '100%' },
-  textInput: { flex: 1, backgroundColor: '#3A506B', borderRadius: scale(24), paddingHorizontal: scale(15), color: '#fff', height: verticalScale(50), marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5), alignSelf: 'center' },
-  sendButton: { marginLeft: scale(12), alignSelf: 'center', padding: scale(12) },
-  sendText: { fontSize: moderateScale(18), color: '#fff' },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: scale(5),
+    backgroundColor: '#1C2541',
+    width: '100%',
+  },
+  col75: { flex: 3 },
+  col25: { flex: 0, paddingLeft: scale(10), justifyContent: 'center' },
+  textInput: {
+    flex: 1, backgroundColor: '#3A506B', borderRadius: scale(24), paddingHorizontal: scale(15), color: '#fff', height: verticalScale(50), marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5), alignSelf: 'center', borderWidth: 1,
+    borderColor: 'rgba(142, 68, 173, 0.6)',
+  },
   choiceRow: { flexDirection: 'row', justifyContent: 'space-around', padding: scale(5) },
   choiceButton: { borderWidth: 1, borderColor: '#e2e2e2ff', borderRadius: scale(20), paddingVertical: verticalScale(10), paddingHorizontal: scale(15), marginBottom: verticalScale(25) },
   choiceSelected: { backgroundColor: '#5BC0BE' },
@@ -756,9 +945,47 @@ const styles = StyleSheet.create({
   continueText: { color: '#000', fontWeight: '600', fontSize: moderateScale(16) },
   continueButtonDisabled: { backgroundColor: '#A0A0A0' },
   continueTextDisabled: { color: '#666' },
-  errorContainer: { borderRadius: scale(12), padding: scale(12), marginTop: verticalScale(8), marginHorizontal: scale(10), maxWidth: '75%', alignSelf: 'center' },
-  errorText: { color: 'red', marginTop: verticalScale(4), marginLeft: scale(12), textAlign: 'center', fontSize: moderateScale(15), fontWeight: 'bold' },
+  errorContainer: {
+    flexDirection: 'row',
+  marginTop: Platform.OS === 'ios' ? verticalScale(4) : verticalScale(6), // closer on iOS
+  marginBottom: Platform.OS === 'ios' ? verticalScale(4) : verticalScale(6), // closer on iOS
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%',
+},
+errorText: {
+  color: 'red',
+  textAlign: 'center',
+  fontSize: moderateScale(14),
+  fontWeight: 'bold',
+},
   backButton: { alignSelf: 'flex-start', paddingHorizontal: scale(12), paddingVertical: verticalScale(8), marginBottom: 0, marginLeft: scale(8), justifyContent: 'center' },
   backText: { fontSize: moderateScale(18), color: '#fff', fontWeight: 'bold' },
-  passwordWidth: { flex: 1, width: '100%'}
+  passwordStyle: {
+    width: '100%', flex: 1, backgroundColor: '#3A506B', borderRadius: scale(24), color: '#fff', height: verticalScale(50), marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5), alignSelf: 'center', borderWidth: 1,
+    borderColor: 'rgba(142, 68, 173, 0.6)',
+  },
+  fieldFrame: {
+    height: INPUT_H,
+    borderRadius: scale(24),
+    borderWidth: 1,
+    borderColor: FIELD_BORDER,
+    backgroundColor: '#3A506B',
+    paddingHorizontal: scale(16),
+    justifyContent: 'center',
+  },
+  inputInner: {
+    color: '#fff',
+    fontSize: moderateScale(16),
+  },
+
+  sendButton: {
+    alignSelf: 'stretch',
+    height: INPUT_H,
+    borderRadius: scale(24),
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: scale(12),
+  },
+  sendText: { fontSize: moderateScale(18), color: '#fff' },
 });
