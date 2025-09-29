@@ -1,40 +1,50 @@
 import React from 'react';
-import { View, Button, StyleSheet, ImageBackground, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, ImageBackground, useWindowDimensions } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { router } from 'expo-router';
 import PrimaryButton from '@/app/components/buttons/primaryButtonComponent';
 import SecondaryButton from '@/app/components/buttons/secondaryButtonComponent';
 import { TitleText } from '@/app/components/typography/TitleText';
 import ButtonText from '@/app/components/typography/ButtonText';
-import welcomeJson from '../app/assets/animations/Pre comp 4.json';
-import logoJson from '../app/assets/animations/Pre comp 3_1.json';
-import { scale, verticalScale, moderateScale } from '../src/utils/responsive';
+import { scale, verticalScale } from '../src/utils/responsive';
 
 export default function Welcome() {
   const { width } = useWindowDimensions();
-  // Responsive animation sizing (caps ensure no runaway growth on tablets)
-  const animationSize = Math.min(width * 0.6, scale(300));
-  const logoWidth = Math.min(width * 0.8, scale(400));
-  const logoHeight = logoWidth * 1.25; // preserves approximate aspect ratio
+  const logoW = Math.min(width * 0.72, scale(360));
+  const logoH = logoW * 0.95; // adjust to your logo aspect
+  
+
   return (
     <View style={styles.container}>
+      {/* background image */}
       <ImageBackground
         source={require('../app/assets/images/background.jpg')}
         style={styles.background}
         resizeMode="cover"
       />
+
+      {/* TOP: animation fills, logo centered on top */}
       <View style={styles.topContainer}>
         <LottieView
-          source={welcomeJson}
+          source={require('../app/assets/animations/galaxy.json')}
           autoPlay
-          style={{ width: animationSize, height: animationSize }}
+          loop
+          style={styles.topAnimation}  // absolute fill inside top container
         />
-        <LottieView
-          source={logoJson}
-          autoPlay
-          style={{ width: logoWidth, height: logoHeight }}
-        />
+
+        {/* centered logo (over the animation) */}
+        <View style={styles.logoWrap}>
+          <LottieView
+            source={require('../app/assets/animations/logo.json')}
+            autoPlay
+            loop={false}
+            style={{ width: '100%', aspectRatio: 1 / 0.95 /* W/H */, height: undefined }}
+            
+          />
+        </View>
       </View>
+
+      {/* BOTTOM: buttons */}
       <View style={styles.bottomContainer}>
         <TitleText>
           <PrimaryButton
@@ -45,14 +55,9 @@ export default function Welcome() {
             accessibilityHint="Navigate to the sign up screen"
           />
         </TitleText>
-        <View
-          style={{
-            width: '80%',
-            height: StyleSheet.hairlineWidth,
-            backgroundColor: '#D4D6DD',
-            marginVertical: verticalScale(20),
-          }}
-        />
+
+        <View style={styles.divider} />
+
         <ButtonText>
           <SecondaryButton
             title="Already a member?"
@@ -66,24 +71,45 @@ export default function Welcome() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  background: {
-    ...StyleSheet.absoluteFillObject,
-  },
+
+  container: { flex: 1 },
+  background: { ...StyleSheet.absoluteFillObject },
+
   topContainer: {
-    flex: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: scale(16),
+    flex: 3.5,                 // keep logo centered here
+    position: 'relative',
+    paddingBottom: verticalScale(50),   // ↓ was larger; reduces gap
   },
+
   bottomContainer: {
-    flex: 2,
+  flex: 1.3,
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  paddingTop: verticalScale(2),
+  paddingBottom: verticalScale(25),
+  gap: verticalScale(15),
+  paddingHorizontal: scale(24),
+
+  // pull the whole block upward
+  marginTop: -verticalScale(90),   // ↑ increase magnitude to move closer
+},
+  // animation fills top container
+  topAnimation: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+  },
+
+  // center the logo in the middle of the top container
+  logoWrap: {
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: verticalScale(40),
-    gap: verticalScale(20),
-    paddingHorizontal: scale(24),
+    zIndex: 2,
   },
+  divider: {
+  width: '80%',
+  height: StyleSheet.hairlineWidth,
+  backgroundColor: '#D4D6DD',
+  marginVertical: verticalScale(12), // was 20
+},
 });
