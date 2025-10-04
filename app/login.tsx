@@ -5,19 +5,19 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Image, KeyboardAvoidingView, Platform, Keyboard, Alert,
 } from 'react-native';
-import { auth } from '../firebaseConfig';
+import { auth } from '../firebase-config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import SecondaryButtonComponent from './components/buttons/secondaryButtonComponent';
+import SecondaryButtonComponent from './components/buttons/secondary-button-component';
 import { useRouter } from 'expo-router';
-import LoadingScreen from './components/utils/LoadingScreen';
-import { useAuth } from './backend/AuthContext';
+import LoadingScreen from './components/utils/loading-screen';
+import { useAuth } from './backend/auth-context';
 import { getFirestore, doc, getDoc, serverTimestamp } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeContext } from './themecontext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { StatusBar } from 'expo-status-bar'; // added
-import PasswordInputField from './components/utils/passwordInputField';
+import PasswordInputField from './components/utils/password-input-field';
 import { updateUserDoc } from './service/user.service';
 import { FieldValue } from 'firebase/firestore';
 import { DateTime } from 'luxon';

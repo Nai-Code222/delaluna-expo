@@ -6,7 +6,7 @@ import PrimaryButton from '@/app/components/buttons/primaryButtonComponent';
 import SecondaryButton from '@/app/components/buttons/secondaryButtonComponent';
 import { TitleText } from '@/app/components/typography/TitleText';
 import ButtonText from '@/app/components/typography/ButtonText';
-import { scale, verticalScale } from '../src/utils/responsive';
+import { scale, verticalScale } from '../archive/app/utils/responsive';
 
 export default function Welcome() {
   const { width } = useWindowDimensions();

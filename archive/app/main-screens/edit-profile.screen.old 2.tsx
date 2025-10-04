@@ -21,14 +21,14 @@ import {
   Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import HeaderNav from '../components/utils/headerNav';
-import { GlassButton } from '../components/buttons/GlassButton';
-import { updateUserDoc } from '../service/userService';
+import HeaderNav from '../components/utils/header-nav';
+import { GlassButton } from '../components/buttons/glass-button';
+import { updateUserDoc } from '../service/user-service';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { format, parse, parseISO, isValid } from 'date-fns';
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
-import PronounDropdown from '../components/buttons/PronounDropdown';
+import PronounDropdown from '../components/buttons/pronoun-dropdown';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Params = {

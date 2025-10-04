@@ -1,6 +1,6 @@
 // src/services/authService.ts
-import UserRecord from '../model/UserRecord';
-import { auth, db } from '../../firebaseConfig';
+import UserRecord from '../model/user-record';
+import { auth, db } from '../../firebase-config';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,

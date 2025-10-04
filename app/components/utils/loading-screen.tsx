@@ -1,7 +1,7 @@
 import LottieView from 'lottie-react-native';
 import React, { useContext } from 'react';
 import { View, ImageBackground, StyleSheet, Animated, Easing, Image, StatusBar } from 'react-native';
-import { BodyText } from '../typography/BodyText';
+import { BodyText } from '../typography/body-text';
 import { ThemeContext } from '../../themecontext'
 const backgroundImg = require('../../assets/images/mainBackground.png');
 const splashAnimation = require('../../assets/animations/splash-animation.json'); // Replace with your animation asset

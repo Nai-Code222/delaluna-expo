@@ -2,7 +2,7 @@
 import React, { useContext, useRef, useEffect } from 'react';
 import { View, FlatList, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import HeaderNav from '../components/utils/headerNav'
+import HeaderNav from '../components/utils/header-nav'
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';

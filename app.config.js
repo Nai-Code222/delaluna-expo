@@ -1,37 +1,8 @@
 import 'dotenv/config';
-import { withProjectBuildGradle } from '@expo/config-plugins';
-
-const withComposeCompilerVersion = config => {
-  return {
-    ...config,
-    mods: {
-      ...config.mods,
-      android: {
-        ...config.mods?.android,
-        // This mod sets the Compose compiler extension version for all modules
-        async dangerousSetComposeCompilerVersion({ modResults }) {
-          if (!modResults) return modResults;
-          if (!modResults.subprojects) return modResults;
-          for (const proj of modResults.subprojects) {
-            if (
-              proj.plugins &&
-              (proj.plugins.hasPlugin('com.android.application') ||
-                proj.plugins.hasPlugin('com.android.library')) &&
-              proj.android &&
-              proj.android.composeOptions
-            ) {
-              proj.android.composeOptions.kotlinCompilerExtensionVersion = "1.5.15";
-            }
-          }
-          return modResults;
-        },
-      },
-    },
-  };
-};
+import { withProjectBuildGradle } from 'expo/config-plugins';
 
 // Injects a Compose compiler version that matches Kotlin 1.9.25 across all modules
-function composeCompilerOverride(config) {
+function withComposeCompilerVersion(config) {
   return withProjectBuildGradle(config, (cfg) => {
     const stamp = '/* compose-compiler-override injected */';
     if (cfg.modResults.contents.includes(stamp)) return cfg;
@@ -63,7 +34,7 @@ subprojects { p ->
   });
 }
 
-export default withComposeCompilerVersion(composeCompilerOverride({
+export default withComposeCompilerVersion({
   expo: {
     name: 'delaluna-expo',
     slug: 'delaluna-expo',
@@ -110,7 +81,6 @@ export default withComposeCompilerVersion(composeCompilerOverride({
     },
 
     plugins: [
-      './plugins/compose-compiler-override',
       [
         'expo-build-properties',
         {
@@ -135,4 +105,4 @@ export default withComposeCompilerVersion(composeCompilerOverride({
 
     experiments: { typedRoutes: true },
   },
-}));
+});

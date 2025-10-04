@@ -5,15 +5,15 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import LocationAutocomplete from './LocationAutocomplete';
+import LocationAutocomplete from './location-autocomplete';
 import { checkEmailExists } from '../../service/auth.service';
-import { auth } from '../../../firebaseConfig';
+import { auth } from '../../../firebase-config';
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
-import PolicyModal from './PolicyModals';
-import { termsAndConditions, privacyPolicy } from '../../assets/legal/legalTexts';
+import PolicyModal from './policy-modals';
+import { termsAndConditions, privacyPolicy } from '../../assets/legal/legal-texts';
 import { format as formatDate } from 'date-fns';
 import { scale, verticalScale, moderateScale } from '../../utils/responsive';
-import PasswordInputField from '../utils/passwordInputField';
+import PasswordInputField from '../utils/password-input-field';
 import { DateTime } from 'luxon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 

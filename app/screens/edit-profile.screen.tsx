@@ -17,19 +17,21 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
-  LayoutChangeEvent,
   Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import HeaderNav from '../components/utils/headerNav';
-import { GlassButton } from '../components/buttons/GlassButton';
-import { updateUserDoc } from '../service/userService';
+import HeaderNav from '../components/utils/header-nav';
+import { GlassButton } from '../components/buttons/glass-button';
+import { updateUserDoc } from '../service/user.service';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { format, parse, parseISO, isValid } from 'date-fns';
 import { ThemeContext } from '../themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
-import PronounDropdown from '../components/buttons/PronounDropdown';
+import PronounDropdown from '../components/buttons/pronoun-dropdown';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { DateTime } from 'luxon';
+import tzlookup from '@photostructure/tz-lookup';
+import { getBigThree } from '../service/astro.service';
 
 type Params = {
   firstName: string;
@@ -41,6 +43,9 @@ type Params = {
   placeOfBirth: string;
   isPlaceOfBirthUnknown: string;
   userID: string;
+  birthLat?: string;
+  birthLon?: string;
+  birthTimezone?: string;
 };
 
 type PhotonFeature = {
@@ -50,19 +55,55 @@ type PhotonFeature = {
     state?: string;
     country?: string;
   };
+  geometry?: {
+    type: string;
+    coordinates: [number, number]; // [lon, lat]
+  };
 };
 
+// ---------- helpers ----------
 const parseBirthday = (s?: string | null): Date | null => {
   if (!s) return null;
   let d = parseISO(s);
   if (isValid(d)) return d;
-  const bases = ['MM-dd-yyyy', 'MM/dd/yyyy', 'M/d/yyyy'];
+  const bases = ['MM-dd-yyyy', 'MM/dd/yyyy', 'M/d/yyyy', 'yyyy-MM-dd'];
   for (const mask of bases) {
     d = parse(s, mask, new Date());
     if (isValid(d)) return d;
   }
   return null;
 };
+
+// Normalize time to "HH:mm" (24h) for internal state
+const normalizeTimeHHmm = (s?: string | null): string => {
+  if (!s) return '';
+  const trimmed = s.trim();
+  if (/^\d{1,2}:\d{2}$/.test(trimmed)) return trimmed;
+  try {
+    const d = parse(trimmed, 'hh:mm a', new Date());
+    if (isValid(d)) return format(d, 'HH:mm');
+  } catch {}
+  return '';
+};
+
+// UI stamp helpers (match your new string spec)
+const formatUtcOffsetLabel = (dt: DateTime) => {
+  const offsetMin = dt.offset; // minutes from UTC (e.g. -360)
+  const sign = offsetMin >= 0 ? '+' : '-';
+  const abs = Math.abs(offsetMin);
+  const hh = Math.floor(abs / 60);
+  const mm = abs % 60;
+  return `UTC${sign}${hh}${mm ? `:${String(mm).padStart(2, '0')}` : ''}`;
+};
+
+// e.g. "MM/dd/yyyy - hh:mm:ss AM UTC-6"
+const formatBirthStamp = (local: DateTime) =>
+  `${local.toFormat('MM/dd/yyyy')} - ${local.toFormat('hh:mm:ss')}\u202F${local.toFormat('a')} ${formatUtcOffsetLabel(local)}`;
+
+// e.g. "hh:mm AM"
+const to12h = (hh: number, mm: number) =>
+  DateTime.fromObject({ hour: hh, minute: mm }).toFormat('hh:mm a');
+// -----------------------------
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -71,15 +112,19 @@ export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
   const window = Dimensions.get('window');
 
+  // Original values used for diffing (we keep whatever came via params)
   const original = {
     firstName: params.firstName,
     lastName: params.lastName,
     pronouns: params.pronouns,
-    birthday: params.birthday,
-    birthtime: params.birthtime,
+    birthday: params.birthday,                 // may be "yyyy-MM-dd" or "MM/dd/yyyy"
+    birthtime: normalizeTimeHHmm(params.birthtime), // "HH:mm"
     isBirthTimeUnknown: params.isBirthTimeUnknown === 'true',
     placeOfBirth: params.placeOfBirth,
     isPlaceOfBirthUnknown: params.isPlaceOfBirthUnknown === 'true',
+    birthLat: params.birthLat != null ? Number(params.birthLat) : undefined,
+    birthLon: params.birthLon != null ? Number(params.birthLon) : undefined,
+    birthTimezone: params.birthTimezone || undefined,
   };
 
   // fields
@@ -88,16 +133,23 @@ export default function EditProfileScreen() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [lastNameError, setLastNameError] = useState<string | null>(null);
   const [pronoun, setPronoun] = useState(params.pronouns);
-  const [birthday, setBirthday] = useState(params.birthday);
+
+  // internal state keeps ISO-like "yyyy-MM-dd" for easy math/display conversion
+  const [birthday, setBirthday] = useState(() => {
+    const parsed = parseBirthday(params.birthday);
+    return parsed ? format(parsed, 'yyyy-MM-dd') : '';
+  });
   const [birthdayError, setBirthdayError] = useState<string | null>(null);
-  const [timeOfBirth, setTimeOfBirth] = useState(params.birthtime);
+
+  const [timeOfBirth, setTimeOfBirth] = useState(normalizeTimeHHmm(params.birthtime)); // "HH:mm"
   const [timeError, setTimeError] = useState<string | null>(null);
   const [isBirthTimeUnknown, setisBirthTimeUnknown] = useState(params.isBirthTimeUnknown === 'true');
+
   const [placeOfBirth, setPlaceOfBirth] = useState(params.placeOfBirth);
   const [placeError, setPlaceError] = useState<string | null>(null);
   const [placeUnknown, setPlaceUnknown] = useState(params.isPlaceOfBirthUnknown === 'true');
-  const [userID] = useState(params.userID);
 
+  const [userID] = useState(params.userID);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
@@ -122,9 +174,29 @@ export default function EditProfileScreen() {
   const firstNameRef = useRef<TextInput | null>(null);
   const lastNameRef = useRef<TextInput | null>(null);
   const lastChosenLabelRef = useRef<string>('');
+  const screenRef = useRef<View>(null);
 
   // open panel tracker (date/time/pronoun)
   const [openPanel, setOpenPanel] = useState<'none'|'pronoun'|'date'|'time'>('none');
+
+  // Canonical astro state
+  const [birthLat, setBirthLat] = useState<number | undefined>(
+    params.birthLat ? Number(params.birthLat) : undefined
+  );
+  const [birthLon, setBirthLon] = useState<number | undefined>(
+    params.birthLon ? Number(params.birthLon) : undefined
+  );
+  const [birthTimezone, setBirthTimezone] = useState<string | undefined>(
+    params.birthTimezone || undefined
+  );
+
+  // Fallbacks + tiny util
+  const FALLBACK_PLACE_LABEL = 'Greenwich, London, United Kingdom';
+  const FALLBACK_LAT = 51.4779;
+  const FALLBACK_LON = 0.0015;
+  const FALLBACK_TZ  = 'Europe/London';
+  const FALLBACK_HH = 12; // noon
+  const FALLBACK_MM = 0;
 
   useEffect(() => {
     const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -136,23 +208,7 @@ export default function EditProfileScreen() {
     return () => { s1.remove(); s2.remove(); };
   }, []);
 
-  // init
-  useEffect(() => {
-    setFirstName(params.firstName);
-    setLastName(params.lastName);
-    setPronoun(params.pronouns);
-    const parsed = parseBirthday(params.birthday);
-    setBirthday(parsed ? format(parsed, 'yyyy-MM-dd') : '');
-    setTimeOfBirth(params.birthtime);
-    setisBirthTimeUnknown(params.isBirthTimeUnknown === 'true');
-    setPlaceOfBirth(params.placeOfBirth);
-    setPlaceUnknown(params.isPlaceOfBirthUnknown === 'true');
-    setBirthdayError(null);
-    setNameError(null);
-    setTimeError(null);
-    setPlaceError(null);
-  }, []);
-
+  // focus first/last on mount
   useEffect(() => {
     const id = setTimeout(() => {
       if (!params.firstName?.trim()) firstNameRef.current?.focus?.();
@@ -218,7 +274,7 @@ export default function EditProfileScreen() {
         placeOfBirth,
         isPlaceOfBirthUnknown: placeUnknown,
       } as any )[k];
-      return currentVal !== original[k];
+      return currentVal !== (original as any)[k];
     });
 
   const formatLabel = (f: PhotonFeature) => {
@@ -245,33 +301,58 @@ export default function EditProfileScreen() {
     }
   }, []);
 
+  // When a place is selected, update canonical fields too
   const handlePlaceSelect = (f: PhotonFeature) => {
     const label = formatLabel(f);
+    if (!f.geometry || !f.geometry.coordinates) {
+      Alert.alert('Invalid location data');
+      return;
+    }
+    const [lon, lat] = f.geometry.coordinates; // Photon is [lon, lat]
+    let tz = FALLBACK_TZ;
+    try { tz = tzlookup(lat, lon); } catch {}
+
     lastChosenLabelRef.current = label;
     setPlaceTextInput(label);
     setPlaceOfBirth(label);
     setPlaceSelected(true);
     setPlaceUnknown(false);
     setShowSuggestions(false);
+
+    setBirthLat(lat);
+    setBirthLon(lon);
+    setBirthTimezone(tz);
+
     Keyboard.dismiss();
   };
 
+  // When "I don't know" is selected, set canonical Greenwich
   const handlePlaceUnknown = () => {
     setPlaceUnknown(true);
     lastChosenLabelRef.current = '';
-    const fallback = 'Greenwich, London, United Kingdom';
-    setPlaceTextInput(fallback);
-    setPlaceOfBirth(fallback);
+    setPlaceTextInput(FALLBACK_PLACE_LABEL);
+    setPlaceOfBirth(FALLBACK_PLACE_LABEL);
     setPlaceSelected(false);
     setShowSuggestions(false);
+
+    setBirthLat(FALLBACK_LAT);
+    setBirthLon(FALLBACK_LON);
+    setBirthTimezone(FALLBACK_TZ);
   };
 
+  // keyboard + anchor measuring
   const onAnchorLayout = () => {
-    // Measure the location input anchor in window coords
     requestAnimationFrame(() => {
-      inputAnchorRef.current?.measureInWindow?.((x, y, width, height) => {
-        setAnchor({ x, y, width, height });
-      });
+      if (!inputAnchorRef.current || !screenRef.current) return;
+      // @ts-ignore RN typing
+      inputAnchorRef.current.measureLayout(
+        // @ts-ignore RN typing
+        screenRef.current,
+        (x: number, y: number, width: number, height: number) => {
+          setAnchor({ x, y, width, height });
+        },
+        () => {}
+      );
     });
   };
 
@@ -284,44 +365,103 @@ export default function EditProfileScreen() {
   };
 
   const handleSave = async () => {
-    if (!placeUnknown && !placeSelected) {
+    if (!placeUnknown && !placeSelected && placeOfBirth !== original.placeOfBirth) {
       setPlaceError('Please select a location from suggestions');
       return;
     }
     if (nameError || lastNameError || birthdayError || timeError || placeError) return;
 
+    // Build current values we may persist (intermediate)
     const currentAll = {
       firstName,
       lastName,
       pronouns: pronoun,
-      birthday,
-      birthtime: timeOfBirth,
+      birthday,                 // 'yyyy-MM-dd' in state
+      birthtime: timeOfBirth,   // 'HH:mm' in state
       isBirthTimeUnknown,
       placeOfBirth,
       isPlaceOfBirthUnknown: placeUnknown,
+      birthLat,
+      birthLon,
+      birthTimezone,
     };
-    const changes = Object.entries(currentAll).reduce((acc, [k, v]) => {
-      if ((original as any)[k] !== v) acc.push([k, v]);
-      return acc;
-    }, [] as [string, any][]);
 
-    if (!changes.length) {
+    // Figure out what changed vs original
+    const changes = Object.entries(currentAll).reduce((acc, [k, v]) => {
+      const orig = (original as any)[k];
+      if (orig !== v) acc[k] = v;
+      return acc;
+    }, {} as Record<string, any>);
+
+    // Did any astro-driving fields change?
+    const astroInputsChanged =
+      changes.birthday !== undefined ||
+      changes.birthtime !== undefined ||
+      changes.isBirthTimeUnknown !== undefined ||
+      changes.placeOfBirth !== undefined ||
+      changes.isPlaceOfBirthUnknown !== undefined ||
+      changes.birthLat !== undefined ||
+      changes.birthLon !== undefined ||
+      changes.birthTimezone !== undefined;
+
+    if (astroInputsChanged) {
+      // Prepare canonical values and UI strings
+      const birthDateISO = (birthday || '').trim(); // 'yyyy-MM-dd'
+      let hh = FALLBACK_HH, mm = FALLBACK_MM;
+
+      if (!isBirthTimeUnknown && timeOfBirth) {
+        const parts = timeOfBirth.split(':').map(Number);
+        if (parts.length === 2 && !Number.isNaN(parts[0]) && !Number.isNaN(parts[1])) {
+          hh = Math.max(0, Math.min(23, parts[0]));
+          mm = Math.max(0, Math.min(59, parts[1]));
+        }
+      }
+      const tz = placeUnknown ? FALLBACK_TZ : (birthTimezone || FALLBACK_TZ);
+      const lat = placeUnknown ? FALLBACK_LAT : (birthLat ?? FALLBACK_LAT);
+      const lon = placeUnknown ? FALLBACK_LON : (birthLon ?? FALLBACK_LON);
+
+      // Local (in birth TZ) then format to strings per spec
+      let dtLocal = DateTime.fromISO(birthDateISO, { zone: tz })
+        .set({ hour: hh, minute: mm, second: 0, millisecond: 0 });
+      if (!dtLocal.isValid) {
+        dtLocal = DateTime.fromISO(birthDateISO).set({ hour: hh, minute: mm, second: 0, millisecond: 0 });
+      }
+
+      const birthtime12h = to12h(hh, mm); // "hh:mm a"
+      const birthdayUi = dtLocal.toFormat('MM/dd/yyyy'); // "MM/dd/yyyy"
+      const birthDateTimeUTCStr = formatBirthStamp(dtLocal); // "MM/dd/yyyy - hh:mm:ss AM UTC-6"
+
+      // For astro math, use the instant in UTC as Date
+      const dtUtc = dtLocal.toUTC();
+      const birthInstant = dtUtc.toJSDate();
+
+      // Astro
+      const { sun, moon, rising } = getBigThree(birthInstant, { latitude: lat, longitude: lon, height: 0 });
+
+      Object.assign(changes, {
+        birthLat: lat,
+        birthLon: lon,
+        birthTimezone: tz,
+        birthday: birthdayUi,          // store UI format
+        birthtime: birthtime12h,       // "hh:mm a"
+        birthDateTimeUTC: birthDateTimeUTCStr, // UI stamp string
+        zodiacSign: sun.sign,
+        moonSign:   moon.sign,
+        risingSign: rising.sign,
+      });
+    }
+
+    if (!Object.keys(changes).length) {
       setShowSuccessAlert(true);
-      setTimeout(() => {
-        setShowSuccessAlert(false);
-        router.replace('/screens/profile.screen');
-      }, 1500);
+      setTimeout(() => { setShowSuccessAlert(false); router.replace('/screens/profile.screen'); }, 1500);
       return;
     }
 
     try {
       setSaving(true);
-      await updateUserDoc(userID, Object.fromEntries(changes));
+      await updateUserDoc(userID, changes);
       setShowSuccessAlert(true);
-      setTimeout(() => {
-        setShowSuccessAlert(false);
-        router.replace('/screens/profile.screen');
-      }, 1500);
+      setTimeout(() => { setShowSuccessAlert(false); router.replace('/screens/profile.screen'); }, 1500);
     } catch (e) {
       console.error(e);
       Alert.alert('Save failed', 'Please try again.');
@@ -331,7 +471,6 @@ export default function EditProfileScreen() {
   };
 
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-
   const birthdayDate = parseBirthday(birthday);
 
   const renderBackground = (children: React.ReactNode) => {
@@ -360,25 +499,23 @@ export default function EditProfileScreen() {
     return <View style={[styles.bg, { backgroundColor: theme.colors.background }]}>{children}</View>;
   };
 
-  // -------- SUGGESTION SHEET (smart position above/below input) ----------
+  // -------- SUGGESTION SHEET ----------
   const SuggestionSheet = () => {
     if (!showSuggestions) return null;
 
-    // available viewport (minus keyboard)
     const viewportBottom = window.height - keyboardInset - insets.bottom;
     const spaceBelow = Math.max(viewportBottom - (anchor.y + anchor.height), 0);
     const maxHeightBelow = Math.min(spaceBelow - 8, 260);
-    const maxHeightAbove = Math.min(Math.max(anchor.y - insets.top - 12, 0), 260);
-
+    const maxHeightAbove = Math.min(Math.max(anchor.y - 12, 0), 260);
     const willFitBelow = maxHeightBelow >= 140 || maxHeightBelow > maxHeightAbove;
     const sheetHeight = Math.max(140, Math.min(260, willFitBelow ? maxHeightBelow : maxHeightAbove || 260));
-    const top = willFitBelow ? anchor.y + anchor.height + 6 : Math.max(anchor.y - sheetHeight - 6, insets.top + 8);
+
+    const top = willFitBelow
+      ? anchor.y + anchor.height
+      : Math.max(anchor.y - sheetHeight - 6, 8);
 
     return (
-      <View
-        pointerEvents="box-none"
-        style={[StyleSheet.absoluteFillObject, { zIndex: 9999 }]}
-      >
+      <View pointerEvents="box-none" style={[StyleSheet.absoluteFillObject, { zIndex: 9999 }]}>
         <View
           style={[
             styles.suggestionSheet,
@@ -387,6 +524,8 @@ export default function EditProfileScreen() {
               left: Math.max(anchor.x, 16),
               width: Math.min(anchor.width, window.width - 32),
               maxHeight: sheetHeight,
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0,
             },
           ]}
         >
@@ -418,10 +557,10 @@ export default function EditProfileScreen() {
       </View>
     );
   };
-  // ----------------------------------------------------------------------
+  // ------------------------------------
 
   return renderBackground(
-    <View style={{ flex: 1 }}>
+    <View ref={screenRef} style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" backgroundColor="#1C2541" />
       <HeaderNav title="Edit Profile" leftLabel="Cancel" onLeftPress={handleCancel} />
 
@@ -523,7 +662,6 @@ export default function EditProfileScreen() {
                       }}
                       onBlur={() => {
                         inputFocusedRef.current = false;
-                        // keep sheet up only if keyboard still present (Android)
                         if (Platform.OS === 'ios') setShowSuggestions(false);
                       }}
                       onChangeText={(text) => {
@@ -539,7 +677,6 @@ export default function EditProfileScreen() {
                       }}
                       returnKeyType="search"
                       onSubmitEditing={() => {
-                        // if user hits enter with one suggestion, auto-pick
                         if (suggestions.length === 1) handlePlaceSelect(suggestions[0].feature);
                       }}
                     />
@@ -609,7 +746,7 @@ export default function EditProfileScreen() {
                     mode="time"
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     date={(() => {
-                      const [h, m] = (timeOfBirth ?? '00:00').split(':').map(Number);
+                      const [h, m] = (timeOfBirth ?? '12:00').split(':').map(Number);
                       const d = new Date();
                       if (!Number.isNaN(h) && !Number.isNaN(m)) d.setHours(h, m, 0, 0);
                       return d;
@@ -632,8 +769,14 @@ export default function EditProfileScreen() {
                   value={isBirthTimeUnknown}
                   onValueChange={(val) => {
                     setisBirthTimeUnknown(val);
-                    if (val) { setTimeOfBirth('00:00'); setShowTimePicker(false); setOpenPanel('none'); }
-                    else { setOpenPanel('time'); setShowTimePicker(true); }
+                    if (val) {
+                      setTimeOfBirth('12:00'); // noon fallback
+                      setShowTimePicker(false);
+                      setOpenPanel('none');
+                    } else {
+                      setOpenPanel('time');
+                      setShowTimePicker(true);
+                    }
                   }}
                 />
                 <Text style={styles.toggleLabel}>I don’t know</Text>
@@ -650,7 +793,7 @@ export default function EditProfileScreen() {
             </View>
           </KeyboardAvoidingView>
 
-          {/* anchored suggestions (always on top; flips above when needed) */}
+          {/* anchored suggestions */}
           <SuggestionSheet />
 
           {showSuccessAlert && (
@@ -716,7 +859,6 @@ const styles = StyleSheet.create({
   toggleLabel: { color: '#fff', marginLeft: 8 },
   errorText: { color: 'red', marginBottom: 12 },
 
-  // Suggestion sheet
   suggestionSheet: {
     position: 'absolute',
     backgroundColor: '#1d1f25',

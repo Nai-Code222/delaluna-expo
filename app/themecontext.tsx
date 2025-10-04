@@ -2,7 +2,7 @@
 import React, { createContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import type { ColorValue, ImageSourcePropType } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuth } from './backend/AuthContext';
+import { useAuth } from './backend/auth-context';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 
 // ===== Images =====

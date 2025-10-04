@@ -16,13 +16,13 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
-import ChatFlow, { StepConfig, FinalSignupPayload } from './components/signup/ChatFlow';
+import ChatFlow, { StepConfig, FinalSignupPayload } from './components/signup/chat-flow';
 import signUp from './service/auth.service';
 import { UserCredential, sendEmailVerification } from 'firebase/auth';
-import type { UserRecord } from './model/UserRecord';
+import type { UserRecord } from './model/user-record';
 import { createUserDoc } from './service/user.service';
-import LoadingScreen from './components/utils/LoadingScreen';
-import { useAuth } from './backend/AuthContext';
+import LoadingScreen from './components/utils/loading-screen';
+import { useAuth } from './backend/auth-context';
 import { StatusBar } from 'expo-status-bar';
 import { scale, verticalScale, moderateScale } from '../src/utils/responsive';
 import { DateTime } from 'luxon';

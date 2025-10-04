@@ -1,21 +1,21 @@
 // ChatFlow.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Keyboard, StatusBar,
   KeyboardAvoidingView,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import LocationAutocomplete from '../../../sign up/location-autocomplete';
-import { checkEmailExists } from '../../../../app/service/auth.service';
-import { auth } from '../../../../firebase-config';
+import LocationAutocomplete from '../../../archive/sign up/location-autocomplete';
+import { checkEmailExists } from '../../service/auth.service';
+import { auth } from '../../../firebase-config';
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
-import PolicyModal from '../../../sign up/policy-modals';
-import { termsAndConditions, privacyPolicy } from '../../../../app/assets/legal/legal-texts';
+import PolicyModal from '../../../archive/sign up/policy-modals';
+import { termsAndConditions, privacyPolicy } from '../../assets/legal/legal-texts';
 import { format as formatDate } from 'date-fns';
-import { scale, verticalScale, moderateScale } from '../../../../src/utils/responsive';
-import PasswordInputField from '../../../../app/components/utils/password-input-field';
+import { scale, verticalScale, moderateScale } from '../../../src/utils/responsive';
+import PasswordInputField from '../utils/password-input-field';
 import { DateTime } from 'luxon';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const INPUT_H = verticalScale(50);
 const FIELD_BORDER = 'rgba(142, 68, 173, 0.6)';
@@ -38,7 +38,6 @@ const isIDK = (s?: string | null) => {
   const t = (s || '').trim().toLowerCase();
   return t === "i don't know" || t === 'i don’t know';
 };
-
 
 // -------------------- types --------------------
 export interface AnswerRecord {
@@ -112,14 +111,13 @@ const fmtBirthday = (d: Date) => {
 
 const fmtBirthtime = (d: Date) => {
   const dt = DateTime.fromJSDate(d);
-  const hh = dt.hour % 12 === 0 ? 12 : dt.hour % 12;
+  const twelve = dt.hour % 12 === 0 ? 12 : dt.hour % 12;
   const mm = pad2(dt.minute);
   const ampm = dt.hour >= 12 ? 'PM' : 'AM';
-  return `${pad2(hh)}:${mm}${NBSP_NARROW}${ampm}`;   // "11:07 AM"
+  return `${twelve}:${mm}${NBSP_NARROW}${ampm}`;
 };
 
 const utcOffsetToken = (dt: DateTime) => {
-  // offset (minutes) -> "UTC-6" or "UTC+5:30"
   const off = dt.offset; // minutes
   const sign = off >= 0 ? '+' : '-';
   const abs = Math.abs(off);
@@ -129,29 +127,23 @@ const utcOffsetToken = (dt: DateTime) => {
 };
 
 const fmtStampWithOffset = (dt: DateTime) => {
-  // "MM/DD/YYYY hh:mm:ss  AM UTC-6"
   const clock = dt.toFormat(`MM/dd/yyyy hh:mm:ss'${NBSP_NARROW}'a`);
   return `${clock} ${utcOffsetToken(dt)}`;
 };
 
 const buildFinalPayload = (a: AnswerRecord): FinalSignupPayload => {
-  // fallbacks
   const tz = a.birthTimezone || DEFAULT_PLACE.timezone;
   const place = a.placeOfBirth || DEFAULT_PLACE.label;
   const lat = a.birthLat ?? DEFAULT_PLACE.lat;
   const lon = a.birthLon ?? DEFAULT_PLACE.lon;
 
-  // date/time defaults if unknown
   const birthdayDate = a.birthday ?? new Date();
   const birthtimeDate = a.birthtime ?? defaultNoon;
 
-  // strings
-  const birthdayStr = fmtBirthday(birthdayDate);     // "MM/DD/YYYY"
-  const birthtimeStr = fmtBirthtime(birthtimeDate);  // "hh:mm  AM"
+  const birthdayStr = fmtBirthday(birthdayDate);
+  const birthtimeStr = fmtBirthtime(birthtimeDate);
 
-  // create a Luxon in birth TZ, using local (birth) wall clock
-  // we only need the *offset* label, not converting to UTC wall time.
-  const [mm, dd, yyyy] = birthdayStr.split('/'); // from "MM/DD/YYYY"
+  const [mm, dd, yyyy] = birthdayStr.split('/');
   const hh24 = birthtimeDate.getHours();
   const mn = birthtimeDate.getMinutes();
 
@@ -160,11 +152,9 @@ const buildFinalPayload = (a: AnswerRecord): FinalSignupPayload => {
     { zone: tz }
   );
 
-  // birthDateTimeUTC: "MM/DD/YYYY - hh:mm:ss  AM UTC-6"
   const clockLocal = dtLocal.toFormat(`MM/dd/yyyy - hh:mm:ss'${NBSP_NARROW}'a`);
   const birthDateTimeUTC = `${clockLocal} ${utcOffsetToken(dtLocal)}`;
 
-  // "now" stamps (use device zone/offset)
   const now = DateTime.now();
   const lastLoginDate = fmtStampWithOffset(now);
   const signUpDate = fmtStampWithOffset(now);
@@ -192,11 +182,11 @@ const buildFinalPayload = (a: AnswerRecord): FinalSignupPayload => {
   };
 };
 
-const submitProps = (enabled: boolean, onSubmit: () => void) => ({
+const submitProps = (enabled: boolean, onSubmit: () => void, returnKey: 'next' | 'done') => ({
   onSubmitEditing: () => { if (enabled) onSubmit(); },
-  returnKeyType: Platform.select({ ios: 'done', android: 'send' }) as any,
+  returnKeyType: Platform.select({ ios: returnKey, android: returnKey }) as any,
   blurOnSubmit: true,
-  enablesReturnKeyAutomatically: true, // iOS hides Send until enabled
+  enablesReturnKeyAutomatically: true,
 });
 
 // -------------------- component --------------------
@@ -205,7 +195,7 @@ export default function ChatFlow({
   onComplete,
   step,
   setStep,
-  keyboardOffset = 0,   // ← destructure with a default
+  keyboardOffset = 0,
 }: ChatFlowProps) {
   const insets = useSafeAreaInsets();
 
@@ -225,7 +215,10 @@ export default function ChatFlow({
     password: '',
   });
 
-  const emailInputRef = useRef<TextInput>(null);
+  // refs for auto-focus
+  const textRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   const [textInput, setTextInput] = useState<string>('');
@@ -238,51 +231,46 @@ export default function ChatFlow({
   const [isPolicyModalVisible, setIsPolicyModalVisible] = useState(false);
   const [policyModalContent, setPolicyModalContent] =
     useState<'Privacy Policy' | 'Terms & Conditions'>('Privacy Policy');
-  const [emailValidating, setEmailValidating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<SelectedPlace | null>(null);
 
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
   const current = steps[step];
 
+  // where email/final/last-input sit
+  const emailStepIndex = useMemo(() => steps.findIndex(s => s.inputType === 'email'), [steps]);
+  const finalStepIndex = useMemo(() => steps.findIndex(s => s.inputType === 'final'), [steps]);
+  const lastInputIndex = useMemo(
+    () => (finalStepIndex > -1 ? finalStepIndex - 1 : steps.length - 1),
+    [finalStepIndex, steps.length]
+  );
+  const isCurrentLastInput = step === lastInputIndex;
+
+  const nextButtonLabel = current.inputType === 'final' ? 'Continue' : 'Next';
+  const nextReturnKey: 'next' | 'done' = isCurrentLastInput ? 'done' : 'next';
+
   // Generic, type-safe answer updater
   const updateAnswer = <K extends keyof AnswerRecord>(key: K, value: AnswerRecord[K]) => {
     setAnswers(a => ({ ...a, [key]: value }));
   };
 
-  const fieldLabelFor = (key: StepConfig['key'], placeholder?: string) => {
-    if (placeholder) return placeholder;
-    switch (key) {
-      case 'firstName': return 'First name';
-      case 'lastName': return 'Last name';
-      case 'pronouns': return 'Pronouns';
-      default: return 'This field';
-    }
-  };
-
-
+  // step changes: reset errors, hydrate value, focus inputs
   useEffect(() => {
+    setError(null);
+
     if (current.inputType === 'text' && isAnswerKey(current.key)) {
       const saved = (answers as any)[current.key];
       setTextInput(typeof saved === 'string' ? saved : '');
       setSelectedPlace(null);
-      return;
-    }
-
-    if (current.inputType === 'email') {
+    } else if (current.inputType === 'email') {
       setTextInput(answers.email || '');
       setSelectedPlace(null);
-      return;
-    }
-
-    if (current.inputType === 'location') {
+    } else if (current.inputType === 'location') {
       if (answers.placeOfBirthUnknown) {
-        // show "I don't know" rather than default place label
         setTextInput("I don't know");
         setSelectedPlace(null);
       } else {
         setTextInput(answers.placeOfBirth || '');
-        // Rehydrate selected place if we have coords/tz
         if (answers.placeOfBirth) {
           setSelectedPlace({
             label: answers.placeOfBirth,
@@ -294,13 +282,24 @@ export default function ChatFlow({
           setSelectedPlace(null);
         }
       }
-      return;
+    } else {
+      setTextInput('');
+      setSelectedPlace(null);
     }
 
-    // time step doesn't use textInput, just ensure no leftover selection
-    setTextInput('');
-    setSelectedPlace(null);
+    // defer focus slightly so layout settles
+    const needsKeyboard =
+      current.inputType === 'text' ||
+      current.inputType === 'email' ||
+      current.inputType === 'secure';
+    const t = setTimeout(() => {
+      if (current.inputType === 'email') emailRef.current?.focus();
+      else if (current.inputType === 'text') textRef.current?.focus();
+      else if (current.inputType === 'secure') passwordRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(t);
   }, [
+    step,
     current.key,
     current.inputType,
     answers.firstName,
@@ -313,29 +312,6 @@ export default function ChatFlow({
     answers.birthLon,
     answers.birthTimezone,
   ]);
-
-  // Live email validation
-  useEffect(() => {
-    if (current.inputType !== 'email') { setError(null); setEmailValidating(false); return; }
-    if (!textInput) { setError(null); setEmailValidating(false); return; }
-    if (!isValidEmail(textInput)) { setError('Invalid email address'); setEmailValidating(false); return; }
-
-    let active = true;
-    setEmailValidating(true);
-    const timer = setTimeout(async () => {
-      try {
-        const exists = await checkEmailExists(textInput);
-        if (!active) return;
-        setError(exists ? 'Email already in use' : null);
-      } catch {
-        if (active) setError('Please enter valid email address');
-      } finally {
-        if (active) setEmailValidating(false);
-      }
-    }, 500);
-
-    return () => { active = false; clearTimeout(timer); };
-  }, [textInput, current.inputType]);
 
   const openPolicyModal = (content: 'Privacy Policy' | 'Terms & Conditions') => {
     setPolicyModalContent(content);
@@ -350,37 +326,42 @@ export default function ChatFlow({
   const formatTime12Hour = (date: Date | string | null | undefined) => {
     if (!date) return 'Select birth time';
     const d = typeof date === 'string' ? new Date(date) : date;
-    const hh = d.getHours() % 12 === 0 ? 12 : d.getHours() % 12;
+    const twelve = d.getHours() % 12 === 0 ? 12 : d.getHours() % 12;
     const mm = pad2(d.getMinutes());
     const ampm = d.getHours() >= 12 ? 'PM' : 'AM';
-    return `${pad2(hh)}:${mm}${NBSP_NARROW}${ampm}`;
+    return `${twelve}:${mm}${NBSP_NARROW}${ampm}`;
   };
-
-  useEffect(() => {
-    if (current.inputType === 'email' && error && emailInputRef.current) {
-      emailInputRef.current.focus();
-    }
-  }, [error, step]);
 
   const capitalizeName = (name: string) =>
     name.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
 
+  const advanceStep = () => setStep(s => s + 1);
 
   const saveAndNext = (value?: any) => {
     switch (current.inputType) {
       case 'text': {
         if (isAnswerKey(current.key)) {
+          const trimmed = (textInput || '').trim();
+          if (!trimmed) { setError((current.placeholder || 'This field') + ' is required'); return; }
           const val =
             current.key === 'firstName' || current.key === 'lastName'
-              ? (capitalizeName(textInput) as AnswerRecord[typeof current.key])
-              : (textInput as AnswerRecord[typeof current.key]);
+              ? (capitalizeName(trimmed) as AnswerRecord[typeof current.key])
+              : (trimmed as AnswerRecord[typeof current.key]);
           updateAnswer(current.key, val);
         }
         setTextInput('');
         break;
       }
       case 'secure': {
-        if (isAnswerKey(current.key)) updateAnswer(current.key, textInput as AnswerRecord[typeof current.key]);
+        const pwd = (textInput || '').trim();
+        if (!pwd) { setError('Please enter a password.'); return; }
+        if (pwd.length < 8) { setError('Password must be at least 8 characters.'); return; }
+        if (!/[A-Z]/.test(pwd)) { setError('Password must contain at least one uppercase letter.'); return; }
+
+        if (isAnswerKey(current.key)) {
+          updateAnswer(current.key, pwd as AnswerRecord[typeof current.key]);
+        }
+        setError(null);
         setTextInput('');
         break;
       }
@@ -403,17 +384,22 @@ export default function ChatFlow({
       case 'location': {
         const unknown = typeof value === 'string' && isIDK(value);
         if (unknown) {
-          // store canonical fallback + unknown flag
           updateAnswer('placeOfBirth', DEFAULT_PLACE.label);
           updateAnswer('placeOfBirthUnknown', true);
           updateAnswer('birthLat', DEFAULT_PLACE.lat);
           updateAnswer('birthLon', DEFAULT_PLACE.lon);
           updateAnswer('birthTimezone', DEFAULT_PLACE.timezone);
-          setTextInput("I don't know"); // keep the visible text consistent
+          setTextInput("I don't know");
         } else {
           updateAnswer('placeOfBirth', value as string);
           updateAnswer('placeOfBirthUnknown', false);
         }
+        break;
+      }
+      case 'email': {
+        const e = (textInput || '').trim();
+        if (!isValidEmail(e)) { setError('Please enter a valid email address.'); return; }
+        updateAnswer('email', e);
         break;
       }
     }
@@ -425,7 +411,9 @@ export default function ChatFlow({
         return a;
       });
     } else {
-      setStep(s => s + 1);
+      setError(null);
+      Keyboard.dismiss();
+      advanceStep();
     }
   };
 
@@ -448,60 +436,51 @@ export default function ChatFlow({
     );
   };
 
+  const emailKeyboardProps = {
+    keyboardType: 'email-address' as const,
+    textContentType: 'emailAddress' as const,
+    autoCapitalize: 'none' as const,
+    autoCorrect: false,
+  };
+
   const renderInputArea = () => (
     <View>
       {(() => {
         switch (current.inputType) {
           case 'text': {
-            const label = current.placeholder || (current.key === 'firstName' ? 'First name' :
-              current.key === 'lastName' ? 'Last name' : 'This field');
             const isBlank = !textInput.trim();
-
-            const handleSend = () => {
-              if (LEADING_WS_RE.test(textInput)) { setError('Cannot begin with a space'); return; }
-              const trimmed = textInput.trim();
-              if (!trimmed) { setError(`${label} is required`); return; }
-              setError(null);
-              Keyboard.dismiss();
-              updateAnswer(current.key as keyof AnswerRecord, trimmed as any);
-              setTextInput('');
-              setStep(s => s + 1);
-            };
-
+            const handleSend = () => saveAndNext();
             return (
               <View style={styles.inputContainer}>
                 <View style={styles.inputRow}>
                   <TextInput
+                    ref={textRef}
                     style={styles.textInput}
                     placeholder={current.placeholder}
                     placeholderTextColor="#fff"
                     value={textInput}
                     onChangeText={(val) => {
                       if (LEADING_WS_RE.test(val)) {
-                        setError('Cannot begin with a space');
                         setTextInput(val.replace(LEADING_WS_RE, ''));
                         return;
                       }
-                      if (error === 'Cannot begin with a space') setError(null);
                       setTextInput(val);
-                      if (!val.trim()) setError(`${label} is required`);
-                      else if (error && error !== 'Cannot begin with a space') setError(null);
                     }}
                     onBlur={() => {
-                      if (error === 'Cannot begin with a space') return;
-                      if (!textInput.trim()) setError(`${label} is required`);
+                      const trimmed = (textInput || '').trim();
+                      if (!trimmed) setError((current.placeholder || 'This field') + ' is required');
                     }}
                     keyboardType={Platform.OS === 'ios' ? 'ascii-capable' : 'default'}
                     autoCapitalize="sentences"
                     autoCorrect
-                    {...submitProps(!isBlank, handleSend)}
+                    {...submitProps(!isBlank, handleSend, nextReturnKey)}
                   />
                   <TouchableOpacity
                     style={[styles.sendButton, { opacity: isBlank ? 0.5 : 1 }]}
                     disabled={isBlank}
                     onPress={handleSend}
                   >
-                    <Text style={styles.sendText}>➔</Text>
+                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
                   </TouchableOpacity>
                 </View>
                 {!!error && (
@@ -512,31 +491,41 @@ export default function ChatFlow({
               </View>
             );
           }
+
           case 'secure': {
-            const handleSend = () => {
-              if (!textInput) setError('Please enter a password.');
-              else if (textInput.length < 8) setError('Password must be at least 8 characters.');
-              else if (!/[A-Z]/.test(textInput)) setError('Password must contain at least one uppercase letter.');
-              else { setError(null); Keyboard.dismiss(); updateAnswer('password', textInput); saveAndNext(textInput); }
-            };
+            const handleSend = () => saveAndNext(textInput);
             return (
               <View style={[styles.inputContainer]}>
                 <View style={[styles.inputRow, { width: '90%' }]}>
                   <PasswordInputField
-                    style={[styles.textInput, styles.passwordStyle, { height: 90 }]}  // rounded shell
-                    inputStyle={{}}                                   // (optional) text styling
+                    ref={passwordRef}
+                    style={[styles.textInput, styles.passwordStyle, { height: 90 }]}
+                    inputStyle={{}}
                     value={textInput}
                     onChangeText={setTextInput}
                     placeholder="Password..."
                     placeholderTextColor="#fff"
+                    textContentType="newPassword"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    onSubmitEditing={handleSend}
+                    returnKeyType={nextReturnKey}
+                    blurOnSubmit
                   />
 
-                  <TouchableOpacity style={[styles.sendButton, { opacity: 1 }]} onPress={handleSend}>
-                    <Text style={styles.sendText}>➔</Text>
+                  <TouchableOpacity
+                    style={[styles.sendButton, { opacity: 1 }]}
+                    onPress={handleSend}
+                  >
+                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
                   </TouchableOpacity>
                 </View>
-                {error && <View style={styles.errorContainer}><Text style={styles.errorText}>{error}</Text></View>}
 
+                {!!error && (
+                  <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                )}
               </View>
             );
           }
@@ -585,7 +574,7 @@ export default function ChatFlow({
                     disabled={!selected || isFuture || isUnder18}
                     onPress={() => { Keyboard.dismiss(); saveAndNext(selected!); }}
                   >
-                    <Text style={styles.sendText}>➔</Text>
+                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -610,12 +599,11 @@ export default function ChatFlow({
 
           case 'location': {
             const isUnknownLoc = answers.placeOfBirthUnknown;
-            const canProceedLocation = isUnknownLoc || !!selectedPlace; // ✅ allow proceed when unknown
+            const canProceedLocation = isUnknownLoc || !!selectedPlace;
 
             const handleSend = () => {
               if (isUnknownLoc) {
                 Keyboard.dismiss();
-                // Keep stored defaults + unknown flag; just advance
                 saveAndNext("I don't know");
                 return;
               }
@@ -638,10 +626,9 @@ export default function ChatFlow({
             const handleUnknown = () => {
               Keyboard.dismiss();
               setSelectedPlace(null);
-              setTextInput("I don't know");                  // ✅ show "I don't know" in field
+              setTextInput("I don't know");
               setLocationError(null);
 
-              // Keep defaults in answers, but mark unknown
               updateAnswer('placeOfBirth', DEFAULT_PLACE.label);
               updateAnswer('placeOfBirthUnknown', true);
               updateAnswer('birthLat', DEFAULT_PLACE.lat);
@@ -653,10 +640,6 @@ export default function ChatFlow({
 
             return (
               <View style={styles.inputContainer}>
-                {!!locationError && (
-                  <View style={styles.errorContainer}><Text style={styles.errorText}>{locationError}</Text></View>
-                )}
-
                 <View style={styles.inputRow}>
                   <LocationAutocomplete
                     value={textInput}
@@ -665,8 +648,6 @@ export default function ChatFlow({
                       setLocationError(null);
 
                       if (text === '') {
-                        // User cleared the field: treat as switching away from “unknown”
-                        // so send button is disabled until they select a place.
                         updateAnswer('placeOfBirthUnknown', false);
                         updateAnswer('placeOfBirth', '');
                         updateAnswer('birthLat', undefined);
@@ -677,13 +658,11 @@ export default function ChatFlow({
                       }
 
                       if (isIDK(text)) {
-                        // Explicitly typed "I don't know"
                         updateAnswer('placeOfBirthUnknown', true);
                         setSelectedPlace(null);
                         return;
                       }
 
-                      // Typing anything else → not unknown
                       updateAnswer('placeOfBirthUnknown', false);
                       setSelectedPlace(null);
                     }}
@@ -711,13 +690,17 @@ export default function ChatFlow({
                     disabled={!canProceedLocation}
                     onPress={handleSend}
                   >
-                    <Text style={styles.sendText}>➔</Text>
+                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
                   </TouchableOpacity>
                 </View>
 
                 <TouchableOpacity style={[styles.choiceButton, { alignSelf: 'center', marginTop: 16 }]} onPress={handleUnknown}>
                   <Text style={[styles.choiceText, { color: '#fff' }]}>I don’t know</Text>
                 </TouchableOpacity>
+
+                {!!locationError && (
+                  <View style={styles.errorContainer}><Text style={styles.errorText}>{locationError}</Text></View>
+                )}
               </View>
             );
           }
@@ -726,7 +709,7 @@ export default function ChatFlow({
             const now = new Date();
             const birthDate = answers.birthday;
             const birthTime = answers.birthtime;
-            const isUnknownTime = !!answers.birthtimeUnknown;            // ✅
+            const isUnknownTime = !!answers.birthtimeUnknown;
             const isBirthdayToday = birthDate?.toDateString() === now.toDateString();
             const isFutureTime =
               !isUnknownTime && birthTime != null &&
@@ -737,14 +720,11 @@ export default function ChatFlow({
                 : false);
 
             const displayTime = isUnknownTime
-              ? "I don't know"                                            // ✅ show text, not a time
+              ? "I don't know"
               : (birthTime ? formatTime12Hour(birthTime) : formatTime12Hour(null));
 
             return (
               <View style={styles.inputContainer}>
-                {isFutureTime && (
-                  <View style={styles.errorContainer}><Text style={styles.errorText}>Please select a valid time not in the future.</Text></View>
-                )}
                 <View style={styles.inputRow}>
                   <TouchableOpacity
                     style={[styles.datePickerButton, styles.textInput]}
@@ -758,15 +738,19 @@ export default function ChatFlow({
                     onPress={() => {
                       Keyboard.dismiss();
                       if (isUnknownTime) {
-                        saveAndNext("I don't know");                      // ✅ keep unknown flag
+                        saveAndNext("I don't know");
                       } else {
                         saveAndNext(birthTime!);
                       }
                     }}
                   >
-                    <Text style={styles.sendText}>➔</Text>
+                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
                   </TouchableOpacity>
                 </View>
+
+                {isFutureTime && (
+                  <View style={styles.errorContainer}><Text style={styles.errorText}>Please select a valid time not in the future.</Text></View>
+                )}
 
                 <TouchableOpacity
                   style={[styles.choiceButton, { alignSelf: 'center', marginTop: 16 }]}
@@ -791,40 +775,41 @@ export default function ChatFlow({
 
           case 'email': {
             const handleSend = async () => {
-              if (!isValidEmail(textInput)) { setError('Please enter a valid email address.'); return; }
-              setError(null);
+              const e = (textInput || '').trim();
+              if (!isValidEmail(e)) { setError('Please enter a valid email address.'); return; }
               try {
-                const methods = await fetchSignInMethodsForEmail(auth, textInput);
+                const methods = await fetchSignInMethodsForEmail(auth, e);
                 if (methods.length > 0) { setError('That email is already registered. Please sign in or use a different address.'); return; }
-                updateAnswer('email', textInput);
+                updateAnswer('email', e);
                 Keyboard.dismiss();
-                saveAndNext(textInput);
+                saveAndNext(e);
               } catch {
                 setError('Network error—please try again.');
               }
             };
+
+            const canSend = !!textInput.trim();
 
             return (
               <View style={styles.inputContainer}>
                 {error && (<View style={styles.errorContainer}><Text style={styles.errorText}>{error}</Text></View>)}
                 <View style={styles.inputRow}>
                   <TextInput
-                    ref={emailInputRef}
+                    ref={emailRef}
                     style={styles.textInput}
                     placeholder={current.placeholder}
                     placeholderTextColor="#fff"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
                     value={textInput}
                     onChangeText={setTextInput}
-                    {...submitProps(!!textInput, handleSend)}
+                    {...emailKeyboardProps}
+                    {...submitProps(canSend, handleSend, nextReturnKey)}
                   />
                   <TouchableOpacity
-                    style={[styles.sendButton, { opacity: textInput ? 1 : 0.5 }]}
-                    disabled={!textInput}
+                    style={[styles.sendButton, { opacity: canSend ? 1 : 0.5 }]}
+                    disabled={!canSend}
                     onPress={handleSend}
                   >
-                    <Text style={styles.sendText}>➔</Text>
+                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -889,7 +874,7 @@ export default function ChatFlow({
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={insets.top + keyboardOffset} // ← now defined
+        keyboardVerticalOffset={insets.top + keyboardOffset}
       >
         <ScrollView ref={scrollRef} contentContainerStyle={styles.container} onContentSizeChange={handleContentSizeChange}>
           {steps.slice(0, step + 1).map((s, i) => (
@@ -911,6 +896,7 @@ export default function ChatFlow({
   );
 }
 
+// 🔒 Styles unchanged from your original file
 const styles = StyleSheet.create({
   container: { paddingHorizontal: scale(20), paddingBottom: verticalScale(20) },
   bubbleContainer: { marginBottom: verticalScale(16), marginLeft: scale(2) },
@@ -920,7 +906,7 @@ const styles = StyleSheet.create({
   inputContainer: { flexDirection: 'column', padding: scale(15), backgroundColor: '#1C2541', width: '100%' },
   inputRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignContent: 'center',
     marginTop: scale(5),
     backgroundColor: '#1C2541',
     width: '100%',
@@ -947,18 +933,18 @@ const styles = StyleSheet.create({
   continueTextDisabled: { color: '#666' },
   errorContainer: {
     flexDirection: 'row',
-  marginTop: Platform.OS === 'ios' ? verticalScale(4) : verticalScale(6), // closer on iOS
-  marginBottom: Platform.OS === 'ios' ? verticalScale(4) : verticalScale(6), // closer on iOS
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '100%',
-},
-errorText: {
-  color: 'red',
-  textAlign: 'center',
-  fontSize: moderateScale(14),
-  fontWeight: 'bold',
-},
+    marginTop: Platform.OS === 'ios' ? verticalScale(4) : verticalScale(6),
+    marginBottom: Platform.OS === 'ios' ? verticalScale(4) : verticalScale(6),
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    fontSize: moderateScale(14),
+    fontWeight: 'bold',
+  },
   backButton: { alignSelf: 'flex-start', paddingHorizontal: scale(12), paddingVertical: verticalScale(8), marginBottom: 0, marginLeft: scale(8), justifyContent: 'center' },
   backText: { fontSize: moderateScale(18), color: '#fff', fontWeight: 'bold' },
   passwordStyle: {
@@ -978,7 +964,6 @@ errorText: {
     color: '#fff',
     fontSize: moderateScale(16),
   },
-
   sendButton: {
     alignSelf: 'stretch',
     height: INPUT_H,
