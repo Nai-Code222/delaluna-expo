@@ -76,7 +76,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (initializing) return;
     if (!user) {
-      router.replace('/(auth)/welcome');
+      router.replace('/app/(auth)/welcome');
     } else {
       setProfileLoading(true);
       getUserRecord();
@@ -93,7 +93,7 @@ export default function ProfileScreen() {
 
   const goToEditProfile = () => {
     router.replace({
-      pathname: '/(supporting)/edit-profile.screen',
+      pathname: '/app/(supporting)/edit-profile.screen',
       params: {
         firstName: userRecord.firstName ?? '',
         lastName: userRecord.lastName ?? '',
@@ -111,7 +111,7 @@ export default function ProfileScreen() {
 
   const goToUpdateTheme = () => {
     router.replace({
-      pathname: '/(supporting)/update-theme.screen',
+      pathname: '/app/(supporting)/update-theme.screen',
       params: {
         userID: user?.uid ?? '',
       },
@@ -138,7 +138,7 @@ export default function ProfileScreen() {
           onPress: async () => {
             try {
               await signOut(auth)
-              router.replace('/(auth)/welcome')
+              router.replace('/app/(auth)/welcome')
             } catch (error) {
               setErrorMessage('Logout failed. Please try again.')
               setShowErrorModal(true)
@@ -164,7 +164,7 @@ export default function ProfileScreen() {
             try {
               deleteDoc(getUserDocRef(user?.uid || ''))
               await user?.delete()
-              router.replace('/(auth)/welcome')
+              router.replace('/app/(auth)/welcome')
             } catch (error) {
               setErrorMessage('Account deletion failed. Please try again.')
               setShowErrorModal(true)

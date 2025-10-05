@@ -26,7 +26,7 @@ export default function SplashScreen() {
       if (user) {
         router.replace('/(main)');
       } else {
-        router.replace('/(auth)/welcome');
+        router.replace('/app/(auth)/welcome');
       }
     });
   }, [user, initializing]);

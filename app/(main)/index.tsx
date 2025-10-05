@@ -90,7 +90,7 @@ export default function HomeScreen() {
         title="Home"
         leftIconName={undefined}
         onLeftPress={() => {}}
-        rightIconSource={require('../assets/icons/Avatar.png')}
+        rightIconSource={require('../assets/icons/avatar.png')}
         onRightPress={goToProfile}
       />
       

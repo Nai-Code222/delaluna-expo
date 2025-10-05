@@ -13,11 +13,11 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import AuthContext from '@/app/backend/AuthContext';
-import HeaderNav from '../components/utils/headerNav';
-import { ThemeContext } from '@/app/ThemeContext'; // 👈 use the exact same path/case
+import { ThemeContext } from '@/app/ThemeContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
+import AuthContext from '../backend/auth-context';
+import HeaderNav from '../components/component-utils/header-nav';
 
 export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext);
@@ -40,7 +40,7 @@ export default function HomeScreen() {
 
   // Auth guard (ThemeProvider already hydrated before first paint)
   useEffect(() => {
-    if (!initializing && !user) router.replace('/welcome');
+    if (!initializing && !user) router.replace('/app/(auth)/welcome');
   }, [initializing, user]);
 
   // Render helpers
@@ -80,7 +80,7 @@ export default function HomeScreen() {
     );
   }
 
-  const goToProfile = () => router.replace('/screens/profile.screen');
+  const goToProfile = () => router.replace('/app/(supporting)/profile.screen');
 
   return renderBackground(
     <Animated.View style={[styles.container, { opacity: fade }]}>
@@ -89,7 +89,7 @@ export default function HomeScreen() {
         title="Home"
         leftIconName={undefined}
         onLeftPress={() => {}}
-        rightIconSource={require('../assets/icons/Avatar.png')}
+        rightIconSource={require('../assets/icons/avatar.png')}
         onRightPress={goToProfile}
       />
       

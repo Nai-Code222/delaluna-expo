@@ -15,7 +15,7 @@ export default function App() {
     'Futura-Medium': require('./assets/fonts/Futura Md BT Medium.ttf'),
     'Futura-Light': require('./assets/fonts/Futura light.ttf'),
     'Futura-Book': require('./assets/fonts/Futura Bk BT Book.ttf'),
-    'Futura-Generic': require('./assets/fonts/Futura-Generic.ttf'),
+    'Futura-Generic': require('./assets/fonts/futura-generic.ttf'),
   });
 
   if (!fontsLoaded) {

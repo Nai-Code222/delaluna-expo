@@ -7,13 +7,13 @@ import { useAuth } from './backend/auth-context';
 
 
 // ===== Images =====
-const mainBg = require('./assets/images/mainBackground.png');
-const blueBg = require('./assets/images/blueTheme.png');
-const greenBg = require('./assets/images/greenTheme.png');
-const orangeBg = require('./assets/images/orangeTheme.png');
-const redBg = require('./assets/images/redTheme.png');
-const yellowBg = require('./assets/images/yellowTheme.png');
-const pinkBg = require('./assets/images/pinkTheme.png');
+const deafult = require('./assets/colors/mdefault-theme.png');
+const blueTheme = require('./assets/colors/blue-theme.png');
+const greenTheme = require('./assets/colors/green-theme.png');
+const orangeTheme = require('./assets/colors/orange-theme.png');
+const redTheme = require('./assets/colors/red-theme.png');
+const yellowTheme = require('./assets/colors/yellow-theme.png');
+const pinkTheme = require('./assets/colors/pink-theme.png');
 
 // ===== Types =====
 export interface ThemeColors {
@@ -50,7 +50,7 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: mainBg,
+    backgroundImage: deafult,
     blendMode: 'difference',
   },
   yellow: {
@@ -65,7 +65,7 @@ const allThemes: Record<string, Theme> = {
       text: '#e5e4e4ff',
     },
     backgroundType: 'image',
-    backgroundImage: yellowBg,
+    backgroundImage: yellowTheme,
     blendMode: 'difference',
   },
   pink: {
@@ -80,7 +80,7 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: pinkBg,
+    backgroundImage: pinkTheme,
     blendMode: 'difference',
   },
   blue: {
@@ -95,7 +95,7 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: blueBg,
+    backgroundImage: blueTheme,
     blendMode: 'difference',
   },
   green: {
@@ -110,7 +110,7 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: greenBg,
+    backgroundImage: greenTheme,
     blendMode: 'difference',
   },
   orange: {
@@ -125,7 +125,7 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: orangeBg,
+    backgroundImage: orangeTheme,
     blendMode: 'difference',
   },
   red: {
@@ -140,7 +140,7 @@ const allThemes: Record<string, Theme> = {
       text: '#ffffff',
     },
     backgroundType: 'image',
-    backgroundImage: redBg,
+    backgroundImage: redTheme,
     blendMode: 'difference',
   },
 };

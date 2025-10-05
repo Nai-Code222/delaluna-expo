@@ -318,22 +318,22 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
-              <Image source={require('../assets/icons/changeThemeIcon.png')} style={styles.leftIconContainer} />
+              <Image source={require('../assets/icons/change-theme-icon.png')} style={styles.leftIconContainer} />
               <Text style={styles.buttonText}>Change Color Theme</Text>
               <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
-              <Image source={require('../assets/icons/changePasseordIcon.png')} style={styles.leftIconContainer} />
+              <Image source={require('../assets/icons/change-passeord-icon.png')} style={styles.leftIconContainer} />
               <Text style={styles.buttonText}>Change Password</Text>
-              <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
+              <Image source={require('../assets/icons/arrow-right-icon.png')} style={styles.rightIconContainer} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.profileButton} onPress={handleLogout}>
-              <Image source={require('../assets/icons/logOutIcon.png')} style={styles.leftIconContainer} />
+              <Image source={require('../assets/icons/log-out-icon.png')} style={styles.leftIconContainer} />
               <Text style={styles.buttonText}>Logout</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
-            <Image source={require('../assets/icons/deleteAccountIcon.png')} style={styles.leftIconContainer} />
+            <Image source={require('../assets/icons/delete-account-icon.png')} style={styles.leftIconContainer} />
             <Text style={styles.buttonText}>Delete Account</Text>
           </TouchableOpacity>
         </View>
