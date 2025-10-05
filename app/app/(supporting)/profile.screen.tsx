@@ -4,8 +4,6 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, TextI
 import { router } from 'expo-router'
 import { signOut } from 'firebase/auth'
 import { StatusBar } from 'expo-status-bar'
-import LoadingScreen from '@/app/components/utils/LoadingScreen'
-import AlertModal from '@/app/components/alerts/AlertModal'
 import { deleteDoc, getDoc, getFirestore, doc } from 'firebase/firestore'
 import type { DocumentData } from 'firebase/firestore';
 import { useIsFocused } from '@react-navigation/native';
@@ -18,6 +16,8 @@ import { UserRecord } from '../../model/user-record'
 import HeaderNav from '../../components/utils/header-nav'
 import { getUserDocRef } from '../../service/user.service'
 import { auth } from '@/firebaseConfig'
+import LoadingScreen from '@/app/components/utils/loading-screen'
+import AlertModal from '@/app/components/alerts/alert-modal'
 
 
 

@@ -1,14 +1,14 @@
 // app/_layout.tsx
-import React, { useContext } from 'react';
+import React from 'react';
 import { Stack } from 'expo-router';
-import { ThemeContext, ThemeProvider } from '@/app/themecontext';
-import { AuthProvider } from '@/backend/auth-context';
+import { AuthProvider } from './backend/auth-context';
+import ThemeProvider from './ThemeContext';
+
 
 export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        {/* The Stack will now receive theme via context */}
         <Stack screenOptions={{ headerShown: false }} />
       </AuthProvider>
     </ThemeProvider>
