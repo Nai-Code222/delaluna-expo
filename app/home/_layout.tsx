@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useRef } from 'react';
 import { Tabs } from 'expo-router';
 import { Image, ImageBackground, StyleSheet, Platform, View, Animated, Easing } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme-context } from '@/app/theme-context'; // ← match file case/path
+ import { ThemeContext } from '@/app/theme-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function HomeLayout() {

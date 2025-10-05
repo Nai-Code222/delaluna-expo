@@ -19,7 +19,7 @@ import SecondaryButtonComponent from '../../components/buttons/secondary-button-
 import LoadingScreen from '../../components/component-utils/loading-screen';
 import PasswordInputField from '../../components/component-utils/password-input-field';
 import { updateUserDoc } from '../../service/user.service';
-import { theme-context } from '@/app/theme-context';
+import { ThemeContext } from '@/app/theme-context';
 
 
 export default function Login() {
@@ -30,7 +30,7 @@ export default function Login() {
 
   const { user, initializing } = useAuth();
   const router = useRouter();
-  const { setThemeKey } = useContext(theme-context);
+  const { setThemeKey } = useContext(ThemeContext);
   const db = getFirestore();
   const passwordRef = React.useRef<TextInput>(null);
   const insets = useSafeAreaInsets();

@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { theme-context } from '@/app/theme-context';
+ import { ThemeContext } from '@/app/theme-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import AuthContext from '../backend/auth-context';
@@ -80,7 +80,7 @@ export default function HomeScreen() {
     );
   }
 
-  const goToProfile = () => router.replace('/app/(supporting)/profile.screen');
+  const goToProfile = () => router.replace('/(supporting)/profile.screen');
 
   return renderBackground(
     <Animated.View style={[styles.container, { opacity: fade }]}>

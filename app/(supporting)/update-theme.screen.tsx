@@ -2,7 +2,7 @@
 import React, { useContext, useRef, useEffect } from 'react';
 import { View, FlatList, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { theme-context } from '@/app/theme-context'
+import { ThemeContext } from "../theme-context";
 import { LinearGradient } from 'expo-linear-gradient';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { auth } from '@/firebaseConfig';
@@ -15,7 +15,7 @@ type Params = {
 };
 
 export default function ChangeThemeScreen() {
-  const { theme, setThemeKey, themes } = useContext(theme-context);
+  const { theme, setThemeKey, themes } = useContext(ThemeContext);
   const router = useRouter();
   const originalKey = useRef<string | null>(null);
   const db = getFirestore();
@@ -51,12 +51,12 @@ export default function ChangeThemeScreen() {
         return;
       }
     }
-    router.replace('/app/(supporting)/profile.screen');
+    router.replace('/(supporting)/profile.screen');
   };
 
   const handleCancel = () => {
     if (originalKey.current) setThemeKey(originalKey.current);
-    router.replace('/app/(supporting)/profile.screen');
+    router.replace('/(supporting)/profile.screen');
   };
 
   // Helper to render background

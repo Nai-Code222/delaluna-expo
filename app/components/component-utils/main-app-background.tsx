@@ -1,4 +1,6 @@
 // components/GradientBackground.tsx
+// This is a reusable gradient background component that can be used in various parts of the app.
+
 import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -31,4 +33,4 @@ const styles = StyleSheet.create({
     flex: 1,          // fill its parent
   },
 });
-// This is a reusable gradient background component that can be used in various parts of the app.
+
