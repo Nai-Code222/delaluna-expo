@@ -19,7 +19,7 @@ import { scale, verticalScale, moderateScale } from '@/src/utils/responsive';
 import { DateTime } from 'luxon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { auth } from '@/firebaseConfig';
-import PasswordInputField from '../utils/password-input-field';
+import PasswordInputField from '../component-utils/password-input-field';
 import LocationAutocomplete from './location-autocomplete';
 import PolicyModal from './policy-modals';
 import { privacyPolicy, termsAndConditions } from '@/app/assets/legal/legal-texts';

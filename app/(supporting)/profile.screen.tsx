@@ -11,13 +11,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { format } from 'date-fns';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { auth } from '@/firebaseConfig'
-import LoadingScreen from '@/app/components/utils/loading-screen'
+import LoadingScreen from '@/app/components/component-utils/loading-screen'
 import AlertModal from '@/app/components/alerts/alert-modal'
 import { ThemeContext } from '../ThemeContext'
 import { useAuth } from '../backend/auth-context'
 import { UserRecord } from '../model/user-record'
 import { getUserDocRef } from '../service/user.service'
-import HeaderNav from '../components/utils/header-nav'
+import HeaderNav from '../components/component-utils/header-nav'
 
 
 

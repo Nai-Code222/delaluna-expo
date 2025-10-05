@@ -27,7 +27,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { getBigThree } from '../../service/astro.service';
-import HeaderNav from '../../components/utils/header-nav';
+import HeaderNav from '../../components/component-utils/header-nav';
 import PronounDropdown from '../../components/buttons/pronoun-dropdown';
 import { GlassButton } from '../../components/buttons/glass-button';
 import { updateUserDoc } from '../../service/user.service';

@@ -29,7 +29,7 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { ThemeContext } from '../ThemeContext';
 import { getBigThree } from '../service/astro.service';
 import { updateUserDoc } from '../service/user.service';
-import HeaderNav from '../components/utils/header-nav';
+import HeaderNav from '../components/component-utils/header-nav';
 import PronounDropdown from '../components/buttons/pronoun-dropdown';
 import GlassButton from '../components/buttons/glass-button';
 

@@ -16,8 +16,8 @@ import { DateTime } from 'luxon';
 import { auth } from '@/firebaseConfig';
 import { useAuth } from '../../backend/auth-context';
 import SecondaryButtonComponent from '../../components/buttons/secondary-button-component';
-import LoadingScreen from '../../components/utils/loading-screen';
-import PasswordInputField from '../../components/utils/password-input-field';
+import LoadingScreen from '../../components/component-utils/loading-screen';
+import PasswordInputField from '../../components/component-utils/password-input-field';
 import { updateUserDoc } from '../../service/user.service';
 import { ThemeContext } from '@/app/ThemeContext';
 

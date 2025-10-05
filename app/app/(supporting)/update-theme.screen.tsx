@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { auth } from '@/firebaseConfig';
 import { StatusBar } from 'expo-status-bar'; // added
-import HeaderNav from '@/app/components/utils/header-nav';
+import HeaderNav from '@/app/components/component-utils/header-nav';
 
 
 type Params = {
