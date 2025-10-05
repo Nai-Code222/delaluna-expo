@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AuthContext from '@/app/backend/AuthContext';
 import HeaderNav from '../components/utils/headerNav';
-import { ThemeContext } from '@/app/themecontext'; // 👈 use the exact same path/case
+import { ThemeContext } from '@/app/ThemeContext'; // 👈 use the exact same path/case
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 
