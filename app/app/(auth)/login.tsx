@@ -5,22 +5,22 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Image, KeyboardAvoidingView, Platform, Keyboard, Alert,
 } from 'react-native';
-import { auth } from '../firebase-config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import SecondaryButtonComponent from './components/buttons/secondary-button-component';
 import { useRouter } from 'expo-router';
-import LoadingScreen from './components/utils/loading-screen';
-import { useAuth } from './backend/auth-context';
 import { getFirestore, doc, getDoc, serverTimestamp } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemeContext } from './themecontext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
-import { StatusBar } from 'expo-status-bar'; // added
-import PasswordInputField from './components/utils/password-input-field';
-import { updateUserDoc } from './service/user.service';
-import { FieldValue } from 'firebase/firestore';
+import { StatusBar } from 'expo-status-bar';
 import { DateTime } from 'luxon';
+import { auth } from '@/firebaseConfig';
+import { useAuth } from '../../backend/auth-context';
+import SecondaryButtonComponent from '../../components/buttons/secondary-button-component';
+import LoadingScreen from '../../components/utils/loading-screen';
+import PasswordInputField from '../../components/utils/password-input-field';
+import { updateUserDoc } from '../../service/user.service';
+import { ThemeContext } from '@/app/ThemeContext';
+
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -50,7 +50,7 @@ export default function Login() {
   // Only auto-redirect if we're NOT in the middle of our controlled login flow
   useEffect(() => {
     if (!skipAutoRedirect && !initializing && user) {
-      router.replace('/home');
+      router.replace('/');
     }
   }, [initializing, user, skipAutoRedirect]);
 
@@ -89,19 +89,30 @@ export default function Login() {
       Alert.alert('Invalid Login', 'Email and password are required.');
       return;
     }
-    if (!emailTrim) { Alert.alert('Invalid Login', 'Please enter your email.'); return; }
-    if (!pwdTrim) { Alert.alert('Invalid Login', 'Please enter your password.'); return; }
+    if (!emailTrim) {
+      Alert.alert('Invalid Login', 'Please enter your email.');
+      return;
+    }
+    if (!pwdTrim) {
+      Alert.alert('Invalid Login', 'Please enter your password.');
+      return;
+    }
 
     try {
       setLoading(true);
       setSkipAutoRedirect(true);
       const cred = await signInWithEmailAndPassword(auth, emailTrim, pwdTrim);
       const uid = cred.user.uid;
+
       const nowUtc = DateTime.utc();
-      await updateUserDoc(uid, { lastLoginDate: nowUtc.toJSDate() });
+      await updateUserDoc(uid, {
+        lastLoginDate: nowUtc.toFormat("MM/dd/yyyy hh:mm:ss a ZZZZ"), // human-readable string
+        lastLoginAt: serverTimestamp(), // Firestore machine timestamp
+      });
+
       const key = await resolveThemeBeforeNavigate(uid);
       await Promise.resolve(setThemeKey(key));
-      router.replace('/home');
+      router.replace('/(main)');
     } catch (e: any) {
       const code = e?.code ?? '';
       const invalidCredCodes = new Set([
@@ -113,7 +124,12 @@ export default function Login() {
         'auth/invalid-email',
       ]);
       if (invalidCredCodes.has(code)) {
-        Alert.alert('Login failed', 'Incorrect email or password. Please try again.', [{ text: 'OK' }], { cancelable: true });
+        Alert.alert(
+          'Login failed',
+          'Incorrect email or password. Please try again.',
+          [{ text: 'OK' }],
+          { cancelable: true }
+        );
       } else {
         Alert.alert('Login failed', e?.message ?? 'Login failed.');
       }
@@ -122,6 +138,7 @@ export default function Login() {
       setSkipAutoRedirect(false);
     }
   };
+
 
   return (
     <KeyboardAvoidingView
@@ -181,7 +198,7 @@ export default function Login() {
 
                   <TouchableOpacity
                     style={styles.forgotPasswordButton}
-                    onPress={() => router.replace('/screens/forgot-password.screen')}
+                    onPress={() => router.replace('/forgot-password.screen')}
                   >
                     <Text style={styles.forgotPassword}>Forgot Password?</Text>
                   </TouchableOpacity>
@@ -194,7 +211,7 @@ export default function Login() {
                 <SecondaryButtonComponent
                   title="Not a member? "
                   linkString="Sign up"
-                  onPress={() => router.replace('/signup')}
+                  onPress={() => router.replace('/(auth)/sign-up')}
                 />
               </View>
             </LinearGradient>

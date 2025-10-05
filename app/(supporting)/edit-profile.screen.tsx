@@ -19,19 +19,20 @@ import {
   Pressable,
   Dimensions,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import HeaderNav from '@/(supporting)/components/utils/header-nav';
-import { GlassButton } from '@/(supporting)/components/buttons/glass-button';
-import { updateUserDoc } from '@/(supporting)/service/user.service';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { format, parse, parseISO, isValid } from 'date-fns';
-import { ThemeContext } from '@/(supporting)/themecontext';
-import { LinearGradient } from 'expo-linear-gradient';
-import PronounDropdown from '@/(supporting)/components/buttons/pronoun-dropdown';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DateTime } from 'luxon';
 import tzlookup from '@photostructure/tz-lookup';
-import { getBigThree } from '@/(supporting)/service/astro.service';
+import { DateTime } from 'luxon';
+import { format, parse, parseISO, isValid } from 'date-fns';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { ThemeContext } from '../themecontext';
+import { getBigThree } from '../service/astro.service';
+import HeaderNav from '../components/utils/header-nav';
+import PronounDropdown from '../components/buttons/pronoun-dropdown';
+import { GlassButton } from '../components/buttons/glass-button';
+import { updateUserDoc } from '../service/user.service';
+
 
 type Params = {
   firstName: string;
@@ -357,10 +358,10 @@ export default function EditProfileScreen() {
   };
 
   const handleCancel = () => {
-    if (!hasUnsaved()) return router.replace('/(supporting)/profile');
+    if (!hasUnsaved()) return router.replace('/(supporting)/profile.screen');
     Alert.alert('Discard changes?', 'You have unsaved changes. Are you sure you want to discard them?', [
       { text: 'No', style: 'cancel' },
-      { text: 'Yes', style: 'destructive', onPress: () => router.replace('/(supporting)/profile') },
+      { text: 'Yes', style: 'destructive', onPress: () => router.replace('/(supporting)/profile.screen') },
     ]);
   };
 
@@ -453,7 +454,7 @@ export default function EditProfileScreen() {
 
     if (!Object.keys(changes).length) {
       setShowSuccessAlert(true);
-      setTimeout(() => { setShowSuccessAlert(false); router.replace('/(supporting)/profile'); }, 1500);
+      setTimeout(() => { setShowSuccessAlert(false); router.replace('/(supporting)/profile.screen'); }, 1500);
       return;
     }
 
@@ -461,7 +462,7 @@ export default function EditProfileScreen() {
       setSaving(true);
       await updateUserDoc(userID, changes);
       setShowSuccessAlert(true);
-      setTimeout(() => { setShowSuccessAlert(false); router.replace('/(supporting)/profile'); }, 1500);
+      setTimeout(() => { setShowSuccessAlert(false); router.replace('/(supporting)/profile.screen'); }, 1500);
     } catch (e) {
       console.error(e);
       Alert.alert('Save failed', 'Please try again.');
