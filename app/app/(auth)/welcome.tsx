@@ -49,7 +49,7 @@ export default function Welcome() {
         <TitleText>
           <PrimaryButton
             title="Get Started"
-            onPress={() => router.replace('/(auth)/sign-up')}
+            onPress={() => router.replace('/app/(auth)/sign-up')}
             style={{ marginBottom: verticalScale(10) }}
             accessibilityLabel="Get Started"
             accessibilityHint="Navigate to the sign up screen"
@@ -62,7 +62,7 @@ export default function Welcome() {
           <SecondaryButton
             title="Already a member?"
             linkString="Log In"
-            onPress={() => router.replace('/(auth)/login')}
+            onPress={() => router.replace('/app/login')}
           />
         </ButtonText>
       </View>
