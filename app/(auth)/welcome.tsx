@@ -6,7 +6,7 @@ import PrimaryButton from '@/app/components/buttons/primaryButtonComponent';
 import SecondaryButton from '@/app/components/buttons/secondaryButtonComponent';
 import { TitleText } from '@/app/components/typography/TitleText';
 import ButtonText from '@/app/components/typography/ButtonText';
-import { scale, verticalScale } from '@/(auth)/archive/app/utils/responsive';
+import { scale, verticalScale } from '@/src/utils/responsive';
 
 export default function Welcome() {
   const { width } = useWindowDimensions();
@@ -49,7 +49,7 @@ export default function Welcome() {
         <TitleText>
           <PrimaryButton
             title="Get Started"
-            onPress={() => router.replace('/signup')}
+            onPress={() => router.replace('/(auth)/sign-up')}
             style={{ marginBottom: verticalScale(10) }}
             accessibilityLabel="Get Started"
             accessibilityHint="Navigate to the sign up screen"

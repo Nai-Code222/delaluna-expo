@@ -11,16 +11,15 @@ import { getFirestore, doc, getDoc, serverTimestamp } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
-import { StatusBar } from 'expo-status-bar'; // added
-import { FieldValue } from 'firebase/firestore';
+import { StatusBar } from 'expo-status-bar';
 import { DateTime } from 'luxon';
 import { auth } from '@/firebaseConfig';
-import { ThemeContext } from '@react-navigation/native';
 import { useAuth } from '../backend/auth-context';
 import SecondaryButtonComponent from '../components/buttons/secondary-button-component';
 import LoadingScreen from '../components/utils/loading-screen';
 import PasswordInputField from '../components/utils/password-input-field';
 import { updateUserDoc } from '../service/user.service';
+import { ThemeContext } from '../themecontext';
 
 
 export default function Login() {
@@ -90,16 +89,27 @@ export default function Login() {
       Alert.alert('Invalid Login', 'Email and password are required.');
       return;
     }
-    if (!emailTrim) { Alert.alert('Invalid Login', 'Please enter your email.'); return; }
-    if (!pwdTrim) { Alert.alert('Invalid Login', 'Please enter your password.'); return; }
+    if (!emailTrim) {
+      Alert.alert('Invalid Login', 'Please enter your email.');
+      return;
+    }
+    if (!pwdTrim) {
+      Alert.alert('Invalid Login', 'Please enter your password.');
+      return;
+    }
 
     try {
       setLoading(true);
       setSkipAutoRedirect(true);
       const cred = await signInWithEmailAndPassword(auth, emailTrim, pwdTrim);
       const uid = cred.user.uid;
+
       const nowUtc = DateTime.utc();
-      await updateUserDoc(uid, { lastLoginDate: nowUtc.toJSDate() });
+      await updateUserDoc(uid, {
+        lastLoginDate: nowUtc.toFormat("MM/dd/yyyy hh:mm:ss a ZZZZ"), // human-readable string
+        lastLoginAt: serverTimestamp(), // Firestore machine timestamp
+      });
+
       const key = await resolveThemeBeforeNavigate(uid);
       await Promise.resolve(setThemeKey(key));
       router.replace('/(main)');
@@ -114,7 +124,12 @@ export default function Login() {
         'auth/invalid-email',
       ]);
       if (invalidCredCodes.has(code)) {
-        Alert.alert('Login failed', 'Incorrect email or password. Please try again.', [{ text: 'OK' }], { cancelable: true });
+        Alert.alert(
+          'Login failed',
+          'Incorrect email or password. Please try again.',
+          [{ text: 'OK' }],
+          { cancelable: true }
+        );
       } else {
         Alert.alert('Login failed', e?.message ?? 'Login failed.');
       }
@@ -123,6 +138,7 @@ export default function Login() {
       setSkipAutoRedirect(false);
     }
   };
+
 
   return (
     <KeyboardAvoidingView
