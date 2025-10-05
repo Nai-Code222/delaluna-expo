@@ -5,17 +5,17 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import LocationAutocomplete from '../../../archive/sign up/location-autocomplete';
-import { checkEmailExists } from '../../service/auth.service';
-import { auth } from '../../../firebase-config';
+import { checkEmailExists } from '@/components/service/auth.service';
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
-import PolicyModal from '../../../archive/sign up/policy-modals';
-import { termsAndConditions, privacyPolicy } from '../../assets/legal/legal-texts';
+import { termsAndConditions, privacyPolicy } from '@/components/assets/legal/legal-texts';
 import { format as formatDate } from 'date-fns';
-import { scale, verticalScale, moderateScale } from '../../../src/utils/responsive';
-import PasswordInputField from '../utils/password-input-field';
+import { scale, verticalScale, moderateScale } from '@/src/utils/responsive';
+import PasswordInputField from '@/components/sign-up/utils/password-input-field';
 import { DateTime } from 'luxon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LocationAutocomplete from '@/components/sign-up/location-autocomplete';
+import { auth } from '@/firebaseConfig';
+import PolicyModal from '@/components/sign-up/policy-modals';
 
 const INPUT_H = verticalScale(50);
 const FIELD_BORDER = 'rgba(142, 68, 173, 0.6)';

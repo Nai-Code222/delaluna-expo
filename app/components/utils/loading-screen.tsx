@@ -1,9 +1,9 @@
 import LottieView from 'lottie-react-native';
 import React, { useContext } from 'react';
 import { View, ImageBackground, StyleSheet, Animated, Easing, Image, StatusBar } from 'react-native';
-import { BodyText } from '../typography/body-text';
-import { ThemeContext } from '../../themecontext'
-const backgroundImg = require('../../assets/images/mainBackground.png');
+import { BodyText } from '@/components/utils/typography/body-text';
+import { ThemeContext } from '@/components/themecontext'
+const backgroundImg = require('../../assets/images/main-background.png');
 const splashAnimation = require('../../assets/animations/splash-animation.json'); // Replace with your animation asset
 type LoadingScreenProps = {
     progress: number; // 0 to 1

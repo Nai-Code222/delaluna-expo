@@ -7,7 +7,8 @@ import React, {
   ReactNode,
 } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '../../firebase-config'; // make sure this is correct
+import { auth } from '@/firebaseConfig';
+
 
 type AuthContextType = {
   user: User | null;

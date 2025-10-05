@@ -1,6 +1,6 @@
-import { auth } from '../../firebase-config';
+import { auth } from '@/firebase-config';
 import { doc, setDoc, FieldValue } from 'firebase/firestore';
-import { db } from '../../firebase-config';
+import { db } from '@/firebase-config';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,

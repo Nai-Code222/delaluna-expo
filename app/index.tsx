@@ -5,8 +5,8 @@ import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { router } from 'expo-router';
-import { useAuth } from '@/app/backend/AuthContext';
 import { StatusBar } from 'expo-status-bar'; // added
+import { useAuth } from '@/backend/auth-context';
 
 
 export default function SplashScreen() {
@@ -17,7 +17,7 @@ export default function SplashScreen() {
     animationRef.current?.play();
 
     const timer = setTimeout(() => {
-      router.replace('/welcome'); // back to welcome screen
+      router.replace('/(auth)/welcome'); // back to welcome screen
     }, 3000);
 
     return () => clearTimeout(timer);
@@ -26,7 +26,7 @@ export default function SplashScreen() {
   // Handle if user has previously logged in
   useEffect(() => {
     if (!initializing && user) {
-      router.replace('/home');
+      router.replace('/(main)');
     }
   }, [initializing, user]);
 

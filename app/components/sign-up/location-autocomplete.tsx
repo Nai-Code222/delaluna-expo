@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import tzlookup from '@photostructure/tz-lookup';
-import { scale, verticalScale } from '@/app/screen utils/responsive';
+import { scale, verticalScale } from '@/src/utils/responsive';
 
 type PhotonFeature = {
   properties: {

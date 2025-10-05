@@ -1,8 +1,8 @@
 // app/_layout.tsx
 import React, { useContext } from 'react';
 import { Stack } from 'expo-router';
-import { AuthProvider } from '@/app/backend/AuthContext';
-import { ThemeContext, ThemeProvider } from '../app/themecontext';
+import { ThemeContext, ThemeProvider } from '@/app/themecontext';
+import { AuthProvider } from '@/backend/auth-context';
 
 export default function RootLayout() {
   return (

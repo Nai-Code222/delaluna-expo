@@ -20,7 +20,7 @@ import {
   updatePassword,
   signOut,
 } from 'firebase/auth';
-import { GlassButton } from '../components/buttons/glass-button';
+import { GlassButton } from '../components/buttons/GlassButton';
 import { ThemeContext } from '../themecontext';
 
 // Helper to validate new password strength
