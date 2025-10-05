@@ -26,7 +26,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { ThemeContext } from '../ThemeContext';
+import { theme-context } from '../theme-context';
 import { getBigThree } from '../service/astro.service';
 import { updateUserDoc } from '../service/user.service';
 import HeaderNav from '../components/component-utils/header-nav';
@@ -110,7 +110,7 @@ const to12h = (hh: number, mm: number) =>
 export default function EditProfileScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<Params>();
-  const { theme } = useContext(ThemeContext);
+    const { theme } = useContext(ThemeContext);
   const insets = useSafeAreaInsets();
   const window = Dimensions.get('window');
 
@@ -359,10 +359,10 @@ export default function EditProfileScreen() {
   };
 
   const handleCancel = () => {
-    if (!hasUnsaved()) return router.replace('/app/(supporting)/profile.screen');
+    if (!hasUnsaved()) return router.replace('/(supporting)/profile.screen');
     Alert.alert('Discard changes?', 'You have unsaved changes. Are you sure you want to discard them?', [
       { text: 'No', style: 'cancel' },
-      { text: 'Yes', style: 'destructive', onPress: () => router.replace('/app/(supporting)/profile.screen') },
+      { text: 'Yes', style: 'destructive', onPress: () => router.replace('/(supporting)/profile.screen') },
     ]);
   };
 
@@ -455,7 +455,7 @@ export default function EditProfileScreen() {
 
     if (!Object.keys(changes).length) {
       setShowSuccessAlert(true);
-      setTimeout(() => { setShowSuccessAlert(false); router.replace('/app/(supporting)/profile.screen'); }, 1500);
+      setTimeout(() => { setShowSuccessAlert(false); router.replace('/(supporting)/profile.screen'); }, 1500);
       return;
     }
 
@@ -463,7 +463,7 @@ export default function EditProfileScreen() {
       setSaving(true);
       await updateUserDoc(userID, changes);
       setShowSuccessAlert(true);
-      setTimeout(() => { setShowSuccessAlert(false); router.replace('/app/(supporting)/profile.screen'); }, 1500);
+      setTimeout(() => { setShowSuccessAlert(false); router.replace('/(supporting)/profile.screen'); }, 1500);
     } catch (e) {
       console.error(e);
       Alert.alert('Save failed', 'Please try again.');

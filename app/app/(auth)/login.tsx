@@ -19,7 +19,7 @@ import SecondaryButtonComponent from '../../components/buttons/secondary-button-
 import LoadingScreen from '../../components/component-utils/loading-screen';
 import PasswordInputField from '../../components/component-utils/password-input-field';
 import { updateUserDoc } from '../../service/user.service';
-import { ThemeContext } from '@/app/ThemeContext';
+import { theme-context } from '@/app/theme-context';
 
 
 export default function Login() {
@@ -30,7 +30,7 @@ export default function Login() {
 
   const { user, initializing } = useAuth();
   const router = useRouter();
-  const { setThemeKey } = useContext(ThemeContext);
+  const { setThemeKey } = useContext(theme-context);
   const db = getFirestore();
   const passwordRef = React.useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
@@ -150,14 +150,14 @@ export default function Login() {
       {/* Layer a full-bleed background so it also covers KAV padding */}
       <View style={{ flex: 1 }}>
         <ImageBackground
-          source={require('../app/assets/images/background.jpg')}
+          source={require('../../assets/images/background.jpg')}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
         />
         {/* Foreground content stays the same */}
         <View style={{ flex: 1 }}>
           <View style={styles.logoContainer}>
-            <Image source={require('../app/assets/images/delaluna_logo.png')} style={styles.logo} resizeMode="contain" />
+            <Image source={require('../../assets/images/delaluna_logo.png')} style={styles.logo} resizeMode="contain" />
           </View>
 
           <BlurView intensity={90} tint="dark" style={styles.card}>
@@ -198,7 +198,7 @@ export default function Login() {
 
                   <TouchableOpacity
                     style={styles.forgotPasswordButton}
-                    onPress={() => router.replace('/app/(supporting)/forgot-password.screen')}
+                    onPress={() => router.replace('/(supporting)/forgot-password.screen')}
                   >
                     <Text style={styles.forgotPassword}>Forgot Password?</Text>
                   </TouchableOpacity>

@@ -17,7 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import AuthContext from '../backend/auth-context';
 import HeaderNav from '../components/component-utils/header-nav';
-import { ThemeContext } from '../ThemeContext';
+import { theme-context } from '../theme-context';
 
 
 export default function HomeScreen() {
@@ -25,7 +25,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const safeOffset = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : insets.top;
 
-  const { theme } = useContext(ThemeContext);
+    const { theme } = useContext(ThemeContext);
 
   // Cross-fade when theme/content becomes ready
   const fade = useRef(new Animated.Value(0)).current;

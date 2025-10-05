@@ -1,10 +1,11 @@
 import React, { useContext } from "react";
 import { ImageBackground, StyleSheet, View, Text } from "react-native";
-import { ThemeContext } from "../themecontext";
 import { LinearGradient } from "expo-linear-gradient";
+import { theme-context } from '../theme-context';
+
 
 export default function ConnectionsScreen() {
-  const { theme } = useContext(ThemeContext);
+    const { theme } = useContext(ThemeContext);
 
   function renderBackground(children: React.ReactNode) {
     if (theme.backgroundType === "image" && theme.backgroundImage) {

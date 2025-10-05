@@ -2,7 +2,7 @@
 import React, { useContext, useRef, useEffect } from 'react';
 import { View, FlatList, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ThemeContext } from '@/app/ThemeContext'
+import { theme-context } from '@/app/theme-context'
 import { LinearGradient } from 'expo-linear-gradient';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { auth } from '@/firebaseConfig';
@@ -15,7 +15,7 @@ type Params = {
 };
 
 export default function ChangeThemeScreen() {
-  const { theme, setThemeKey, themes } = useContext(ThemeContext);
+  const { theme, setThemeKey, themes } = useContext(theme-context);
   const router = useRouter();
   const originalKey = useRef<string | null>(null);
   const db = getFirestore();

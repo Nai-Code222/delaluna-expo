@@ -11,7 +11,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
-import { ThemeContext } from '@/app/ThemeContext'
+import { theme-context } from '@/app/theme-context'
 
 type HeaderNavProps = {
   title?: string
@@ -39,7 +39,7 @@ export default function HeaderNav({
   backgroundColor,
   textColor,
 }: HeaderNavProps) {
-  const { theme } = useContext(ThemeContext)
+  const { theme } = useContext(theme-context)
 
   // use provided props or fall back to theme
   const bg = backgroundColor ?? theme.colors.headerBg

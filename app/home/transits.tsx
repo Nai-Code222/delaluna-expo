@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
 import { ImageBackground, StyleSheet, View, Text } from "react-native";
-import { ThemeContext } from "../themecontext";
+import { ThemeContext} from "../theme-context";
 import { LinearGradient } from "expo-linear-gradient";
 
 export default function TransitsScreen() {
-  const { theme } = useContext(ThemeContext);
+    const { theme } = useContext(ThemeContext);
 
   function renderBackground(children: React.ReactNode) {
     if (theme.backgroundType === "image" && theme.backgroundImage) {

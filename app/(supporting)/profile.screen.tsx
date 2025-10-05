@@ -13,11 +13,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { auth } from '@/firebaseConfig'
 import LoadingScreen from '@/app/components/component-utils/loading-screen'
 import AlertModal from '@/app/components/alerts/alert-modal'
-import { ThemeContext } from '../ThemeContext'
 import { useAuth } from '../backend/auth-context'
 import { UserRecord } from '../model/user-record'
 import { getUserDocRef } from '../service/user.service'
 import HeaderNav from '../components/component-utils/header-nav'
+import { ThemeContext } from '../theme-context';
+
 
 
 
@@ -31,7 +32,7 @@ const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 export default function ProfileScreen() {
   const { user, initializing } = useAuth();
-  const { theme, setThemeKey } = useContext(ThemeContext);
+  const { theme, setThemeKey } = useContext(theme-context);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userRecord, setUserRecord] = useState<UserRecord | null>(null);
@@ -93,7 +94,7 @@ export default function ProfileScreen() {
 
   const goToEditProfile = () => {
     router.replace({
-      pathname: '/app/(supporting)/edit-profile.screen',
+      pathname: '/(supporting)/edit-profile.screen',
       params: {
         firstName: userRecord.firstName ?? '',
         lastName: userRecord.lastName ?? '',
@@ -111,14 +112,14 @@ export default function ProfileScreen() {
 
   const goToUpdateTheme = () => {
     router.replace({
-      pathname: '/app/(supporting)/update-theme.screen',
+      pathname: '/(supporting)/update-theme.screen',
       params: {
         userID: user?.uid ?? '',
       },
     });
   }
   const goToChangePassword = () => {
-    router.replace('/app/(supporting)/update-password.screen');
+    router.replace('/(supporting)/update-password.screen');
   };
   const backToPreviousPage = () => {
     router.replace('/(main)')
@@ -320,10 +321,10 @@ export default function ProfileScreen() {
             <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
               <Image source={require('../assets/icons/change-theme-icon.png')} style={styles.leftIconContainer} />
               <Text style={styles.buttonText}>Change Color Theme</Text>
-              <Image source={require('../assets/icons/arrowRightIcon.png')} style={styles.rightIconContainer} />
+              <Image source={require('../assets/icons/arrow-right-icon.png')} style={styles.rightIconContainer} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
-              <Image source={require('../assets/icons/change-passeord-icon.png')} style={styles.leftIconContainer} />
+              <Image source={require('../assets/icons/change-password-icon.png')} style={styles.leftIconContainer} />
               <Text style={styles.buttonText}>Change Password</Text>
               <Image source={require('../assets/icons/arrow-right-icon.png')} style={styles.rightIconContainer} />
             </TouchableOpacity>

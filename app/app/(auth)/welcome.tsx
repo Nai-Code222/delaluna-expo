@@ -18,7 +18,7 @@ export default function Welcome() {
     <View style={styles.container}>
       {/* background image */}
       <ImageBackground
-        source={require('../app/assets/images/background.jpg')}
+        source={require('../../assets/images/background.jpg')}
         style={styles.background}
         resizeMode="cover"
       />
@@ -26,7 +26,7 @@ export default function Welcome() {
       {/* TOP: animation fills, logo centered on top */}
       <View style={styles.topContainer}>
         <LottieView
-          source={require('../app/assets/animations/galaxy.json')}
+          source={require('../../assets/animations/galaxy.json')}
           autoPlay
           loop
           style={styles.topAnimation}  // absolute fill inside top container
@@ -35,7 +35,7 @@ export default function Welcome() {
         {/* centered logo (over the animation) */}
         <View style={styles.logoWrap}>
           <LottieView
-            source={require('../app/assets/animations/logo.json')}
+            source={require('../../assets/animations/logo.json')}
             autoPlay
             loop={false}
             style={{ width: '100%', aspectRatio: 1 / 0.95 /* W/H */, height: undefined }}

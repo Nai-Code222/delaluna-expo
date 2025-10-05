@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ThemeContext } from '@/app/ThemeContext';
+import { theme-context } from '@/app/theme-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import AuthContext from '../backend/auth-context';
@@ -24,7 +24,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const safeOffset = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : insets.top;
 
-  const { theme } = useContext(ThemeContext);
+    const { theme } = useContext(ThemeContext);
 
   // Cross-fade when theme/content becomes ready
   const fade = useRef(new Animated.Value(0)).current;

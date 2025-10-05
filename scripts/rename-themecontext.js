@@ -4,14 +4,14 @@ const path = require("path");
 const projectRoot = process.cwd();
 
 // Step 1: Rename file
-const oldPath = path.join(projectRoot, "app", "themecontext.tsx");
-const newPath = path.join(projectRoot, "app", "ThemeContext.tsx");
+const oldPath = path.join(projectRoot, "app", "theme-context.tsx");
+const newPath = path.join(projectRoot, "app", "theme-context.tsx");
 
 if (fs.existsSync(oldPath)) {
   fs.renameSync(oldPath, newPath);
-  console.log(`✅ Renamed: themecontext.tsx → ThemeContext.tsx`);
+  console.log(`✅ Renamed: theme-context.tsx → theme-context.tsx`);
 } else {
-  console.log("⚠️ themecontext.tsx not found in app/");
+  console.log("⚠️ theme-context.tsx not found in app/");
 }
 
 // Step 2: Update imports
@@ -28,10 +28,10 @@ walk(projectRoot, (file) => {
     let content = fs.readFileSync(file, "utf8");
 
     // fix relative imports
-    let updated = content.replace(/(['"])\.\/themecontext\1/g, '$1./ThemeContext$1');
+    let updated = content.replace(/(['"])\.\/theme-context\1/g, '$1./theme-context$1');
 
     // fix alias imports
-    updated = updated.replace(/(['"])@\/app\/themecontext\1/g, '$1@/app/ThemeContext$1');
+    updated = updated.replace(/(['"])@\/app\/theme-context\1/g, '$1@/app/theme-context$1');
 
     if (updated !== content) {
       fs.writeFileSync(file, updated, "utf8");

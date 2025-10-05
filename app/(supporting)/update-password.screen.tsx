@@ -20,7 +20,7 @@ import {
   updatePassword,
   signOut,
 } from 'firebase/auth';
-import { ThemeContext } from '@/app/ThemeContext';
+import { theme-context } from '@/app/theme-context';
 import { GlassButton } from '@/app/components/buttons/glass-button';
 
 
@@ -42,7 +42,7 @@ export default function UpdatePasswordScreen() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { theme } = useContext(ThemeContext);
+    const { theme } = useContext(ThemeContext);
 
   const handleCancel = () => {
     router.replace('/app/(supporting)/profile.screen');

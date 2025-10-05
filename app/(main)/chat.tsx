@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
 import { ImageBackground, StyleSheet, View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { ThemeContext } from "../ThemeContext";
+import { theme-context } from "../theme-context";
 
 export default function ChatScreen() {
-  const { theme } = useContext(ThemeContext);
+    const { theme } = useContext(ThemeContext);
 
   function renderBackground(children: React.ReactNode) {
     if (theme.backgroundType === "image" && theme.backgroundImage) {
