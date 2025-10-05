@@ -2,11 +2,11 @@ import React from 'react';
 import { View, StyleSheet, ImageBackground, useWindowDimensions } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { router } from 'expo-router';
-import PrimaryButton from '@/app/components/buttons/primaryButtonComponent';
-import SecondaryButton from '@/app/components/buttons/secondaryButtonComponent';
-import { TitleText } from '@/app/components/typography/TitleText';
-import ButtonText from '@/app/components/typography/ButtonText';
 import { scale, verticalScale } from '@/src/utils/responsive';
+import TitleText from '@/app/components/typography/title-text';
+import PrimaryButton from '@/app/components/buttons/primary-button-component';
+import SecondaryButton from '@/app/components/buttons/secondary-button-component';
+import ButtonText from '@/app/components/typography/button-text';
 
 export default function Welcome() {
   const { width } = useWindowDimensions();
