@@ -1,13 +1,12 @@
-import { auth } from '@/firebase-config';
 import { doc, setDoc, FieldValue } from 'firebase/firestore';
-import { db } from '@/firebase-config';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   onAuthStateChanged as fbOnAuthStateChanged,
   signOut as fbSignOut,
 } from 'firebase/auth';
-import { UserRecord } from '@/app/model/UserRecord';
+import { UserRecord } from '../model/user-record';
+import { auth, db } from '@/firebaseConfig';
 
 export default function signUp(email: string, password: string) {
   return createUserWithEmailAndPassword(auth, email, password);
