@@ -1,24 +1,25 @@
 // profile screen
 import React, { useContext, useEffect, useState } from 'react'
 import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, TextInput, Platform, ScrollView, Alert, useWindowDimensions } from 'react-native'
-import { useAuth } from '@/app/backend/AuthContext'
 import { router } from 'expo-router'
-import HeaderNav from '@/(supporting)/components/utils/header-nav'
-import { auth } from '@/firebase-config'
 import { signOut } from 'firebase/auth'
 import { StatusBar } from 'expo-status-bar'
 import LoadingScreen from '@/app/components/utils/LoadingScreen'
 import AlertModal from '@/app/components/alerts/AlertModal'
-import { getUserDocRef } from '@/(supporting)/service/user.service'
 import { deleteDoc, getDoc, getFirestore, doc } from 'firebase/firestore'
-import { UserRecord } from '@/app/model/UserRecord'
-import EditProfileScreen from '@/(supporting)/edit-profile.screen'
 import type { DocumentData } from 'firebase/firestore';
 import { useIsFocused } from '@react-navigation/native';
-import { ThemeContext } from '@/(supporting)/themecontext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { format } from 'date-fns';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ThemeContext } from '../../ThemeContext'
+import { useAuth } from '../../backend/auth-context'
+import { UserRecord } from '../../model/user-record'
+import HeaderNav from '../../components/utils/header-nav'
+import { getUserDocRef } from '../../service/user.service'
+import { auth } from '@/firebaseConfig'
+
+
 
 // Base canvas + scaling clamps
 const BASE_W = 390;
@@ -92,7 +93,7 @@ export default function ProfileScreen() {
 
   const goToEditProfile = () => {
     router.replace({
-      pathname: '/screens/edit-profile.screen',
+      pathname: '/(supporting)/edit-profile.screen',
       params: {
         firstName: userRecord.firstName ?? '',
         lastName: userRecord.lastName ?? '',
@@ -110,14 +111,14 @@ export default function ProfileScreen() {
 
   const goToUpdateTheme = () => {
     router.replace({
-      pathname: '/screens/update-theme.screen',
+      pathname: '/(supporting)/update-theme.screen',
       params: {
         userID: user?.uid ?? '',
       },
     });
   }
   const goToChangePassword = () => {
-    router.replace('/(supporting)/update-password');
+    router.replace('/(supporting)/update-password.screen');
   };
   const backToPreviousPage = () => {
     router.replace('/(main)')
