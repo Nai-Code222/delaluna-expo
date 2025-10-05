@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { ImageBackground, StyleSheet, View, Text } from "react-native";
-import { ThemeContext } from '@/(main)/themecontext';
 import { LinearGradient } from "expo-linear-gradient";
+import { ThemeContext } from "../ThemeContext";
 
 export default function ChatScreen() {
   const { theme } = useContext(ThemeContext);

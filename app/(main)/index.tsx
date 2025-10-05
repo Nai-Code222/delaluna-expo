@@ -13,11 +13,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ThemeContext } from '@/app/themecontext'; // 👈 use the exact same path/case
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import AuthContext from '../backend/auth-context';
 import HeaderNav from '../components/utils/header-nav';
+import { ThemeContext } from '../ThemeContext';
+
 
 export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext);
