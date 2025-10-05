@@ -39,7 +39,7 @@ export default function Welcome() {
             autoPlay
             loop={false}
             style={{ width: '100%', aspectRatio: 1 / 0.95 /* W/H */, height: undefined }}
-            
+
           />
         </View>
       </View>

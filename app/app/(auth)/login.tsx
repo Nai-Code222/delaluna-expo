@@ -198,7 +198,7 @@ export default function Login() {
 
                   <TouchableOpacity
                     style={styles.forgotPasswordButton}
-                    onPress={() => router.replace('/forgot-password.screen')}
+                    onPress={() => router.replace('/app/(supporting)/forgot-password.screen')}
                   >
                     <Text style={styles.forgotPassword}>Forgot Password?</Text>
                   </TouchableOpacity>
@@ -211,7 +211,7 @@ export default function Login() {
                 <SecondaryButtonComponent
                   title="Not a member? "
                   linkString="Sign up"
-                  onPress={() => router.replace('/(auth)/sign-up')}
+                  onPress={() => router.replace('/app/(auth)/sign-up')}
                 />
               </View>
             </LinearGradient>

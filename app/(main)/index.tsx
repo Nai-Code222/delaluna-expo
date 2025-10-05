@@ -41,7 +41,7 @@ export default function HomeScreen() {
 
   // Auth guard (ThemeProvider already hydrated before first paint)
   useEffect(() => {
-    if (!initializing && !user) router.replace('/(auth)/welcome');
+    if (!initializing && !user) router.replace('/app/(auth)/welcome');
   }, [initializing, user]);
 
   // Render helpers
@@ -81,7 +81,7 @@ export default function HomeScreen() {
     );
   }
 
-  const goToProfile = () => router.replace('/(supporting)/profile.screen');
+  const goToProfile = () => router.replace('/app/(supporting)/profile.screen');
 
   return renderBackground(
     <Animated.View style={[styles.container, { opacity: fade }]}>

@@ -1,21 +1,28 @@
 // ChatFlow.tsx
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
-  ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Keyboard, StatusBar,
+  ScrollView, 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Platform, 
+  Keyboard, 
+  StatusBar,
   KeyboardAvoidingView,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { checkEmailExists } from '@/components/service/auth.service';
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
-import { termsAndConditions, privacyPolicy } from '@/components/assets/legal/legal-texts';
 import { format as formatDate } from 'date-fns';
 import { scale, verticalScale, moderateScale } from '@/src/utils/responsive';
-import PasswordInputField from '@/components/sign-up/utils/password-input-field';
 import { DateTime } from 'luxon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import LocationAutocomplete from '@/components/sign-up/location-autocomplete';
 import { auth } from '@/firebaseConfig';
-import PolicyModal from '@/components/sign-up/policy-modals';
+import PasswordInputField from '../utils/password-input-field';
+import LocationAutocomplete from './location-autocomplete';
+import PolicyModal from './policy-modals';
+import { privacyPolicy, termsAndConditions } from '@/app/assets/legal/legal-texts';
 
 const INPUT_H = verticalScale(50);
 const FIELD_BORDER = 'rgba(142, 68, 173, 0.6)';
