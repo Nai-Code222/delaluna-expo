@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { ImageBackground, StyleSheet, View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { theme-context } from "../theme-context";
+import { ThemeContext } from "../theme-context";
 
 export default function TransitsScreen() {
     const { theme } = useContext(ThemeContext);

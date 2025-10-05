@@ -16,7 +16,7 @@ export default function ForgotPasswordScreen() {
     const cancelTop = insets.top + (height < 700 ? 4 : 16);
 
     const handleCancel = () => {
-        router.replace('/(auth)/login');
+        router.replace('/app/(auth)/login');
     }
 
     return (
@@ -73,7 +73,7 @@ export default function ForgotPasswordScreen() {
                                         "If that email is registered, a reset link has been sent.\nIf you don't see it, please check your spam folder.",
                                         [{ text: "OK" }]
                                     );
-                                    router.replace('/(auth)/login');
+                                    router.replace('/app/(auth)/login');
                                 })
                                 .catch((error) => {
                                     const errorCode = error.code;

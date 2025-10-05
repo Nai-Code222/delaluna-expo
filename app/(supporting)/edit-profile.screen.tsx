@@ -26,7 +26,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { theme-context } from '../theme-context';
+import { ThemeContext } from "../theme-context";
 import { getBigThree } from '../service/astro.service';
 import { updateUserDoc } from '../service/user.service';
 import HeaderNav from '../components/component-utils/header-nav';

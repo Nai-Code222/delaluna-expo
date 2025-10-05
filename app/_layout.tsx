@@ -2,7 +2,7 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 import { AuthProvider } from './backend/auth-context';
-import ThemeProvider from './ThemeContext';
+import { ThemeProvider } from './theme-context';
 
 
 export default function RootLayout() {

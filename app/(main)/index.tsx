@@ -17,7 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import AuthContext from '../backend/auth-context';
 import HeaderNav from '../components/component-utils/header-nav';
-import { theme-context } from '../theme-context';
+import { ThemeContext } from "../theme-context";
 
 
 export default function HomeScreen() {
@@ -81,7 +81,7 @@ export default function HomeScreen() {
     );
   }
 
-  const goToProfile = () => router.replace('/app/(supporting)/profile.screen');
+  const goToProfile = () => router.replace('/(supporting)/profile.screen');
 
   return renderBackground(
     <Animated.View style={[styles.container, { opacity: fade }]}>

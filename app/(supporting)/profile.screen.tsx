@@ -17,9 +17,7 @@ import { useAuth } from '../backend/auth-context'
 import { UserRecord } from '../model/user-record'
 import { getUserDocRef } from '../service/user.service'
 import HeaderNav from '../components/component-utils/header-nav'
-import { ThemeContext } from '../theme-context';
-
-
+import { ThemeContext } from '../theme-context'
 
 
 // Base canvas + scaling clamps
@@ -32,7 +30,7 @@ const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 export default function ProfileScreen() {
   const { user, initializing } = useAuth();
-  const { theme, setThemeKey } = useContext(theme-context);
+  const { theme, setThemeKey } = useContext(ThemeContext);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userRecord, setUserRecord] = useState<UserRecord | null>(null);
