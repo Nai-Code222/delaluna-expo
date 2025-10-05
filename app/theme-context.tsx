@@ -7,7 +7,7 @@ import { useAuth } from './backend/auth-context';
 
 
 // ===== Images =====
-const deafult = require('./assets/colors/mdefault-theme.png');
+const deafult = require('./assets/colors/default-theme.png');
 const blueTheme = require('./assets/colors/blue-theme.png');
 const greenTheme = require('./assets/colors/green-theme.png');
 const orangeTheme = require('./assets/colors/orange-theme.png');
