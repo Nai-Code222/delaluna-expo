@@ -14,11 +14,11 @@ import { useHeaderHeight } from '@react-navigation/elements';
 import { StatusBar } from 'expo-status-bar';
 import { DateTime } from 'luxon';
 import { auth } from '@/firebaseConfig';
-import { useAuth } from '../../backend/auth-context';
-import SecondaryButtonComponent from '../../components/buttons/secondary-button-component';
-import LoadingScreen from '../../components/component-utils/loading-screen';
-import PasswordInputField from '../../components/component-utils/password-input-field';
-import { updateUserDoc } from '../../service/user.service';
+import { useAuth } from '../backend/auth-context';
+import SecondaryButtonComponent from '../components/buttons/secondary-button-component';
+import LoadingScreen from '../components/component-utils/loading-screen';
+import PasswordInputField from '../components/component-utils/password-input-field';
+import { updateUserDoc } from '../service/user.service';
 import { ThemeContext } from '@/app/theme-context';
 
 
@@ -150,14 +150,14 @@ export default function Login() {
       {/* Layer a full-bleed background so it also covers KAV padding */}
       <View style={{ flex: 1 }}>
         <ImageBackground
-          source={require('../../assets/images/background.jpg')}
+          source={require('../assets/images/background.jpg')}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
         />
         {/* Foreground content stays the same */}
         <View style={{ flex: 1 }}>
           <View style={styles.logoContainer}>
-            <Image source={require('../../assets/images/delaluna_logo.png')} style={styles.logo} resizeMode="contain" />
+            <Image source={require('../assets/images/delaluna_logo.png')} style={styles.logo} resizeMode="contain" />
           </View>
 
           <BlurView intensity={90} tint="dark" style={styles.card}>

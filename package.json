@@ -92,10 +92,12 @@
   "bugs": {
     "url": "https://github.com/Nai-Code222/delaluna-expo/issues"
   },
-    "homepage": "https://github.com/Nai-Code222/delaluna-expo#readme",
+  "homepage": "https://github.com/Nai-Code222/delaluna-expo#readme",
   "expo": {
     "install": {
-      "exclude": ["@expo/config-plugins"]
+      "exclude": [
+        "@expo/config-plugins"
+      ]
     },
     "doctor": {
       "reactNativeDirectoryCheck": {

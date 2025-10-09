@@ -12,7 +12,7 @@ export default function SplashScreen() {
   useEffect(() => {
     animationRef.current?.play();
 
-    const minTimer = new Promise(resolve => setTimeout(resolve, 1200)); // 1.2s minimum
+    const minTimer = new Promise(resolve => setTimeout(resolve, 1200));
     const authReady = new Promise(resolve => {
       const interval = setInterval(() => {
         if (!initializing) {
@@ -26,7 +26,7 @@ export default function SplashScreen() {
       if (user) {
         router.replace('/(main)');
       } else {
-        router.replace('/app/(auth)/welcome');
+        router.replace('/(auth)/welcome');
       }
     });
   }, [user, initializing]);
@@ -38,15 +38,8 @@ export default function SplashScreen() {
       resizeMode="cover"
     >
       <StatusBar style="light" translucent backgroundColor="transparent" />
-      <View style={styles.overlay}>
-        <LottieView
-          ref={animationRef}
-          source={require('./assets/animations/splash-animation.json')}
-          autoPlay
-          loop={true}
-          style={styles.animation}
-        />
-      </View>
+      
+        
     </ImageBackground>
   );
 }
