@@ -41,7 +41,7 @@ export default withComposeCompilerVersion({
 
     version: '2.0.0',
     orientation: 'portrait',
-    icon: './app/assets/images/Delaluna_App_Icon.png',
+    icon: './app/assets/images/delaluna_app_icon.png',
     scheme: 'myapp',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
@@ -61,22 +61,22 @@ export default withComposeCompilerVersion({
     },
 
     ios: {
-      jsEngine: 'hermes',
+      jsEngine: 'jsc',
       supportsTablet: true,
       bundleIdentifier: 'com.app.delaluna-answers',
     },
 
     android: {
-      jsEngine: 'hermes',
+      jsEngine: 'jsc',
       softwareKeyboardLayoutMode: 'resize',
-      adaptiveIcon: { foregroundImage: './app/assets/images/Delaluna_App_Icon.png' },
+      adaptiveIcon: { foregroundImage: './app/assets/images/delaluna_app_icon.png' },
       package: 'com.app.delaluna_answers',
     },
 
     web: {
       bundler: 'metro',
       output: 'static',
-      favicon: './assets/images/Delaluna_App_Icon.png',
+      favicon: './assets/images/delaluna_app_icon.png',
     },
 
     plugins: [
@@ -94,7 +94,7 @@ export default withComposeCompilerVersion({
       [
         'expo-splash-screen',
         {
-          image: './app/assets/images/Delaluna_App_Icon.png',
+          image: './app/assets/images/delaluna_app_icon.png',
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#ffffff',
