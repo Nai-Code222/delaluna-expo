@@ -41,7 +41,7 @@ export default function HomeScreen() {
 
   // Auth guard (ThemeProvider already hydrated before first paint)
   useEffect(() => {
-    if (!initializing && !user) router.replace('/app/(auth)/welcome');
+    if (!initializing && !user) router.replace('/(auth)/welcome');
   }, [initializing, user]);
 
   // Render helpers
