@@ -47,14 +47,13 @@ export default function Welcome() {
       {/* BOTTOM: buttons */}
       <View style={styles.bottomContainer}>
         <TitleText>
-          <PrimaryButton
-            title="Get Started"
-            onPress={() => router.replace('/(auth)/sign-up')}
-            style={{ marginBottom: verticalScale(10) }}
-            accessibilityLabel="Get Started"
-            accessibilityHint="Navigate to the sign up screen"
-          />
+          Welcome to {'\n'} <TitleText>Delaluna</TitleText>
         </TitleText>
+
+        <PrimaryButton
+          title="Get Started"
+          onPress={() => router.replace('/(auth)/sign-up')}
+        />
 
         <View style={styles.divider} />
 

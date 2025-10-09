@@ -38,7 +38,6 @@ export default withComposeCompilerVersion({
   expo: {
     name: 'delaluna-expo',
     slug: 'delaluna-expo',
-    jsEngine: 'jsc',
 
     version: '2.0.0',
     orientation: 'portrait',
@@ -62,13 +61,13 @@ export default withComposeCompilerVersion({
     },
 
     ios: {
-      jsEngine: 'jsc',
+      jsEngine: 'hermes',
       supportsTablet: true,
       bundleIdentifier: 'com.app.delaluna-answers',
     },
 
     android: {
-      jsEngine: 'jsc',
+      jsEngine: 'hermes',
       softwareKeyboardLayoutMode: 'resize',
       adaptiveIcon: { foregroundImage: './app/assets/images/Delaluna_App_Icon.png' },
       package: 'com.app.delaluna_answers',

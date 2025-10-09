@@ -211,7 +211,7 @@ export default function Login() {
                 <SecondaryButtonComponent
                   title="Not a member? "
                   linkString="Sign up"
-                  onPress={() => router.replace('/app/(auth)/sign-up')}
+                  onPress={() => router.replace('/(auth)/sign-up')}
                 />
               </View>
             </LinearGradient>
