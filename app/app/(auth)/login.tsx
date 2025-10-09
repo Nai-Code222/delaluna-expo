@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 24,
   },
-  form: { width: '90%' },
+  form: { width: '90%', height: 48, justifyContent: 'center' },
   textField: {
     ...Platform.select({ ios: { backgroundColor: 'rgba(255, 255, 255, 0.1)' }, android: { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }),
     borderRadius: 12, borderWidth: 1, borderColor: 'rgba(142, 68, 173, 0.6)', marginBottom: 16, paddingHorizontal: 16, height: 48, color: 'white',
