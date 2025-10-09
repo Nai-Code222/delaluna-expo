@@ -18,8 +18,8 @@ import { useAuth } from '../backend/auth-context';
 import SecondaryButtonComponent from '../components/buttons/secondary-button-component';
 import LoadingScreen from '../components/component-utils/loading-screen';
 import PasswordInputField from '../components/component-utils/password-input-field';
-import { updateUserDoc } from '../service/user.service';
 import { ThemeContext } from '@/app/theme-context';
+import { updateUserDoc } from '../services/user.service';
 
 
 export default function Login() {

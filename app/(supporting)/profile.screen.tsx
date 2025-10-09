@@ -15,9 +15,9 @@ import LoadingScreen from '@/app/components/component-utils/loading-screen'
 import AlertModal from '@/app/components/alerts/alert-modal'
 import { useAuth } from '../backend/auth-context'
 import { UserRecord } from '../model/user-record'
-import { getUserDocRef } from '../service/user.service'
 import HeaderNav from '../components/component-utils/header-nav'
 import { ThemeContext } from '../theme-context'
+import { getUserDocRef } from '../services/user.service'
 
 
 // Base canvas + scaling clamps
@@ -75,7 +75,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (initializing) return;
     if (!user) {
-      router.replace('/app/(auth)/welcome');
+      router.replace('/(auth)/welcome');
     } else {
       setProfileLoading(true);
       getUserRecord();
@@ -137,7 +137,7 @@ export default function ProfileScreen() {
           onPress: async () => {
             try {
               await signOut(auth)
-              router.replace('/app/(auth)/welcome')
+              router.replace('/(auth)/welcome')
             } catch (error) {
               setErrorMessage('Logout failed. Please try again.')
               setShowErrorModal(true)
@@ -163,7 +163,7 @@ export default function ProfileScreen() {
             try {
               deleteDoc(getUserDocRef(user?.uid || ''))
               await user?.delete()
-              router.replace('/app/(auth)/welcome')
+              router.replace('/(auth)/welcome')
             } catch (error) {
               setErrorMessage('Account deletion failed. Please try again.')
               setShowErrorModal(true)
