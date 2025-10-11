@@ -24,8 +24,7 @@ export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext);
   const insets = useSafeAreaInsets();
   const safeOffset = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : insets.top;
-
-    const { theme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
 
   // Cross-fade when theme/content becomes ready
   const fade = useRef(new Animated.Value(0)).current;

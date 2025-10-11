@@ -1,4 +1,3 @@
-// screens/SignUpChatScreen.tsx
 import 'intl';
 import 'intl/locale-data/jsonp/en';
 
@@ -23,9 +22,13 @@ import { DateTime } from 'luxon';
 import { verticalScale, scale, moderateScale } from '@/src/utils/responsive';
 import { useAuth } from '../backend/auth-context';
 import LoadingScreen from '../components/component-utils/loading-screen';
+import parseBirthtime12h from '../components/component-utils/time.utils';
 import ChatFlow, { StepConfig, FinalSignupPayload } from '../components/sign-up/chat-flow';
 import { UserRecord } from '../model/user-record';
-import signUp, { createUserDoc } from '../services/user.service';
+import fetchSignsFromAPI from '../services/astrology.service';
+import signUp from '../services/auth.service';
+import { createUserDoc } from '../services/user.service';
+
 
 // ----- Defaults for "I don't know" -----
 const FALLBACK_PLACE_LABEL = 'Greenwich, London, United Kingdom';
@@ -41,6 +44,7 @@ export default function SignUpChatScreen() {
   const [confirmVisible, setConfirmVisible] = useState(false);
   const { width } = useWindowDimensions();
   const modalCardWidth = width > 640 ? '55%' : width > 480 ? '70%' : '86%';
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   useEffect(() => {
     if (!initializing && user) {
@@ -65,40 +69,8 @@ export default function SignUpChatScreen() {
     if (index !== -1) setStep(index);
   };
 
-  // Parse "MM/DD/YYYY - hh:mm:ss AM UTC-6[:MM]" -> Luxon UTC DateTime
-  const parseBirthUtcFromString = (s: string): DateTime | null => {
-    const re = /^(\d{2})\/(\d{2})\/(\d{4})\s*-\s*(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)\s*UTC([+-])(\d{1,2})(?::(\d{2}))?$/i;
-    const m = re.exec(s.trim());
-    if (!m) return null;
-
-    const [, MM, DD, YYYY, hStr, mStr, sStr, ampm, sign, ohStr, omStr] = m;
-    let hour = parseInt(hStr, 10);
-    const minute = parseInt(mStr, 10);
-    const second = parseInt(sStr, 10);
-    const month = parseInt(MM, 10);
-    const day = parseInt(DD, 10);
-    const year = parseInt(YYYY, 10);
-
-    // convert to 24h
-    const isPM = ampm.toUpperCase() === 'PM';
-    if (isPM && hour < 12) hour += 12;
-    if (!isPM && hour === 12) hour = 0;
-
-    const offMin =
-      (sign === '-' ? -1 : 1) *
-      (parseInt(ohStr, 10) * 60 + (omStr ? parseInt(omStr, 10) : 0));
-
-    // Treat parsed clock as "local" then convert to UTC using the offset
-    const localAsUTC = DateTime.fromObject(
-      { year, month, day, hour, minute, second, millisecond: 0 },
-      { zone: 'UTC' }
-    );
-    return localAsUTC.minus({ minutes: offMin }).toUTC();
-  };
-
   const handleComplete = async (answers: FinalSignupPayload) => {
     try {
-      // Pull normalized strings (already formatted by ChatFlow)
       const {
         firstName,
         lastName,
@@ -106,80 +78,91 @@ export default function SignUpChatScreen() {
         email: rawEmail,
         password,
         themeKey,
-
         birthday,               // "MM/DD/YYYY"
-        birthtime,              // "hh:mm AM"
-        birthTimezone,          // "Europe/Rome"
+        birthtime,              // "hh:mm AM/PM"
+        birthTimezone,          // IANA
         birthLat = FALLBACK_LAT,
         birthLon = FALLBACK_LON,
         placeOfBirth = FALLBACK_PLACE_LABEL,
         isBirthTimeUnknown,
         isPlaceOfBirthUnknown,
-
-        birthDateTimeUTC,       // "MM/DD/YYYY - hh:mm:ss AM UTC-6"
-        lastLoginDate,          // "MM/DD/YYYY hh:mm:ss AM UTC-5"
-        signUpDate,             // same format
+        birthDateTimeUTC,
+        tZoneOffset,
+        lastLoginDate,
+        signUpDate,
       } = answers;
 
-      const email = String(rawEmail ?? '').trim();
-
-      // Build UTC Date for astronomy from birthDateTimeUTC string
-      const dtUtc = parseBirthUtcFromString(birthDateTimeUTC) ?? DateTime.utc();
-      const dateUtcForChart: Date = dtUtc.toJSDate();
+      const email = String(rawEmail ?? "").trim();
 
       // Auth
       const userCred: UserCredential = await signUp(email, password);
       const uid = userCred.user.uid;
 
-      // Persist user record with your new shapes (all strings where requested)
+      // Parse birthday
+      const [month, day, year] = birthday.split("/").map(Number);
+      const { hour, minute } = parseBirthtime12h(birthtime);
+
+
+      // fetch signs (now returns { sunSign, moonSign, risingSign })
+      const { sunSign, moonSign, risingSign } = await fetchSignsFromAPI(
+        day,
+        month,
+        year,
+        hour,
+        minute,
+        birthLat,
+        birthLon,
+        tZoneOffset
+      );
+
+      // Build Firestore user record (store birthtime exactly as entered)
       const userRecord: UserRecord = {
         id: uid,
         firstName,
         lastName,
         pronouns,
-        birthday,                // "MM/DD/YYYY"
-        birthtime,               // "hh:mm AM"
+        birthday,
+        birthtime,
         placeOfBirth,
-        // zodiacSign: sun.sign,
-        // risingSign: rising.sign,
-        // moonSign: moon.sign,
         email,
         isPaidMember: false,
-        signUpDate,              // "MM/DD/YYYY hh:mm:ss AM UTC-5"
-        lastLoginDate,           // "MM/DD/YYYY hh:mm:ss AM UTC-5"
+        signUpDate,
+        lastLoginDate,
         isBirthTimeUnknown,
         isPlaceOfBirthUnknown,
-        themeKey: themeKey || 'default',
+        themeKey: themeKey || "default",
         birthLat,
         birthLon,
-        birthTimezone,           // "Europe/Rome"
-        birthDateTimeUTC,        // "MM/DD/YYYY - hh:mm:ss AM UTC-6"
+        birthTimezone,
+        birthDateTimeUTC,
+        tZoneOffset,       // numeric offset in hours
+        sunSign,
+        moonSign,
+        risingSign,
       };
 
       if (userCred.user) {
-        // (Optional) tiny pause for UX continuity with the loading bar
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-       
         await createUserDoc(uid, userRecord);
+
+        // Progress animation
         setIsLoading(true);
         let currentProgress = 0;
-
         const interval = setInterval(() => {
           currentProgress += 0.2;
           setProgress(currentProgress);
           if (currentProgress >= 1) {
             clearInterval(interval);
             sendEmailVerification(userCred.user);
-            router.replace('/(main)');
+            router.replace("/(main)");
           }
         }, 200);
       }
     } catch (e: any) {
-      if (e?.code === 'auth/email-already-in-use') {
-        setStepToKey('email');
+      if (e?.code === "auth/email-already-in-use") {
+        setStepToKey("email");
         return;
       } else {
-        console.warn('Signup error:', e?.message ?? e);
+        console.warn("Signup error:", e?.message ?? e);
       }
     }
   };
@@ -190,7 +173,7 @@ export default function SignUpChatScreen() {
       setConfirmVisible(true);
     } else {
       setConfirmVisible(false);
-    setTimeout(() => router.replace('/welcome'), 0);
+      setTimeout(() => router.replace('/welcome'), 0);
     }
   };
   const confirmCancel = () => {
@@ -213,9 +196,12 @@ export default function SignUpChatScreen() {
         <View style={{ flex: 1 }}>
           <StatusBar style="light" translucent backgroundColor="transparent" />
           <BlurView intensity={10} tint="dark" style={styles.overlay}>
-            <View style={styles.header}>
+            <View
+              style={styles.header}
+              onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+            >
               {step > 0 ? (
-                <TouchableOpacity onPress={() => setStep(step - 1)}>
+                <TouchableOpacity onPress={() => { Keyboard.dismiss(); setStep(step - 1); }}>
                   <Text style={styles.goBackText}>← Go Back</Text>
                 </TouchableOpacity>
               ) : (
@@ -227,7 +213,13 @@ export default function SignUpChatScreen() {
             </View>
 
             <View style={styles.chatFlowWrapper}>
-              <ChatFlow steps={steps} onComplete={handleComplete} step={step} setStep={setStep} />
+              <ChatFlow
+                steps={steps}
+                onComplete={handleComplete}
+                step={step}
+                setStep={setStep}
+                keyboardOffset={headerHeight}
+              />
             </View>
           </BlurView>
         </View>
@@ -307,9 +299,5 @@ const styles = StyleSheet.create({
   btnGhostText: { color: '#e6e9f0', fontWeight: '600' },
   btnDanger: { backgroundColor: '#ff4d4f' },
   btnDangerText: { color: '#fff', fontWeight: '700' },
-  chatFlowWrapper: {
-    flex: 1,
-    width: '100%',
-    alignSelf: 'stretch',
-  },
+  chatFlowWrapper: { flex: 1, width: '100%', alignSelf: 'stretch' },
 });
