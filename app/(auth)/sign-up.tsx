@@ -71,7 +71,6 @@ export default function SignUpChatScreen() {
 
   const handleComplete = async (answers: FinalSignupPayload) => {
     try {
-      console.log("Signup answers:", answers);
       const {
         firstName,
         lastName,
