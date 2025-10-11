@@ -154,7 +154,7 @@ export default function LocationAutocomplete({
 }
 
 const styles = StyleSheet.create({
-  container: { width: '90%' },
+  container: { width: '85%' },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -163,30 +163,34 @@ const styles = StyleSheet.create({
   },
   inputWrapper: { position: 'relative' },
   input: {
-    flex: 1, 
-    backgroundColor: '#3A506B', 
-    borderRadius: scale(24), 
-    paddingHorizontal: scale(15), 
-    color: '#fff', 
-    height: verticalScale(35), 
-    marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5), 
-    alignSelf: 'center', borderWidth: 1,
+    flex: 1,
+    backgroundColor: '#3A506B',
+    borderRadius: scale(25),
+    paddingHorizontal: scale(15),
+    color: '#fff',
+    height: verticalScale(50),
+    marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5),
+    alignSelf: 'center',
+    borderWidth: 1,
     borderColor: 'rgba(142, 68, 173, 0.6)',
   },
   clearBtn: {
     marginLeft: 8,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: scale(25),
+    height: scale(28),
+    borderRadius: scale(14),
     backgroundColor: 'rgba(255,255,255,0.08)',
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(255,255,255,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'absolute',
+    right: scale(10),
+    top: scale(25),
+    marginTop: -15, // half height
   },
   clearText: {
-    color: 'rgba(255,255,255,0.65)',               // lighter “×”
-    fontSize: 18,
+    color: 'rgba(255,255,255,0.65)',
     lineHeight: 18,
     fontWeight: '700',
   },

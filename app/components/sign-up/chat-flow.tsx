@@ -504,10 +504,10 @@ export default function ChatFlow({
             const handleSend = () => saveAndNext(textInput);
             return (
               <View style={[styles.inputContainer]}>
-                <View style={[styles.inputRow, { width: '90%' }]}>
+                <View style={[styles.inputRow, { width: '90%', justifyContent: 'space-between' }]}>
                   <PasswordInputField
                     ref={passwordRef}
-                    style={[styles.textInput, styles.passwordStyle, { height: 90 }]}
+                    style={[styles.textInput, styles.passwordStyle, { height: 90, marginRight: 10,  }]}
                     inputStyle={{}}
                     value={textInput}
                     onChangeText={setTextInput}
@@ -522,7 +522,18 @@ export default function ChatFlow({
                   />
 
                   <TouchableOpacity
-                    style={[styles.sendButton, { opacity: 1 }]}
+                    style={[
+                      styles.sendButton,
+                      {
+                        opacity: 1,
+                        height: INPUT_H,            // aligns with field height
+                        marginLeft: scale(-12),
+                        paddingVertical: 0,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: scale(5),
+                      },
+                    ]}
                     onPress={handleSend}
                   >
                     <Text style={styles.sendText}>{nextButtonLabel}</Text>
@@ -857,7 +868,7 @@ export default function ChatFlow({
                     setBigThreeError(null);
                     const finalized = buildFinalPayload({ ...answers, themeKey: 'default' });
                     try {
-              
+
                       onComplete({
                         ...finalized,
                       });
@@ -937,20 +948,48 @@ const styles = StyleSheet.create({
   col75: { flex: 3 },
   col25: { flex: 0, paddingLeft: scale(10), justifyContent: 'center' },
   textInput: {
-    flex: 1, backgroundColor: '#3A506B', borderRadius: scale(24), paddingHorizontal: scale(15), color: '#fff', height: verticalScale(50), marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5), alignSelf: 'center', borderWidth: 1,
+    flex: 1,
+    backgroundColor: '#3A506B',
+    borderRadius: scale(24),
+    paddingHorizontal: scale(15),
+    color: '#fff',
+    height: verticalScale(50),
+    marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5),
+    alignSelf: 'center',
+    borderWidth: 1,
     borderColor: 'rgba(142, 68, 173, 0.6)',
   },
   choiceRow: { flexDirection: 'row', justifyContent: 'space-around', padding: scale(5) },
-  choiceButton: { borderWidth: 1, borderColor: '#e2e2e2ff', borderRadius: scale(20), paddingVertical: verticalScale(10), paddingHorizontal: scale(15), marginBottom: verticalScale(25) },
+  choiceButton: {
+    borderWidth: 1,
+    borderColor: '#e2e2e2ff',
+    borderRadius: scale(20),
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: scale(15),
+    marginBottom: verticalScale(25),
+  },
   choiceSelected: { backgroundColor: '#5BC0BE' },
   choiceText: { color: '#fff' },
-  datePickerButton: { flex: 1, backgroundColor: '#3A506B', borderRadius: scale(24), justifyContent: 'center', paddingHorizontal: scale(16), height: verticalScale(48) },
+  datePickerButton: {
+    flex: 1,
+    backgroundColor: '#3A506B',
+    borderRadius: scale(24), justifyContent: 'center',
+    paddingHorizontal: scale(16),
+    height: verticalScale(48)
+  },
   datePickerText: { color: '#fff' },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: scale(12), marginBottom: verticalScale(8) },
   finalArea: { padding: scale(12), backgroundColor: '#1C2541' },
   footerText: { color: '#fff', marginLeft: scale(8) },
   link: { textDecorationLine: 'underline', color: '#6FFFE9' },
-  continueButton: { marginTop: verticalScale(12), backgroundColor: '#6FFFE9', paddingVertical: verticalScale(14), borderRadius: scale(24), alignItems: 'center', marginBottom: verticalScale(Platform.OS === 'ios' ? 30 : 12) },
+  continueButton: {
+    marginTop: verticalScale(12),
+    backgroundColor: '#6FFFE9',
+    paddingVertical: verticalScale(14),
+    borderRadius: scale(24),
+    alignItems: 'center',
+    marginBottom: verticalScale(Platform.OS === 'ios' ? 30 : 12),
+  },
   continueText: { color: '#000', fontWeight: '600', fontSize: moderateScale(16) },
   continueButtonDisabled: { backgroundColor: '#A0A0A0' },
   continueTextDisabled: { color: '#666' },
@@ -968,10 +1007,22 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(14),
     fontWeight: 'bold',
   },
-  backButton: { alignSelf: 'flex-start', paddingHorizontal: scale(12), paddingVertical: verticalScale(8), marginBottom: 0, marginLeft: scale(8), justifyContent: 'center' },
+  backButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: scale(12),
+    paddingVertical: verticalScale(8),
+    marginBottom: 0, marginLeft: scale(8),
+    justifyContent: 'center'
+  },
   backText: { fontSize: moderateScale(18), color: '#fff', fontWeight: 'bold' },
   passwordStyle: {
-    width: '100%', flex: 1, backgroundColor: '#3A506B', borderRadius: scale(24), color: '#fff', height: verticalScale(50), marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5), alignSelf: 'center', borderWidth: 1,
+    width: '95%', flex: 1,
+    backgroundColor: '#3A506B',
+    borderRadius: scale(24),
+    color: '#fff', height: verticalScale(50),
+    marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5),
+    alignSelf: 'center',
+    borderWidth: 1,
     borderColor: 'rgba(142, 68, 173, 0.6)',
   },
   fieldFrame: {
@@ -993,7 +1044,7 @@ const styles = StyleSheet.create({
     borderRadius: scale(24),
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: scale(12),
+    paddingHorizontal: scale(10),
   },
   sendText: { fontSize: moderateScale(18), color: '#fff' },
 });
