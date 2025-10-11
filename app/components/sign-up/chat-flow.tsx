@@ -1,14 +1,17 @@
 // ChatFlow.tsx
+import 'intl';
+import 'intl/locale-data/jsonp/en';
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
-  ScrollView, 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Platform, 
-  Keyboard, 
+  ScrollView,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  Keyboard,
   StatusBar,
   KeyboardAvoidingView,
 } from 'react-native';
@@ -74,6 +77,7 @@ export type FinalSignupPayload = {
 
   // normalized/required fields:
   birthday: string;              // "MM/DD/YYYY"
+
   birthtime: string;             // "hh:mm  AM"
   birthTimezone: string;         // "Europe/Rome"
   birthLat: number;
@@ -86,6 +90,15 @@ export type FinalSignupPayload = {
   birthDateTimeUTC: string;      // "MM/DD/YYYY - hh:mm:ss  AM UTC-6"
   lastLoginDate: string;         // "MM/DD/YYYY hh:mm:ss  AM UTC-5"
   signUpDate: string;            // same format as above
+
+  // Add big three
+  sunSign?: string;
+  moonSign?: string;
+  risingSign?: string;
+
+  // raw values for convenience (not stored in DB)
+  rawBirthdayDate: Date;
+  rawBirthtimeDate: Date;
 };
 
 export type StepConfig = {
@@ -150,18 +163,6 @@ const buildFinalPayload = (a: AnswerRecord): FinalSignupPayload => {
   const birthdayStr = fmtBirthday(birthdayDate);
   const birthtimeStr = fmtBirthtime(birthtimeDate);
 
-  const [mm, dd, yyyy] = birthdayStr.split('/');
-  const hh24 = birthtimeDate.getHours();
-  const mn = birthtimeDate.getMinutes();
-
-  const dtLocal = DateTime.fromObject(
-    { year: Number(yyyy), month: Number(mm), day: Number(dd), hour: hh24, minute: mn, second: 0, millisecond: 0 },
-    { zone: tz }
-  );
-
-  const clockLocal = dtLocal.toFormat(`MM/dd/yyyy - hh:mm:ss'${NBSP_NARROW}'a`);
-  const birthDateTimeUTC = `${clockLocal} ${utcOffsetToken(dtLocal)}`;
-
   const now = DateTime.now();
   const lastLoginDate = fmtStampWithOffset(now);
   const signUpDate = fmtStampWithOffset(now);
@@ -173,7 +174,6 @@ const buildFinalPayload = (a: AnswerRecord): FinalSignupPayload => {
     email: a.email,
     password: a.password,
     themeKey: a.themeKey,
-
     birthday: birthdayStr,
     birthtime: birthtimeStr,
     birthTimezone: tz,
@@ -182,10 +182,11 @@ const buildFinalPayload = (a: AnswerRecord): FinalSignupPayload => {
     placeOfBirth: place,
     isBirthTimeUnknown: !!a.birthtimeUnknown,
     isPlaceOfBirthUnknown: !!a.placeOfBirthUnknown,
-
-    birthDateTimeUTC,
+    birthDateTimeUTC: "",
     lastLoginDate,
     signUpDate,
+    rawBirthdayDate: birthdayDate,
+    rawBirthtimeDate: birthtimeDate,
   };
 };
 
@@ -240,6 +241,8 @@ export default function ChatFlow({
     useState<'Privacy Policy' | 'Terms & Conditions'>('Privacy Policy');
   const [locationError, setLocationError] = useState<string | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<SelectedPlace | null>(null);
+  const [loadingBigThree, setLoadingBigThree] = useState(false);
+  const [bigThreeError, setBigThreeError] = useState<string | null>(null);
 
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
   const current = steps[step];
@@ -264,7 +267,6 @@ export default function ChatFlow({
   // step changes: reset errors, hydrate value, focus inputs
   useEffect(() => {
     setError(null);
-
     if (current.inputType === 'text' && isAnswerKey(current.key)) {
       const saved = (answers as any)[current.key];
       setTextInput(typeof saved === 'string' ? saved : '');
@@ -341,7 +343,6 @@ export default function ChatFlow({
 
   const capitalizeName = (name: string) =>
     name.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
-
   const advanceStep = () => setStep(s => s + 1);
 
   const saveAndNext = (value?: any) => {
@@ -824,7 +825,7 @@ export default function ChatFlow({
           }
 
           case 'final': {
-            const isDisabled = !checkedPolicy || !checkedTerms;
+            const isDisabled = !checkedPolicy || !checkedTerms || loadingBigThree;
             return (
               <View style={styles.finalArea}>
                 <View style={styles.row}>
@@ -850,18 +851,33 @@ export default function ChatFlow({
                 </View>
 
                 <TouchableOpacity
-                  onPress={() => {
+                  onPress={async () => {
                     if (isDisabled) return;
+                    setLoadingBigThree(true);
+                    setBigThreeError(null);
                     const finalized = buildFinalPayload({ ...answers, themeKey: 'default' });
-                    onComplete(finalized);
+                    try {
+              
+                      onComplete({
+                        ...finalized,
+                      });
+                    } catch (e) {
+                      setBigThreeError('Could not fetch astrology data. Please try again.');
+                    } finally {
+                      setLoadingBigThree(false);
+                    }
                   }}
                   disabled={isDisabled}
                   activeOpacity={0.7}
                   style={[styles.continueButton, isDisabled && styles.continueButtonDisabled]}
                 >
-                  <Text style={[styles.continueText, isDisabled && styles.continueTextDisabled]}>Continue</Text>
+                  <Text style={[styles.continueText, isDisabled && styles.continueTextDisabled]}>
+                    {loadingBigThree ? 'Loading...' : 'Continue'}
+                  </Text>
                 </TouchableOpacity>
-
+                {bigThreeError && (
+                  <View style={styles.errorContainer}><Text style={styles.errorText}>{bigThreeError}</Text></View>
+                )}
                 {error && (
                   <View style={styles.errorContainer}><Text style={styles.errorText}>{error}</Text></View>
                 )}

@@ -1,5 +1,5 @@
-// @/app/model/UserRecord.ts
-import type { FieldValue, Timestamp } from 'firebase/firestore';
+import type { FieldValue, Timestamp } from "firebase/firestore";
+import { DateTime } from "luxon";
 
 type ServerTimestamp = FieldValue;
 export type Nullable<T> = T | null;
@@ -15,59 +15,61 @@ export interface UserRecord {
   email: string;
   isPaidMember: boolean;
 
-  // ✅ human-readable strings for UI
+  // human-readable strings for UI
   signUpDate?: string;        // "MM/DD/YYYY hh:mm:ss AM UTC-5"
   lastLoginDate?: string;     // "MM/DD/YYYY hh:mm:ss AM UTC-5"
 
-  // ✅ machine-sortable timestamps for queries/ordering
+  // machine-sortable timestamps
   signUpAt?: Timestamp | ServerTimestamp;
   lastLoginAt?: Timestamp | ServerTimestamp;
 
-  themeKey?: string; // e.g., 'default'
+  themeKey?: string;
 
-  // astrology (inputs for display)
+  // astrology inputs
   birthday: string;           // "MM/DD/YYYY"
-  birthtime?: string;         // "hh:mm AM"
-  birthTimezone?: string;     // IANA, e.g. "Europe/Rome"
+  birthtime?: string; 
+  birthTimezone?: string;     // IANA string like "America/Chicago"
   placeOfBirth?: string | null;
+  birthLat?: number;
+  birthLon?: number;
+  birthTimeDateObj?: DateTime;      
+
 
   // UX flags
   isBirthTimeUnknown?: boolean;
   isPlaceOfBirthUnknown?: boolean;
 
-  // canonical astro inputs (math)
-  birthLat?: number;
-  birthLon?: number;
-
-  // ✅ canonical UTC string (no local)
+  // canonical UTC string (for reference only)
   birthDateTimeUTC?: string;  // "MM/DD/YYYY - hh:mm:ss AM UTC-6"
 
-  // outputs
-  zodiacSign?: Nullable<string>;
-  risingSign?: Nullable<string>;
+  // numeric timezone offset (computed at signup, in hours)
+  tZoneOffset?: number;
+
+  // astrology outputs
+  sunSign?: Nullable<string>;
   moonSign?: Nullable<string>;
+  risingSign?: Nullable<string>;
 }
 
-// keep a lean default for UI state
 export const UserRecordDefault: Partial<UserRecord> = {
-  firstName: '',
-  lastName: '',
-  pronouns: '',
-  email: '',
+  firstName: "",
+  lastName: "",
+  pronouns: "",
+  email: "",
   isPaidMember: false,
-  themeKey: 'default',
+  themeKey: "default",
 
-  birthday: '',
-  birthtime: '',
+  birthday: "",
+  birthtime: "",
   birthTimezone: undefined,
   placeOfBirth: null,
 
   isBirthTimeUnknown: false,
   isPlaceOfBirthUnknown: false,
 
-  zodiacSign: null,
-  risingSign: null,
+  sunSign: null,
   moonSign: null,
+  risingSign: null,
 };
 
 export default UserRecordDefault;

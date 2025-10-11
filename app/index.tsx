@@ -4,6 +4,8 @@ import LottieView from 'lottie-react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from './backend/auth-context';
+import { Buffer } from "buffer";
+global.Buffer = Buffer;
 
 export default function SplashScreen() {
   const animationRef = useRef<LottieView>(null);

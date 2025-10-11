@@ -22,12 +22,12 @@ import { DateTime } from 'luxon';
 import { verticalScale, scale, moderateScale } from '@/src/utils/responsive';
 import { useAuth } from '../backend/auth-context';
 import LoadingScreen from '../components/component-utils/loading-screen';
-import parseBirthtime12h from '../components/component-utils/time.utils';
 import ChatFlow, { StepConfig, FinalSignupPayload } from '../components/sign-up/chat-flow';
 import { UserRecord } from '../model/user-record';
-import fetchSignsFromAPI from '../services/astrology.service';
 import signUp from '../services/auth.service';
 import { createUserDoc } from '../services/user.service';
+import { getAstroSigns } from '../services/astrology-api.service';
+
 
 
 // ----- Defaults for "I don't know" -----
@@ -71,6 +71,7 @@ export default function SignUpChatScreen() {
 
   const handleComplete = async (answers: FinalSignupPayload) => {
     try {
+      console.log("Signup answers:", answers);
       const {
         firstName,
         lastName,
@@ -80,42 +81,55 @@ export default function SignUpChatScreen() {
         themeKey,
         birthday,               // "MM/DD/YYYY"
         birthtime,              // "hh:mm AM/PM"
-        birthTimezone,          // IANA
+        birthTimezone,          // IANA string like "America/New_York"
         birthLat = FALLBACK_LAT,
         birthLon = FALLBACK_LON,
         placeOfBirth = FALLBACK_PLACE_LABEL,
         isBirthTimeUnknown,
         isPlaceOfBirthUnknown,
         birthDateTimeUTC,
-        tZoneOffset,
         lastLoginDate,
         signUpDate,
+        rawBirthdayDate,
+        rawBirthtimeDate,
       } = answers;
 
       const email = String(rawEmail ?? "").trim();
 
-      // Auth
+      // ✅ Create user in Firebase Auth
       const userCred: UserCredential = await signUp(email, password);
       const uid = userCred.user.uid;
+      console.log("Created Firebase Auth user:", uid, userCred.user.email);
 
-      // Parse birthday
-      const [month, day, year] = birthday.split("/").map(Number);
-      const { hour, minute } = parseBirthtime12h(birthtime);
+      // ✅ Extract birth details
+      const mm = rawBirthdayDate.getMonth() + 1;
+      const dd = rawBirthdayDate.getDate();
+      const yyyy = rawBirthdayDate.getFullYear();
+      const hh24 = rawBirthtimeDate.getHours();
+      const mn = rawBirthtimeDate.getMinutes();
+      console.log("Parsed birth details:", { mm, dd, yyyy, hh24, mn });
 
+      // ✅ Timezone offset (hours)
+      const offset = -rawBirthtimeDate.getTimezoneOffset() / 60;
+      console.log("Timezone offset (hours):", offset);
 
-      // fetch signs (now returns { sunSign, moonSign, risingSign })
-      const { sunSign, moonSign, risingSign } = await fetchSignsFromAPI(
-        day,
-        month,
-        year,
-        hour,
-        minute,
-        birthLat,
-        birthLon,
-        tZoneOffset
-      );
+      // ✅ Astrology API Parameters
+      const params = {
+        day: dd,
+        month: mm,
+        year: yyyy,
+        hour: hh24,
+        min: mn,
+        lat: birthLat,
+        lon: birthLon,
+        tzone: offset,
+      };
+      console.log("Astro API Params:", params);
 
-      // Build Firestore user record (store birthtime exactly as entered)
+      const { sunSign, moonSign, risingSign } = await getAstroSigns(params);
+      console.log("🌞", sunSign, "🌙", moonSign, "⬆️", risingSign);
+
+      // ✅ Build Firestore user record
       const userRecord: UserRecord = {
         id: uid,
         firstName,
@@ -135,28 +149,28 @@ export default function SignUpChatScreen() {
         birthLon,
         birthTimezone,
         birthDateTimeUTC,
-        tZoneOffset,       // numeric offset in hours
-        sunSign,
-        moonSign,
-        risingSign,
+        tZoneOffset: offset,
+        sunSign: "",
+        moonSign: "",
+        risingSign: "",
       };
 
-      if (userCred.user) {
-        await createUserDoc(uid, userRecord);
+      // ✅ Save to Firestore
+      await createUserDoc(uid, userRecord);
 
-        // Progress animation
-        setIsLoading(true);
-        let currentProgress = 0;
-        const interval = setInterval(() => {
-          currentProgress += 0.2;
-          setProgress(currentProgress);
-          if (currentProgress >= 1) {
-            clearInterval(interval);
-            sendEmailVerification(userCred.user);
-            router.replace("/(main)");
-          }
-        }, 200);
-      }
+      // ✅ Finish signup animation + redirect
+      setIsLoading(true);
+      let currentProgress = 0;
+      const interval = setInterval(() => {
+        currentProgress += 0.2;
+        setProgress(currentProgress);
+        if (currentProgress >= 1) {
+          clearInterval(interval);
+          sendEmailVerification(userCred.user);
+          router.replace("/(main)");
+        }
+      }, 200);
+
     } catch (e: any) {
       if (e?.code === "auth/email-already-in-use") {
         setStepToKey("email");
