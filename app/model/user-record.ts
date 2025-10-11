@@ -34,6 +34,17 @@ export interface UserRecord {
   birthLon?: number;
   birthTimeDateObj?: DateTime;      
 
+  // ASTRO API params (optional cached copy to avoid rebuilding them repeatedly)
+  astroParams?: {
+    day: number;
+    month: number;
+    year: number;
+    hour: number;
+    min: number;
+    lat: number;
+    lon: number;
+    tzone: number; // numeric timezone offset in hours (e.g. -5)
+  };
 
   // UX flags
   isBirthTimeUnknown?: boolean;
@@ -63,6 +74,9 @@ export const UserRecordDefault: Partial<UserRecord> = {
   birthtime: "",
   birthTimezone: undefined,
   placeOfBirth: null,
+
+  // astro params default (not set)
+  astroParams: undefined,
 
   isBirthTimeUnknown: false,
   isPlaceOfBirthUnknown: false,

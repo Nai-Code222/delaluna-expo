@@ -79,9 +79,9 @@ export default function SignUpChatScreen() {
         email: rawEmail,
         password,
         themeKey,
-        birthday,               // "MM/DD/YYYY"
-        birthtime,              // "hh:mm AM/PM"
-        birthTimezone,          // IANA string like "America/New_York"
+        birthday,
+        birthtime,
+        birthTimezone,
         birthLat = FALLBACK_LAT,
         birthLon = FALLBACK_LON,
         placeOfBirth = FALLBACK_PLACE_LABEL,
@@ -96,24 +96,21 @@ export default function SignUpChatScreen() {
 
       const email = String(rawEmail ?? "").trim();
 
-      // ✅ Create user in Firebase Auth
+      // Create user in Firebase Auth
       const userCred: UserCredential = await signUp(email, password);
       const uid = userCred.user.uid;
-      console.log("Created Firebase Auth user:", uid, userCred.user.email);
 
-      // ✅ Extract birth details
+      // Extract birth details
       const mm = rawBirthdayDate.getMonth() + 1;
       const dd = rawBirthdayDate.getDate();
       const yyyy = rawBirthdayDate.getFullYear();
       const hh24 = rawBirthtimeDate.getHours();
       const mn = rawBirthtimeDate.getMinutes();
-      console.log("Parsed birth details:", { mm, dd, yyyy, hh24, mn });
 
-      // ✅ Timezone offset (hours)
+      // Timezone offset (hours)
       const offset = -rawBirthtimeDate.getTimezoneOffset() / 60;
-      console.log("Timezone offset (hours):", offset);
 
-      // ✅ Astrology API Parameters
+      // Astrology API Parameters
       const params = {
         day: dd,
         month: mm,
@@ -124,12 +121,9 @@ export default function SignUpChatScreen() {
         lon: birthLon,
         tzone: offset,
       };
-      console.log("Astro API Params:", params);
-
       const { sunSign, moonSign, risingSign } = await getAstroSigns(params);
-      console.log("🌞", sunSign, "🌙", moonSign, "⬆️", risingSign);
 
-      // ✅ Build Firestore user record
+      // Build Firestore user record
       const userRecord: UserRecord = {
         id: uid,
         firstName,
@@ -150,15 +144,14 @@ export default function SignUpChatScreen() {
         birthTimezone,
         birthDateTimeUTC,
         tZoneOffset: offset,
-        sunSign: "",
-        moonSign: "",
-        risingSign: "",
+        sunSign: sunSign || "",
+        moonSign: moonSign || "",
+        risingSign: risingSign || "",
+        astroParams: params,
       };
 
-      // ✅ Save to Firestore
       await createUserDoc(uid, userRecord);
 
-      // ✅ Finish signup animation + redirect
       setIsLoading(true);
       let currentProgress = 0;
       const interval = setInterval(() => {
@@ -190,6 +183,7 @@ export default function SignUpChatScreen() {
       setTimeout(() => router.replace('/welcome'), 0);
     }
   };
+
   const confirmCancel = () => {
     setConfirmVisible(false);
     setTimeout(() => router.replace('/welcome'), 0);
