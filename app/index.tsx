@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from './backend/auth-context';
 import { Buffer } from "buffer";
+import { scale } from '@/src/utils/responsive';
 global.Buffer = Buffer;
 
 export default function SplashScreen() {
@@ -34,15 +35,23 @@ export default function SplashScreen() {
   }, [user, initializing]);
 
   return (
+
     <ImageBackground
       source={require('./assets/images/background.jpg')}
       style={styles.background}
-      resizeMode="cover"
-    >
-      <StatusBar style="light" translucent backgroundColor="transparent" />
-      
-        
+      resizeMode="cover">
+      <View style={styles.overlay}>
+        <LottieView
+              source={require('./assets/animations/splash-loop.json')}
+              autoPlay
+              loop
+              style={styles.animation}  // absolute fill inside top container
+            />
+      </View>
+      <StatusBar style="light" />
+
     </ImageBackground>
+
   );
 }
 
@@ -54,5 +63,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  animation: { width: 600, height: 600 },
+  animation: { width: scale(600), height: scale(800), aspectRatio: 1 / 1, },
 });
