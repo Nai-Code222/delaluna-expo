@@ -38,10 +38,14 @@ export default withComposeCompilerVersion({
   expo: {
     name: 'delaluna-expo',
     slug: 'delaluna-expo',
-
     version: '2.0.0',
     orientation: 'portrait',
     icon: './app/assets/images/delaluna_app_icon.png',
+    splash: {
+      image: './app/assets/images/delaluna_app_icon.png',
+      resizeMode: 'contain',
+      backgroundColor: '#ffffff',
+    },
     scheme: 'myapp',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
@@ -64,12 +68,18 @@ export default withComposeCompilerVersion({
       jsEngine: 'jsc',
       supportsTablet: true,
       bundleIdentifier: 'com.app.delaluna-answers',
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
 
     android: {
       jsEngine: 'jsc',
       softwareKeyboardLayoutMode: 'resize',
-      adaptiveIcon: { foregroundImage: './app/assets/images/delaluna_app_icon.png' },
+      adaptiveIcon: {
+        foregroundImage: './app/assets/images/delaluna_app_icon.png',
+        backgroundColor: '#ffffff',
+      },
       package: 'com.app.delaluna_answers',
     },
 
