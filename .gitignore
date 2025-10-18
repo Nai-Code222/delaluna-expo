@@ -39,3 +39,8 @@ app-example
 .env
 .DS_Store
 .DS_Store
+src/utils/serviceAccountKey.json
+credentials/serviceAccountKey.json
+src/utils/testCompatibilityWrite.ts
+credentials/android/keystore.jks
+scripts/testFirestoreWrite.js

@@ -46,10 +46,6 @@ export default function Welcome() {
 
       {/* BOTTOM: buttons */}
       <View style={styles.bottomContainer}>
-        <TitleText>
-          Welcome to {'\n'} <TitleText>Delaluna</TitleText>
-        </TitleText>
-
         <PrimaryButton
           title="Get Started"
           onPress={() => router.replace('/(auth)/sign-up')}
@@ -77,11 +73,11 @@ const styles = StyleSheet.create({
   topContainer: {
     flex: 3.5,                 // keep logo centered here
     position: 'relative',
-    paddingBottom: verticalScale(50),   // ↓ was larger; reduces gap
+    paddingBottom: verticalScale(75),   // ↓ was larger; reduces gap
   },
 
   bottomContainer: {
-  flex: 1.3,
+  flex: 1,
   alignItems: 'center',
   justifyContent: 'flex-start',
   paddingTop: verticalScale(2),

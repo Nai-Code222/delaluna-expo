@@ -14,6 +14,7 @@ import {
   Keyboard,
   StatusBar,
   KeyboardAvoidingView,
+  Image,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
@@ -196,6 +197,22 @@ const submitProps = (enabled: boolean, onSubmit: () => void, returnKey: 'next' |
   blurOnSubmit: true,
   enablesReturnKeyAutomatically: true,
 });
+
+// Small icon send button used across inputs
+const SendButton = ({ disabled, onPress }: { disabled?: boolean; onPress: () => void }) => (
+  <TouchableOpacity
+    style={[styles.sendButton, disabled && { opacity: 0.45 }]}
+    disabled={!!disabled}
+    onPress={onPress}
+    accessibilityLabel="Send"
+  >
+    <Image
+      source={require('../../assets/icons/arrow-right-icon.png')}
+      style={styles.sendIcon}
+      resizeMode="contain"
+    />
+  </TouchableOpacity>
+);
 
 // -------------------- component --------------------
 export default function ChatFlow({
@@ -505,13 +522,7 @@ export default function ChatFlow({
                     autoCorrect
                     {...submitProps(!isBlank, handleSend, nextReturnKey)}
                   />
-                  <TouchableOpacity
-                    style={[styles.sendButton, { opacity: isBlank ? 0.5 : 1 }]}
-                    disabled={isBlank}
-                    onPress={handleSend}
-                  >
-                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
-                  </TouchableOpacity>
+                  <SendButton disabled={isBlank} onPress={handleSend} />
                 </View>
                 {!!error && (
                   <View style={styles.errorContainer}>
@@ -543,12 +554,7 @@ export default function ChatFlow({
                     blurOnSubmit
                   />
 
-                  <TouchableOpacity
-                    style={[styles.sendButton, { opacity: 1 }]}
-                    onPress={handleSend}
-                  >
-                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
-                  </TouchableOpacity>
+                  <SendButton disabled={false} onPress={handleSend} />
                 </View>
 
                 {!!error && (
@@ -599,13 +605,7 @@ export default function ChatFlow({
                       {answers.birthday ? formatDate(answers.birthday, 'MM/dd/yyyy') : 'Select your birthdate'}
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.sendButton, { opacity: selected && !isFuture && !isUnder18 ? 1 : 0.5 }]}
-                    disabled={!selected || isFuture || isUnder18}
-                    onPress={() => { Keyboard.dismiss(); saveAndNext(selected!); }}
-                  >
-                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
-                  </TouchableOpacity>
+                  <SendButton disabled={!selected || isFuture || isUnder18} onPress={() => { Keyboard.dismiss(); saveAndNext(selected!); }} />
                 </View>
 
                 <DateTimePickerModal
@@ -715,13 +715,7 @@ export default function ChatFlow({
                     onSubmitRequest={handleSend}
                   />
 
-                  <TouchableOpacity
-                    style={[styles.sendButton, { opacity: canProceedLocation ? 1 : 0.5 }]}
-                    disabled={!canProceedLocation}
-                    onPress={handleSend}
-                  >
-                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
-                  </TouchableOpacity>
+                  <SendButton disabled={!canProceedLocation} onPress={handleSend} />
                 </View>
 
                 <TouchableOpacity style={[styles.choiceButton, { alignSelf: 'center', marginTop: 16 }]} onPress={handleUnknown}>
@@ -762,20 +756,14 @@ export default function ChatFlow({
                   >
                     <Text style={styles.datePickerText}>{displayTime}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.sendButton, { opacity: (isUnknownTime || (!!birthTime && !isFutureTime)) ? 1 : 0.5 }]}
-                    disabled={!(isUnknownTime || (!!birthTime && !isFutureTime))}
-                    onPress={() => {
-                      Keyboard.dismiss();
-                      if (isUnknownTime) {
-                        saveAndNext("I don't know");
-                      } else {
-                        saveAndNext(birthTime!);
-                      }
-                    }}
-                  >
-                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
-                  </TouchableOpacity>
+                  <SendButton disabled={!isUnknownTime && (!birthTime || isFutureTime)} onPress={() => {
+                    Keyboard.dismiss();
+                    if (isUnknownTime) {
+                      saveAndNext("I don't know");
+                    } else {
+                      saveAndNext(birthTime!);
+                    }
+                  }} />
                 </View>
 
                 {isFutureTime && (
@@ -834,13 +822,7 @@ export default function ChatFlow({
                     {...emailKeyboardProps}
                     {...submitProps(canSend, handleSend, nextReturnKey)}
                   />
-                  <TouchableOpacity
-                    style={[styles.sendButton, { opacity: canSend ? 1 : 0.5 }]}
-                    disabled={!canSend}
-                    onPress={handleSend}
-                  >
-                    <Text style={styles.sendText}>{nextButtonLabel}</Text>
-                  </TouchableOpacity>
+                  <SendButton disabled={!canSend} onPress={handleSend} />
                 </View>
               </View>
             );
@@ -972,7 +954,7 @@ const styles = StyleSheet.create({
   finalArea: { padding: scale(12), backgroundColor: '#1C2541' },
   footerText: { color: '#fff', marginLeft: scale(8) },
   link: { textDecorationLine: 'underline', color: '#6FFFE9' },
-  continueButton: { marginTop: verticalScale(12), backgroundColor: '#6FFFE9', paddingVertical: verticalScale(14), borderRadius: scale(24), alignItems: 'center', marginBottom: verticalScale(Platform.OS === 'ios' ? 30 : 12) },
+  continueButton: { marginTop: verticalScale(10), backgroundColor: '#6FFFE9', paddingVertical: verticalScale(14), borderRadius: scale(24), alignItems: 'center', marginBottom: verticalScale(Platform.OS === 'ios' ? 30 : 12) },
   continueText: { color: '#000', fontWeight: '600', fontSize: moderateScale(16) },
   continueButtonDisabled: { backgroundColor: '#A0A0A0' },
   continueTextDisabled: { color: '#666' },
@@ -1016,6 +998,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: scale(12),
+  },
+  sendIcon: {
+    width: moderateScale(18),
+    height: moderateScale(18),
+    tintColor: '#fff',
   },
   sendText: { fontSize: moderateScale(18), color: '#fff' },
 });
