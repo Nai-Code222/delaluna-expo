@@ -26,11 +26,8 @@ export default function SplashScreen() {
     });
 
     Promise.all([minTimer, authReady]).then(() => {
-      if (user) {
-        router.replace('/(main)');
-      } else {
-        router.replace('/(auth)/welcome');
-      }
+      //router.replace(user ? '/(main)' : '/(auth)/welcome');
+      router.replace('/test-signs' as unknown as any); // TEMP SKIP AUTH FOR TESTING
     });
   }, [user, initializing]);
 

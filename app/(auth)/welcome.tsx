@@ -77,10 +77,10 @@ const styles = StyleSheet.create({
   },
 
   bottomContainer: {
-  flex: 1,
+  flex: 2,
   alignItems: 'center',
   justifyContent: 'flex-start',
-  paddingTop: verticalScale(2),
+  paddingTop: verticalScale(60),
   paddingBottom: verticalScale(25),
   gap: verticalScale(15),
   paddingHorizontal: scale(24),

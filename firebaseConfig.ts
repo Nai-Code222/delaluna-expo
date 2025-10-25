@@ -23,5 +23,9 @@ initializeFirestore(app, {
   experimentalAutoDetectLongPolling: true,
 });
 
+// Firebase authentication
 export const auth = initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });
+// Firestore database
 export const db = getFirestore(app);
+// Export the initialized app for use in other modules or any other Firebase SDKs
+export { app };
