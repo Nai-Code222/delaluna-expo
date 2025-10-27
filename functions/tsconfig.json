@@ -15,5 +15,8 @@
   "include": [
     "src"
   ],
-  "extends": "expo/tsconfig.base"
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
 }
