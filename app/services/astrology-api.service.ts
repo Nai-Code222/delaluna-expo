@@ -1,12 +1,4 @@
 // app/services/astrology-api.service.ts
-
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { app } from "@/firebaseConfig";
-
-const functions = getFunctions(app);
-const getSigns = httpsCallable(functions, "getSigns");
-
-/** Fetch Sun, Moon, and Rising signs using Firebase Cloud Function (Ephemeris) */
 export async function getAstroSigns(params: {
   day: number;
   month: number;
@@ -17,21 +9,32 @@ export async function getAstroSigns(params: {
   lon: number;
   tzone: number;
 }) {
+  const FUNCTION_URL =
+    "https://us-central1-delaluna-answers.cloudfunctions.net/getSignsHttp";
+
   try {
-    const result = await getSigns(params);
-    const data = result.data as {
-      sunSign: string;
-      moonSign: string;
-      risingSign: string;
+    console.log("🔮 Fetching astrology signs (HTTP):", params);
+
+    const res = await fetch(FUNCTION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+
+    const { summary, raw } = data;
+    console.log("✅ Received:", summary);
+
+    return {
+      sunSign: raw.sun.sign,
+      moonSign: raw.moon.sign,
+      risingSign: raw.ascendant.sign,
     };
-
-    console.log("☀️ Sun:", data.sunSign);
-    console.log("🌙 Moon:", data.moonSign);
-    console.log("⬆️ Rising:", data.risingSign);
-
-    return data;
   } catch (error: any) {
-    console.error("🔥 Error fetching signs:", error);
+    console.error("🔥 Error fetching signs (HTTP):", error);
     throw new Error("Failed to calculate astrological signs");
   }
 }

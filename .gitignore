@@ -45,3 +45,4 @@ src/utils/testCompatibilityWrite.ts
 credentials/android/keystore.jks
 scripts/testFirestoreWrite.js
 functions/firebase-debug.log
+scripts

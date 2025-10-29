@@ -10,6 +10,8 @@
 import {setGlobalOptions} from "firebase-functions";
 import {onRequest} from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
+import { onGeminiResponse } from "./onGeminiResponse";
+
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -36,4 +38,5 @@ setGlobalOptions({
 //   response.send("Hello from Firebase!");
 // });
 
-export { getSignsHttp } from "./getSigns";
+export { getSigns, getSignsHttp } from "./getSigns";
+export { onGeminiResponse };
