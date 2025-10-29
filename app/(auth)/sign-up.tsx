@@ -1,6 +1,7 @@
 import 'intl';
 import 'intl/locale-data/jsonp/en';
-
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/firebaseConfig";
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -13,12 +14,12 @@ import {
   useWindowDimensions,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
-import { UserCredential, sendEmailVerification } from 'firebase/auth';
+import { UserCredential, sendEmailVerification, updateProfile } from 'firebase/auth';
 import { StatusBar } from 'expo-status-bar';
-import { DateTime } from 'luxon';
 import { verticalScale, scale, moderateScale } from '@/src/utils/responsive';
 import { useAuth } from '../backend/auth-context';
 import LoadingScreen from '../components/component-utils/loading-screen';
@@ -27,6 +28,7 @@ import { UserRecord } from '../model/user-record';
 import signUp from '../services/auth.service';
 import { createUserDoc } from '../services/user.service';
 import { getAstroSigns } from '../services/astrology-api.service';
+
 
 
 
@@ -70,6 +72,8 @@ export default function SignUpChatScreen() {
   };
 
   const handleComplete = async (answers: FinalSignupPayload) => {
+    let userCred: UserCredential | null = null;
+
     try {
       const {
         firstName,
@@ -95,38 +99,35 @@ export default function SignUpChatScreen() {
 
       const email = String(rawEmail ?? "").trim();
 
-      // Create user in Firebase Auth
-      const userCred: UserCredential = await signUp(email, password);
-      const uid = userCred.user.uid;
+      // 1️⃣ Create Firebase user
+      userCred = await signUp(email, password);
+      const user = userCred.user;
+      const uid = user.uid;
 
-      // Extract birth details
+      // 2️⃣ Create display name
+      const displayName = `${firstName?.trim()} ${lastName?.trim()}`
+        .replace(/\s+/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+
+      await updateProfile(user, { displayName });
+
+      // 3️⃣ Build astro params
       const mm = rawBirthdayDate.getMonth() + 1;
       const dd = rawBirthdayDate.getDate();
       const yyyy = rawBirthdayDate.getFullYear();
       const hh24 = rawBirthtimeDate.getHours();
       const mn = rawBirthtimeDate.getMinutes();
-
-      // Timezone offset (hours)
       const offset = -rawBirthtimeDate.getTimezoneOffset() / 60;
 
-      // Astrology API Parameters
-      const params = {
-        day: dd,
-        month: mm,
-        year: yyyy,
-        hour: hh24,
-        min: mn,
-        lat: birthLat,
-        lon: birthLon,
-        tzone: offset,
-      };
+      const params = { day: dd, month: mm, year: yyyy, hour: hh24, min: mn, lat: birthLat, lon: birthLon, tzone: offset };
       const { sunSign, moonSign, risingSign } = await getAstroSigns(params);
 
-      // Build Firestore user record
+      // 4️⃣ Build full user record
       const userRecord: UserRecord = {
         id: uid,
         firstName,
         lastName,
+        displayName,
         pronouns,
         birthday,
         birthtime,
@@ -149,29 +150,86 @@ export default function SignUpChatScreen() {
         astroParams: params,
       };
 
-      await createUserDoc(uid, userRecord);
+      // 5️⃣ Try Firestore write (retry once)
+      let docCreated = false;
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          await createUserDoc(uid, userRecord);
+          docCreated = true;
+          break;
+        } catch (err) {
+          console.warn(`⚠️ Firestore write failed (attempt ${attempt})`, err);
+          if (attempt < 2) await new Promise((res) => setTimeout(res, 500));
+        }
+      }
 
+      if (!docCreated) {
+        console.error("❌ Could not create Firestore doc — will retry later.");
+        await logSignupError(email, uid, new Error("UserDoc creation failed"), userRecord);
+
+        Alert.alert(
+          "Syncing Profile",
+          "Your account was created successfully, but we’re still finishing setup in the background."
+        );
+        // Retry silently in background
+        retryUserDocCreation(uid, userRecord);
+      }
+
+      // 6️⃣ Send to home WITH userRecord
       setIsLoading(true);
       let currentProgress = 0;
       const interval = setInterval(() => {
-        currentProgress += 0.2;
+        currentProgress += 0.25;
         setProgress(currentProgress);
         if (currentProgress >= 1) {
           clearInterval(interval);
-          sendEmailVerification(userCred.user);
-          router.replace("/(main)");
+          sendEmailVerification(user);
+          router.replace({
+            pathname: "/(main)",
+            params: { user: JSON.stringify(userRecord) }, // 👈 pass full user record
+          });
         }
       }, 200);
 
     } catch (e: any) {
-      if (e?.code === "auth/email-already-in-use") {
-        setStepToKey("email");
-        return;
-      } else {
-        console.warn("Signup error:", e?.message ?? e);
-      }
+      console.warn("❌ Signup failed:", e);
+      await logSignupError(answers.email, userCred?.user?.uid, e);
+      Alert.alert("Signup Error", e?.message || "We hit a snag creating your account. Please try again.");
     }
   };
+
+  // 🔁 Retry background doc creation
+const retryUserDocCreation = async (uid: string, userRecord: UserRecord) => {
+  try {
+    console.log("🔁 Retrying user doc creation...");
+    await createUserDoc(uid, userRecord);
+    console.log("✅ User doc created successfully on retry.");
+  } catch (err) {
+    console.warn("⚠️ Retry failed:", err);
+    await logSignupError(userRecord.email, uid, err, userRecord);
+  }
+};
+
+// 🪶 Log signup errors
+const logSignupError = async (email: string, uid: string | undefined, error: any, payload?: Record<string, any>) => {
+  const isDev = __DEV__ || process.env.NODE_ENV !== "production";
+  try {
+    const docData: any = {
+      email,
+      uid: uid ?? null,
+      message: error?.message ?? String(error),
+      code: error?.code ?? "unknown",
+      createdAt: serverTimestamp(),
+    };
+    if (isDev) {
+      docData.payload = payload;
+      docData.stack = error?.stack;
+    }
+    await setDoc(doc(db, "signup_errors", `${uid ?? email}-${Date.now()}`), docData);
+  } catch (err) {
+    console.warn("⚠️ Failed to log signup error:", err);
+  }
+};
 
   // Cancel flow
   const onCancelPress = () => {
