@@ -86,11 +86,9 @@ export default function HomeScreen() {
     <Animated.View style={[styles.container, { opacity: fade }]}>
       <ExpoStatusBar style="light" />
       <HeaderNav
-        title="Home"
-        leftIconName={undefined}
-        onLeftPress={() => {}}
-        rightIconSource={require('../assets/icons/avatar.png')}
-        onRightPress={goToProfile}
+        title="home"
+        leftIconName={"person-circle-outline"}
+        onLeftPress={goToProfile}
       />
       
       <View style={styles.content}>
