@@ -9,6 +9,7 @@ export interface UserRecord {
   id?: string;
   firstName: string;
   lastName?: string;
+  displayName?: string;
   pronouns?: string;
 
   // auth/membership
