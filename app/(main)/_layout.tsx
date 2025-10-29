@@ -52,7 +52,6 @@ export default function HomeLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        // ✅ This one is supported on your Tabs type
         sceneStyle: { backgroundColor: 'transparent' },
         tabBarStyle: {
           backgroundColor: theme.colors.headerBg,
