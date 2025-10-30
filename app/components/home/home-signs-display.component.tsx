@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
+import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
 
 interface HomeSignsDisplayProps {
   sun: string;
@@ -42,28 +43,30 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
 
 const styles = StyleSheet.create({
   container: {
-    display: "flex",
     flexDirection: "row",
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    justifyContent: "flex-start",
     alignItems: "center",
-    gap: 5,
+    width: "100%",
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: scale(10),
+    gap: scale(5),
     alignSelf: "stretch",
   },
   signItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: scale(2),
   },
   icon: {
-    width: 20,
-    height: 20,
+    width: scale(22),
+    height: scale(22),
     resizeMode: "contain",
   },
   text: {
-    fontSize: 14,
+    fontSize: moderateScale(14),
     color: "#FFFFFF",
-    fontWeight: "500",
+    fontWeight: "300",
     textTransform: "uppercase",
+    letterSpacing: 0.6,
   },
 });

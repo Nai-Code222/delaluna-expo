@@ -23,6 +23,7 @@ import { useUserProfile } from "../hooks/useUserProfile";
 import { getDoc, doc } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 import HomeSignsDisplay from "../components/home/home-signs-display.component";
+import HomeTextBox from "../components/home/home-text-box.component";
 
 export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext);
@@ -38,6 +39,17 @@ export default function HomeScreen() {
     user?.uid,
     initialUserRecord
   );
+
+  const sectionLabels = [
+    "Quote",
+    "Advice",
+    "Affirmation",
+    "Message in a Bottle",
+    "Moon Phase",
+    "Today’s Cards",
+    "New Love",
+    "Release",
+  ];
 
   // 🔄 Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
@@ -143,29 +155,10 @@ export default function HomeScreen() {
         }
       >
         <View style={styles.content}>
-          <Text style={styles.title}>
-            Welcome
-            {userRecord?.displayName ? `, ${userRecord.displayName}` : "!"}
-          </Text>
-          <Text style={styles.email}>
-            {user ? `Logged in as: ${user.email}` : "No user logged in."}
-          </Text>
-
-          {userRecord && (
-            <View style={{ marginTop: 16, alignItems: "center" }}>
-              <Text style={styles.detail}>☀️ Sun: {userRecord.sunSign}</Text>
-              <Text style={styles.detail}>🌙 Moon: {userRecord.moonSign}</Text>
-              <Text style={styles.detail}>⬆️ Rising: {userRecord.risingSign}</Text>
-              <Text style={[styles.detail, { opacity: 0.7 }]}>
-                Theme: {userRecord.themeKey}
-              </Text>
-              {cachedAt && (
-                <Text style={[styles.detail, { fontSize: 13, opacity: 0.6 }]}>
-                  Last synced: {new Date(cachedAt).toLocaleTimeString()}
-                </Text>
-              )}
-            </View>
-          )}
+          {sectionLabels.map((label, index) => (
+        <HomeTextBox key={index} title={label}  style={{ marginBottom: 16 }} />
+      ))}
+          
         </View>
       </ScrollView>
     </Animated.View>
