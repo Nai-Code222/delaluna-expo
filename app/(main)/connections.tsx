@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+import { router, useLocalSearchParams } from "expo-router";
 import {
   ImageBackground,
   StyleSheet,
@@ -10,52 +11,21 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { ThemeContext } from "../theme-context";
 import AddConnectionButton from "../components/buttons/add-connection-button.component";
+import DelalunaContainer from "../components/component-utils/delaluna-container.component";
+import useRenderBackground from "../hooks/useRenderBackground";
 
 export default function ConnectionsScreen() {
   const { theme } = useContext(ThemeContext);
+  const goToNewConnectionScreen = () => router.replace("../(supporting)/single-connection-create.screen");
+  const renderBackground = useRenderBackground();
 
-  function renderBackground(children: React.ReactNode) {
-    if (theme.backgroundType === "image" && theme.backgroundImage) {
-      return (
-        <ImageBackground
-          source={theme.backgroundImage}
-          style={styles.background}
-          resizeMode="cover"
-        >
-          {children}
-        </ImageBackground>
-      );
-    }
-    if (theme.backgroundType === "gradient" && theme.gradient) {
-      return (
-        <LinearGradient
-          colors={theme.gradient.colors as [string, string, ...string[]]}
-          start={{ x: 0, y: 0 }}
-          end={{
-            x: Math.cos((theme.gradient.angle ?? 0) * Math.PI / 180),
-            y: Math.sin((theme.gradient.angle ?? 0) * Math.PI / 180),
-          }}
-          style={styles.background}
-        >
-          {children}
-        </LinearGradient>
-      );
-    }
-    return (
-      <View
-        style={[styles.background, { backgroundColor: theme.colors.background }]}
-      >
-        {children}
-      </View>
-    );
-  }
-
+  
   return renderBackground(
-    <View style={styles.centered}>
+    <DelalunaContainer style={styles.centered}>
       <AddConnectionButton
-        onPress={() => console.log("Add Connection pressed!")}
+        onPress={goToNewConnectionScreen}
       />
-    </View>
+    </DelalunaContainer>
   );
 }
 

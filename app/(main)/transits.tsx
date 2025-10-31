@@ -1,56 +1,88 @@
 import React, { useContext } from "react";
-import { ImageBackground, StyleSheet, View, Text } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Platform,
+  ImageBackground,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemeContext } from "../theme-context";
+import { scale, verticalScale } from "@/src/utils/responsive";
+import ExpandableDelalunaContainer from "../components/component-utils/expandable-delaluna-container.component";
+import useRenderBackground from "../hooks/useRenderBackground";
 
 export default function TransitsScreen() {
-    const { theme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
+  const insets = useSafeAreaInsets();
+  const renderBackground = useRenderBackground();
 
-  function renderBackground(children: React.ReactNode) {
-    if (theme.backgroundType === "image" && theme.backgroundImage) {
-      return (
-        <ImageBackground
-          source={theme.backgroundImage}
-          style={styles.background}
-          resizeMode="cover"
-        >
-          {children}
-        </ImageBackground>
-      );
-    }
-    if (theme.backgroundType === "gradient" && theme.gradient) {
-      return (
-        <LinearGradient
-          colors={theme.gradient.colors as [string, string, ...string[]]}
-          start={{ x: 0, y: 0 }}
-          end={{
-            x: Math.cos((theme.gradient.angle ?? 0) * Math.PI / 180),
-            y: Math.sin((theme.gradient.angle ?? 0) * Math.PI / 180),
-          }}
-          style={styles.background}
-        >
-          {children}
-        </LinearGradient>
-      );
-    }
-    return (
-      <View style={[styles.background, { backgroundColor: theme.colors.background }]}>
-        {children}
-      </View>
-    );
-  }
+  const fakeTransits: any[] = []; // aTODO  replace with Firestore or Gemini data later
 
   return renderBackground(
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ color: theme.colors.text, fontSize: 18, opacity: 0.6 }}>
-        No transits available.
-      </Text>
-    </View>
+    <ScrollView
+      style={[
+        styles.scrollView,
+        {
+          paddingTop:
+            Platform.OS === "android" ? insets.top + 12 : insets.top + 24,
+          paddingBottom: insets.bottom + 24,
+        },
+      ]}
+      contentContainerStyle={[
+        styles.content,
+        fakeTransits.length === 0 && styles.centerContent,
+      ]}
+    >
+      {fakeTransits.length === 0 ? (
+        <Text style={styles.noDataText}>No transits available.</Text>
+      ) : (
+        fakeTransits.map((transit, index) => (
+          <ExpandableDelalunaContainer
+            key={index}
+            title={transit.title}
+            subtitle={transit.date}
+            expandedContent={
+              <View>
+                <Text style={styles.expandedText}>{transit.description}</Text>
+              </View>
+            }
+          />
+        ))
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+    width: "100%",
+  },
+  content: {
+    paddingHorizontal: scale(16),
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noDataText: {
+    color: "#FFFFFF",
+    fontSize: scale(16),
+    opacity: 0.6,
+    textAlign: "center",
+  },
+  expandedText: {
+    color: "#FFFFFF",
+    fontSize: scale(14),
+    lineHeight: verticalScale(22),
+    fontWeight: "400",
+    textAlign: "left",
+    opacity: 0.9,
   },
 });

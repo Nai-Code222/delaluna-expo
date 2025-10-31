@@ -24,6 +24,7 @@ import { getDoc, doc } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 import HomeSignsDisplay from "../components/home/home-signs-display.component";
 import HomeTextBox from "../components/home/home-text-box.component";
+import useRenderBackground from "../hooks/useRenderBackground";
 
 export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext);
@@ -51,7 +52,7 @@ export default function HomeScreen() {
     "Release",
   ];
 
-  // 🔄 Pull-to-refresh
+  // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     if (!user?.uid) return;
@@ -81,48 +82,13 @@ export default function HomeScreen() {
     }).start();
   }, [theme]);
 
-  // 🧭 Auth guard
+  // Auth guard
   useEffect(() => {
     if (!initializing && !user) router.replace("/(auth)/welcome");
   }, [initializing, user]);
 
-  // 🎨 Background renderer
-  const renderBackground = (children: React.ReactNode) => {
-    if (theme.backgroundType === "image" && theme.backgroundImage) {
-      return (
-        <ImageBackground
-          source={theme.backgroundImage}
-          style={styles.background}
-          resizeMode="cover"
-        >
-          {children}
-        </ImageBackground>
-      );
-    }
-    if (theme.backgroundType === "gradient" && theme.gradient) {
-      const angle = theme.gradient.angle ?? 0;
-      return (
-        <LinearGradient
-          colors={theme.gradient.colors as [string, string, ...string[]]}
-          start={{ x: 0, y: 0 }}
-          end={{
-            x: Math.cos((angle * Math.PI) / 180),
-            y: Math.sin((angle * Math.PI) / 180),
-          }}
-          style={styles.background}
-        >
-          {children}
-        </LinearGradient>
-      );
-    }
-    return (
-      <View
-        style={[styles.background, { backgroundColor: theme.colors.background }]}
-      >
-        {children}
-      </View>
-    );
-  };
+  // Background renderer
+  const renderBackground = useRenderBackground();
 
   // ⏳ While auth/profile loading
   if (initializing || profileLoading) {

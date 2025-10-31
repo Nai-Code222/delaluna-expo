@@ -5,6 +5,7 @@ import { Image, ImageBackground, StyleSheet, Platform, View, Animated, Easing } 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemeContext } from '@/app/theme-context'; // ← match file case/path
 import { LinearGradient } from 'expo-linear-gradient';
+import useRenderBackground from '../hooks/useRenderBackground';
 
 export default function HomeLayout() {
   const insets = useSafeAreaInsets();
@@ -15,38 +16,13 @@ export default function HomeLayout() {
   const isIOS = Platform.OS === 'ios';
   const baseHeight = isIOS ? IOS_TABBAR_BASE_HEIGHT + insets.bottom : ANDROID_TABBAR_BASE_HEIGHT;
   const paddingBottom = isIOS ? insets.bottom : 8;
-
+  const renderBackground = useRenderBackground();
   const fade = useRef(new Animated.Value(1)).current;
+  
   useEffect(() => {
     fade.setValue(0);
     Animated.timing(fade, { toValue: 1, duration: 180, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
   }, [theme]);
-
-  function renderBackground(children: React.ReactNode) {
-    const content = <Animated.View style={[styles.fill, { opacity: fade }]}>{children}</Animated.View>;
-
-    if (theme.backgroundType === 'image' && theme.backgroundImage) {
-      return (
-        <ImageBackground source={theme.backgroundImage} style={styles.fill} resizeMode="cover">
-          {content}
-        </ImageBackground>
-      );
-    }
-    if (theme.backgroundType === 'gradient' && theme.gradient) {
-      const angle = theme.gradient.angle ?? 0;
-      return (
-        <LinearGradient
-          colors={theme.gradient.colors as [string, string, ...string[]]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: Math.cos((angle * Math.PI) / 180), y: Math.sin((angle * Math.PI) / 180) }}
-          style={styles.fill}
-        >
-          {content}
-        </LinearGradient>
-      );
-    }
-    return <View style={[styles.fill, { backgroundColor: theme.colors.background }]}>{content}</View>;
-  }
 
   return renderBackground(
     <Tabs
