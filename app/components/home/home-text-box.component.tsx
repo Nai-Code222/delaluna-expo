@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ViewStyle } from "react-native";
 import SendInput from "../component-utils/send-input.component";
+import DelalunaContainer from "../component-utils/delaluna-container.component";
 
 
 interface HomeTextBoxProps {
@@ -13,15 +14,15 @@ interface HomeTextBoxProps {
 export default function HomeTextBox({ title, text = "", style }: HomeTextBoxProps) {
   const isBottleSection = title.toLowerCase().includes("in a bottle");
 
-  return (
+  return ( 
     <View style={[styles.container, style]}>
       <Text style={styles.title}>{title}</Text>
       {isBottleSection ? (
         <SendInput placeholder="Message to the universe" />
       ) : (
-        <View style={styles.box}>
+        <DelalunaContainer style={styles.box}>
           <Text style={styles.text}>{text}</Text>
-        </View>
+        </DelalunaContainer>
       )}
     </View>
   );
