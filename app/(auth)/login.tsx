@@ -39,6 +39,7 @@ export default function Login() {
 
   // Track keyboard visibility
   const [kbVisible, setKbVisible] = useState(false);
+  
   useEffect(() => {
     const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';

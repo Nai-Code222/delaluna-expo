@@ -99,19 +99,19 @@ export default function SignUpChatScreen() {
 
       const email = String(rawEmail ?? "").trim();
 
-      // 1️⃣ Create Firebase user
+      // Create Firebase user
       userCred = await signUp(email, password);
       const user = userCred.user;
       const uid = user.uid;
 
-      // 2️⃣ Create display name
+      // Create display name
       const displayName = `${firstName?.trim()} ${lastName?.trim()}`
         .replace(/\s+/g, " ")
         .replace(/\b\w/g, (char) => char.toUpperCase());
 
       await updateProfile(user, { displayName });
 
-      // 3️⃣ Build astro params
+      // uild astro params
       const mm = rawBirthdayDate.getMonth() + 1;
       const dd = rawBirthdayDate.getDate();
       const yyyy = rawBirthdayDate.getFullYear();
@@ -150,7 +150,7 @@ export default function SignUpChatScreen() {
         astroParams: params,
       };
 
-      // 5️⃣ Try Firestore write (retry once)
+      // Try Firestore write (retry once)
       let docCreated = false;
       for (let attempt = 1; attempt <= 2; attempt++) {
         try {
@@ -198,7 +198,7 @@ export default function SignUpChatScreen() {
     }
   };
 
-  // 🔁 Retry background doc creation
+  // Retry background doc creation
 const retryUserDocCreation = async (uid: string, userRecord: UserRecord) => {
   try {
     console.log("🔁 Retrying user doc creation...");
@@ -210,7 +210,7 @@ const retryUserDocCreation = async (uid: string, userRecord: UserRecord) => {
   }
 };
 
-// 🪶 Log signup errors
+// Log signup errors
 const logSignupError = async (email: string, uid: string | undefined, error: any, payload?: Record<string, any>) => {
   const isDev = __DEV__ || process.env.NODE_ENV !== "production";
   try {
