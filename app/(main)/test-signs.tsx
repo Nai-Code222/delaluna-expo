@@ -54,6 +54,23 @@ export default function TestSignsScreen() {
   );
 }
 
+/*
+* {userRecord && (
+            <View style={{ marginTop: 16, alignItems: "center" }}>
+              <Text style={styles.detail}>☀️ Sun: {userRecord.sunSign}</Text>
+              <Text style={styles.detail}>🌙 Moon: {userRecord.moonSign}</Text>
+              <Text style={styles.detail}>⬆️ Rising: {userRecord.risingSign}</Text>
+              <Text style={[styles.detail, { opacity: 0.7 }]}>
+                Theme: {userRecord.themeKey}
+              </Text>
+              {cachedAt && (
+                <Text style={[styles.detail, { fontSize: 13, opacity: 0.6 }]}>
+                  Last synced: {new Date(cachedAt).toLocaleTimeString()}
+                </Text>
+              )}
+            </View>
+          )}
+*/
 const styles = StyleSheet.create({
   container: {
     flex: 1,
