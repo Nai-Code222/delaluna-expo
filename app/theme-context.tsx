@@ -15,6 +15,16 @@ const redTheme = require('./assets/colors/red-theme.png');
 const yellowTheme = require('./assets/colors/yellow-theme.png');
 const pinkTheme = require('./assets/colors/pink-theme.png');
 
+export interface Theme {
+  key: string;
+  colors: ThemeColors;
+  backgroundType: 'image' | 'gradient';
+  backgroundImage?: ImageSourcePropType;
+  gradient?: ThemeGradient;
+  blendMode: 'difference';
+  isDark?: boolean;
+}
+
 // ===== Types =====
 export interface ThemeColors {
   background: ColorValue;
@@ -27,14 +37,7 @@ export interface ThemeColors {
   overlay?: string;
 }
 export interface ThemeGradient { colors: string[]; angle: number; }
-export interface Theme {
-  key: string;
-  colors: ThemeColors;
-  backgroundType: 'image' | 'gradient';
-  backgroundImage?: ImageSourcePropType;
-  gradient?: ThemeGradient;
-  blendMode: 'difference';
-}
+
 
 // ===== Themes (unchanged) =====
 const allThemes: Record<string, Theme> = {
@@ -243,13 +246,28 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       }
     })();
 
+    
+
+
     return () => { cancelled = true; };
   }, [user?.uid, db]);
 
   if (!hydrated) return null; // keeps splash showing until theme is ready
 
+  const currentTheme = {
+  ...allThemes[themeKey],
+  isDark: (() => {
+    const t = allThemes[themeKey];
+    // 🌙 Simple heuristic: check brightness of background or header
+    const bg = t.colors.background.toString().toLowerCase();
+    const header = t.colors.headerBg.toString().toLowerCase();
+    const darkColors = ["#000", "#1c2541", "#240046", "#013220", "#000080"];
+    return darkColors.some((c) => bg.includes(c) || header.includes(c));
+  })(),
+};
+
   return (
-    <ThemeContext.Provider value={{ theme: allThemes[themeKey], themeKey, setThemeKey, themes: allThemes }}>
+<ThemeContext.Provider value={{ theme: currentTheme, themeKey, setThemeKey, themes: allThemes }}>
       {children}
     </ThemeContext.Provider>
   );
