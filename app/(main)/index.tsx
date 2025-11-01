@@ -25,15 +25,18 @@ import { db } from "@/firebaseConfig";
 import HomeSignsDisplay from "../components/home/home-signs-display.component";
 import HomeTextBox from "../components/home/home-text-box.component";
 import useRenderBackground from "../hooks/useRenderBackground";
+import DateSwitcher from "../components/component-utils/date-switcher.component";
 
 export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext);
   const insets = useSafeAreaInsets();
+  const goToProfile = () => router.replace("/(supporting)/profile.screen");
   const safeOffset =
     Platform.OS === "android" ? StatusBar.currentHeight || 0 : insets.top;
   const { theme } = useContext(ThemeContext);
   const { user: userParam } = useLocalSearchParams();
   const initialUserRecord = userParam ? JSON.parse(userParam as string) : null;
+  const HEADER_HEIGHT = Platform.OS === "ios" ? 115 : 85;
 
   // 🌙 Firestore user profile (cached + realtime)
   const { user: userRecord, loading: profileLoading, cachedAt } = useUserProfile(
@@ -61,10 +64,10 @@ export default function HomeScreen() {
       const snap = await getDoc(doc(db, "users", user.uid));
       if (snap.exists()) {
         const freshData = snap.data();
-        console.log("🔄 Manually refreshed user data:", freshData);
+        console.log("Manually refreshed user data:", freshData);
       }
     } catch (e) {
-      console.warn("⚠️ Manual refresh failed:", e);
+      console.warn("Manual refresh failed:", e);
     } finally {
       setRefreshing(false);
     }
@@ -99,17 +102,28 @@ export default function HomeScreen() {
     );
   }
 
-  const goToProfile = () => router.replace("/(supporting)/profile.screen");
 
   return renderBackground(
-    <Animated.View style={[styles.container, { opacity: fade }]}>
-      <ExpoStatusBar style="light" />
-      <HeaderNav
-        title="home"
-        leftIconName="person-circle-outline"
-        onLeftPress={goToProfile}
-      />
-      <HomeSignsDisplay sun={userRecord.sunSign} moon={userRecord.moonSign} rising={userRecord.risingSign} />
+  <Animated.View style={[styles.container, { opacity: fade }]}>
+    <HeaderNav
+      title="Home"
+      leftIconName="person-circle-outline"
+      onLeftPress={goToProfile}
+    />
+
+    {/* 👇 Wrap main content with top offset */}
+    <View style={[styles.mainContent, { marginTop: HEADER_HEIGHT }]}>
+      <View style={styles.homeTextBox}>
+        <HomeSignsDisplay
+          sun={userRecord.sunSign}
+          moon={userRecord.moonSign}
+          rising={userRecord.risingSign}
+        />
+        <DateSwitcher>
+          
+        </DateSwitcher>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         refreshControl={
@@ -122,22 +136,41 @@ export default function HomeScreen() {
       >
         <View style={styles.content}>
           {sectionLabels.map((label, index) => (
-        <HomeTextBox key={index} title={label}  style={{ marginBottom: 16 }} />
-      ))}
-          
+            <HomeTextBox key={index} title={label} style={{ marginBottom: 15 }} />
+          ))}
         </View>
       </ScrollView>
-    </Animated.View>
-  );
+    </View>
+  </Animated.View>
+);
+
 }
 
+
 const styles = StyleSheet.create({
-  container: { flex: 1, width: "100%", height: "100%" },
   background: { flex: 1, width: "100%", height: "100%" },
   loader: { flex: 1, justifyContent: "center", alignItems: "center" },
-  scrollContainer: { flexGrow: 1 },
-  content: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
-  title: { fontSize: 24, marginBottom: 8, color: "#fff", fontWeight: "600" },
-  email: { fontSize: 16, marginBottom: 20, color: "#ddd" },
-  detail: { fontSize: 16, color: "#fff", marginVertical: 2 },
+  container: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    flexDirection: "column",
+  },
+  mainContent: {
+    flex: 1,
+    width: "100%",
+  },
+  homeTextBox: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingBottom: 100,
+  },
+  content: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 10,
+  },
 });
