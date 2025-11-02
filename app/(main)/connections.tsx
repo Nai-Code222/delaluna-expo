@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   ImageBackground,
@@ -7,31 +7,64 @@ import {
   Text,
   TouchableOpacity,
   Image,
+  Animated,
+  Easing,
+  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ThemeContext } from "../theme-context";
 import AddConnectionButton from "../components/buttons/add-connection-button.component";
 import DelalunaContainer from "../components/component-utils/delaluna-container.component";
 import useRenderBackground from "../hooks/useRenderBackground";
+import HeaderNav from "../components/component-utils/header-nav";
+import { HEADER_HEIGHT } from "@/src/utils/responsive-header";
 
 export default function ConnectionsScreen() {
   const { theme } = useContext(ThemeContext);
   const goToNewConnectionScreen = () => router.replace("../(supporting)/single-connection-create.screen");
   const renderBackground = useRenderBackground();
 
-  
+
+  const fade = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    fade.setValue(0);
+    Animated.timing(fade, {
+      toValue: 1,
+      duration: 220,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [theme]);
+
+
   return renderBackground(
-    <DelalunaContainer style={styles.centered}>
-      <AddConnectionButton
-        onPress={goToNewConnectionScreen}
+    <Animated.View style={[styles.container, { opacity: fade }]}>
+      <HeaderNav
+        title="Connections"
       />
-    </DelalunaContainer>
+      {/* Wrap main content with top offset */}
+      <View style={[styles.centered, { marginTop: HEADER_HEIGHT }]}>
+        <AddConnectionButton
+          onPress={goToNewConnectionScreen}
+        />
+      </View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+  },
+  container: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    flexDirection: "column",
+  },
+  mainContent: {
+    flex: 1,
+    width: "100%",
   },
   centered: {
     flex: 1,
@@ -63,5 +96,10 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "600",
+  },
+  content: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 10,
   },
 });
