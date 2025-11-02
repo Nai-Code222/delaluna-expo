@@ -9,10 +9,11 @@ import {
   Platform,
   StatusBar,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { ThemeContext } from "@/app/theme-context";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
+import { scale, moderateScale } from "@/src/utils/responsive";
+import { HEADER_HEIGHT } from "@/src/utils/responsive-header";
 
 type HeaderNavProps = {
   title?: string;
@@ -46,48 +47,43 @@ export default function HeaderNav({
 
   const bg = backgroundColor ?? theme.colors.headerBg;
   const tc = textColor ?? theme.colors.headerText;
-
-  /** ⬆️ Start header right below the status bar */
-  const topInset = Platform.OS === "ios" ? insets.top : StatusBar.currentHeight ?? 0;
+  const navHeight = HEADER_HEIGHT - insets.top;
 
   return (
     <>
+      {/* 🌙 StatusBar appearance */}
       <StatusBar
         barStyle={theme.isDark ? "light-content" : "dark-content"}
         translucent
         backgroundColor="transparent"
       />
 
+      {/* 🔝 Absolute header positioned below the status bar */}
       <View
         style={[
           styles.headerContainer,
           {
             backgroundColor: bg,
-            paddingTop: topInset,
-            position: "absolute",
-            top: 0, // ✅ Always just below the status bar
-            left: 0,
-            right: 0,
+            height: HEADER_HEIGHT,
+            paddingTop: insets.top,
           },
         ]}
       >
-        <View style={styles.navBar}>
+        <View style={[styles.navBar, { height: navHeight }]}>
           {/* LEFT SIDE */}
-          <View style={styles.sideContainer}>
-            <TouchableOpacity onPress={onLeftPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              {leftIconName ? (
-                <Ionicons name={leftIconName} size={moderateScale(22)} color={tc} />
-              ) : leftIconSource ? (
-                <Image source={leftIconSource} style={[styles.icon, { tintColor: tc }]} />
-              ) : leftLabel ? (
-                <Text style={[styles.sideText, { color: tc }]}>{leftLabel}</Text>
-              ) : (
-                <View style={styles.placeholder} />
-              )}
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={onLeftPress} style={styles.sideContainer}>
+            {leftIconName ? (
+              <Ionicons name={leftIconName} size={moderateScale(22)} color={tc} />
+            ) : leftIconSource ? (
+              <Image source={leftIconSource} style={[styles.icon, { tintColor: tc }]} />
+            ) : leftLabel ? (
+              <Text style={[styles.sideText, { color: tc }]}>{leftLabel}</Text>
+            ) : (
+              <View style={styles.placeholder} />
+            )}
+          </TouchableOpacity>
 
-          {/* CENTER TITLE */}
+          {/* TITLE */}
           <View style={styles.centerContainer}>
             <Text style={[styles.title, { color: tc }]} numberOfLines={1}>
               {title}
@@ -95,19 +91,17 @@ export default function HeaderNav({
           </View>
 
           {/* RIGHT SIDE */}
-          <View style={styles.sideContainer}>
-            <TouchableOpacity onPress={onRightPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              {rightIconName ? (
-                <Ionicons name={rightIconName} size={moderateScale(22)} color={tc} />
-              ) : rightIconSource ? (
-                <Image source={rightIconSource} style={[styles.icon, { tintColor: tc }]} />
-              ) : rightLabel ? (
-                <Text style={[styles.sideText, { color: tc }]}>{rightLabel}</Text>
-              ) : (
-                <View style={styles.placeholder} />
-              )}
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={onRightPress} style={styles.sideContainer}>
+            {rightIconName ? (
+              <Ionicons name={rightIconName} size={moderateScale(22)} color={tc} />
+            ) : rightIconSource ? (
+              <Image source={rightIconSource} style={[styles.icon, { tintColor: tc }]} />
+            ) : rightLabel ? (
+              <Text style={[styles.sideText, { color: tc }]}>{rightLabel}</Text>
+            ) : (
+              <View style={styles.placeholder} />
+            )}
+          </TouchableOpacity>
         </View>
       </View>
     </>
@@ -117,22 +111,31 @@ export default function HeaderNav({
 const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
     zIndex: 10,
+    elevation: 4, // Android shadow
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(255,255,255,0.1)",
   },
   navBar: {
-    height: Platform.OS === "ios" ? 45 : 45,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: scale(10),
   },
   sideContainer: {
-    width: scale(60), // ✅ fixed width for symmetrical sides
+    width: scale(80),
     alignItems: "center",
     justifyContent: "center",
   },
   centerContainer: {
-    position: "absolute", // ✅ makes title perfectly centered
+    position: "absolute",
     left: 0,
     right: 0,
     alignItems: "center",
@@ -144,10 +147,11 @@ const styles = StyleSheet.create({
     fontWeight: Platform.select({ ios: "700", android: "600" }),
     includeFontPadding: false,
     textAlignVertical: "center",
+    letterSpacing: 0.2,
   },
   icon: {
-    width: scale(24),
-    height: scale(24),
+    width: scale(30),
+    height: scale(30),
     resizeMode: "contain",
   },
   placeholder: {
