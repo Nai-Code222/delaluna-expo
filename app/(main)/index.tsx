@@ -107,8 +107,8 @@ export default function HomeScreen() {
   <Animated.View style={[styles.container, { opacity: fade }]}>
     <HeaderNav
       title="Home"
-      leftIconName="person-circle-outline"
-      onLeftPress={goToProfile}
+      rightIconName="person-circle-outline"
+      onRightPress={goToProfile}
     />
 
     {/* 👇 Wrap main content with top offset */}
