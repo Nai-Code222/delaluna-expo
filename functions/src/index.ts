@@ -11,6 +11,10 @@ import {setGlobalOptions} from "firebase-functions";
 import {onRequest} from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
 import { onGeminiResponse } from "./onGeminiResponse";
+export * from "./getConnection";
+export * from "./getSigns";
+export * from "./onGeminiCompatibility";
+
 
 
 // Start writing functions

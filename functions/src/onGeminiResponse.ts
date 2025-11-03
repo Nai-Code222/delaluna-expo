@@ -8,7 +8,7 @@ import * as admin from "firebase-admin";
  * and deletes the raw 'response' field.
  */
 export const onGeminiResponse = onDocumentUpdated(
-  "users/{userId}/compatibility/{docId}",
+   "users/{userId}/connections/{docId}",
   async (event) => {
     // ✅ Ensure Firebase Admin is initialized before anything else
     if (!admin.apps.length) {
