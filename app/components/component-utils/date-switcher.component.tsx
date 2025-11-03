@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "stretch",
     paddingHorizontal: scale(13),
-    paddingVertical: verticalScale(4),
+    paddingVertical: verticalScale(10),
     backgroundColor: "#0D0628",
     gap: scale(3),
   },
@@ -123,8 +123,8 @@ const styles = StyleSheet.create({
   },
   dateText: {
     color: "#FFFFFF",
-    fontSize: moderateScale(14),
-    fontWeight: "500",
+    fontSize: moderateScale(20),
+    fontWeight: "900",
     textAlign: "center",
   },
 });
