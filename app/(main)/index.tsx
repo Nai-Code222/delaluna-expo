@@ -50,7 +50,7 @@ export default function HomeScreen() {
     "Affirmation",
     "Message in a Bottle",
     "Moon Phase",
-    "Today’s Cards",
+    "Todays Cards",
     "New Love",
     "Release",
   ];
@@ -104,45 +104,45 @@ export default function HomeScreen() {
 
 
   return renderBackground(
-  <Animated.View style={[styles.container, { opacity: fade }]}>
-    <HeaderNav
-      title="Home"
-      rightIconName="person-circle-outline"
-      onRightPress={goToProfile}
-    />
+    <Animated.View style={[styles.container, { opacity: fade }]}>
+      <HeaderNav
+        title="Home"
+        rightIconName="person-circle-outline"
+        onRightPress={goToProfile}
+      />
 
-    {/* 👇 Wrap main content with top offset */}
-    <View style={[styles.mainContent, { marginTop: HEADER_HEIGHT }]}>
-      <View style={styles.homeTextBox}>
-        <HomeSignsDisplay
-          sun={userRecord.sunSign}
-          moon={userRecord.moonSign}
-          rising={userRecord.risingSign}
-        />
-        <DateSwitcher>
-          
-        </DateSwitcher>
-      </View>
-
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#fff"
+      {/* 👇 Wrap main content with top offset */}
+      <View style={[styles.mainContent, { marginTop: HEADER_HEIGHT }]}>
+        <View style={styles.homeTextBox}>
+          <HomeSignsDisplay
+            sun={userRecord.sunSign}
+            moon={userRecord.moonSign}
+            rising={userRecord.risingSign}
           />
-        }
-      >
-        <View style={styles.content}>
-          {sectionLabels.map((label, index) => (
-            <HomeTextBox key={index} title={label} style={{ marginBottom: 15 }} />
-          ))}
+
         </View>
-      </ScrollView>
-    </View>
-  </Animated.View>
-);
+        <DateSwitcher>
+
+        </DateSwitcher>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#fff"
+            />
+          }
+        >
+          <View style={styles.content}>
+            {sectionLabels.map((label, index) => (
+              <HomeTextBox key={index} title={label} style={{ marginBottom: 15 }} />
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+    </Animated.View>
+  );
 
 }
 
@@ -173,4 +173,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
   },
+  datePicker:{
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: "15%",
+  }
 });
