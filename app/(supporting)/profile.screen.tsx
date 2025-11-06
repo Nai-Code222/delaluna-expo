@@ -233,11 +233,11 @@ export default function ProfileScreen() {
   return renderBackground(
     <ScrollView
       style={{ flex: 1, width: '100%' }}
-      contentContainerStyle={{ paddingBottom: insets.bottom }} // removed paddingTop
-      contentInsetAdjustmentBehavior="never"                   // prevent iOS auto-inset
-      automaticallyAdjustContentInsets={false}                 // prevent RN auto-inset
-      automaticallyAdjustsScrollIndicatorInsets={false}        // keep indicators aligned
-      showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingTop: Math.max(insets.top, 40) + 60, // guarantees at least 100px top space
+    paddingBottom: insets.bottom + 30,
+  }}
+  showsVerticalScrollIndicator={false}
     >
       <StatusBar style="light" />
       <HeaderNav
@@ -253,9 +253,6 @@ export default function ProfileScreen() {
           <View
             style={styles.profileContentContainer}
           >
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>Your Profile</Text>
-            </View>
             <View style={styles.profileInformationContainer}>
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>First Name</Text>

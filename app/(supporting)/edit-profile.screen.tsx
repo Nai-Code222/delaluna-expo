@@ -562,7 +562,8 @@ export default function EditProfileScreen() {
   // ------------------------------------
 
   return renderBackground(
-    <View ref={screenRef} style={{ flex: 1 }}>
+    <View ref={screenRef} style={{ flex: 1, paddingTop: Math.max(insets.top, 40) + 60,
+      paddingBottom: insets.bottom + 20,  }}>
       <StatusBar barStyle="light-content" backgroundColor="#1C2541" />
       <HeaderNav title="Edit Profile" leftLabel="Cancel" onLeftPress={handleCancel} />
 
