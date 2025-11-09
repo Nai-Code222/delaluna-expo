@@ -1,5 +1,4 @@
-// components/PrimaryButton.tsx
-import React from 'react';
+import React from "react";
 import {
   TouchableOpacity,
   Text,
@@ -9,40 +8,39 @@ import {
   ViewStyle,
   TextStyle,
   StyleProp,
-} from 'react-native';
-import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
+} from "react-native";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
+import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
 
 interface Props extends TouchableOpacityProps {
   title: string;
   style?: StyleProp<ViewStyle>;
 }
 
-export default function PrimaryButton({
-  title,
-  onPress,
-  style,
-  ...rest
-}: Props) {
+export default function PrimaryButton({ title, onPress, style, ...rest }: Props) {
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       style={[styles.wrapper, style]}
       {...rest}
     >
-      {/* 1px gradient border */}
+      {/* Outer gradient border — same tone as GlassButton */}
       <LinearGradient
-        colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0)']}
+        colors={["rgba(255,255,255,0.5)", "rgba(255,255,255,0.07)"]}
+        locations={[0.0115, 0.9891]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
         style={styles.border}
       >
-        {/* Frosted glass panel */}
+        {/* Frosted glass surface */}
         <BlurView intensity={50} tint="dark" style={styles.glass}>
-          {/* Top-to-bottom white→transparent fill */}
+          {/* Subtle vertical highlight */}
           <LinearGradient
-            colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
+            colors={["rgba(255,255,255,0.25)", "rgba(255,255,255,0.05)"]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
           <Text style={styles.text}>{title.toUpperCase()}</Text>
@@ -59,12 +57,12 @@ const styles = StyleSheet.create<{
   text: TextStyle;
 }>({
   wrapper: {
-    width: 327,
-    height: 54,
-    borderRadius: 40,
+    width: scale(327),
+    height: verticalScale(54),
+    borderRadius: scale(40),
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
@@ -76,25 +74,25 @@ const styles = StyleSheet.create<{
   },
   border: {
     flex: 1,
-    borderRadius: 40,
+    borderRadius: scale(40),
     padding: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   glass: {
     flex: 1,
-    borderRadius: 40,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent background
+    borderRadius: scale(40),
+    paddingVertical: verticalScale(12),
+    paddingHorizontal: scale(16),
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
   },
   text: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
+    color: "#FFFFFF",
+    fontSize: moderateScale(16),
+    fontWeight: "700",
     letterSpacing: 1,
-    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowColor: "rgba(0,0,0,0.25)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },

@@ -1,41 +1,48 @@
-import React from 'react';
-import { Pressable, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React from "react";
+import { Pressable, Text, StyleSheet, ViewStyle, TextStyle } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
 
-export const GlassButton: React.FC<{
+interface GlassButtonProps {
   title: string;
   onPress: () => void;
-}> = ({ title, onPress }) => (
-  <Pressable onPress={onPress}>
+}
+
+export const GlassButton: React.FC<GlassButtonProps> = ({ title, onPress }) => (
+  <Pressable onPress={onPress} style={styles.pressable}>
     <LinearGradient
-      colors={['rgba(255,255,255,0.5)', 'rgba(255, 255, 255, 0.07)']}
+      colors={["rgba(255,255,255,0.5)", "rgba(255,255,255,0.07)"]}
       locations={[0.0115, 0.9891]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
-      style={styles.gradient}      // inferred as ViewStyle :contentReference[oaicite:0]{index=0}
+      style={styles.gradient}
     >
-      <Text style={styles.text}>  {/* now inferred as TextStyle :contentReference[oaicite:1]{index=1} */}
-        {title}
-      </Text>
+      <Text style={styles.text}>{title}</Text>
     </LinearGradient>
   </Pressable>
 );
 
 const styles = StyleSheet.create<{
+  pressable: ViewStyle;
   gradient: ViewStyle;
   text: TextStyle;
 }>({
+  pressable: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
   gradient: {
-    width: 200,
-    height: 50,
-    borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: scale(200),
+    height: verticalScale(50),
+    borderRadius: scale(25),
+    alignItems: "center",
+    justifyContent: "center",
   },
   text: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: "#FFFFFF",
+    fontSize: moderateScale(16),
+    fontWeight: "600",
+    letterSpacing: 0.4,
   },
 });
 
