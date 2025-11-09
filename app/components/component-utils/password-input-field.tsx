@@ -1,3 +1,5 @@
+import { scale } from '@/src/utils/responsive';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState, forwardRef } from 'react';
 import {
   View,
@@ -18,6 +20,8 @@ export type PasswordInputFieldProps = TextInputProps & {
   inputStyle?: StyleProp<TextStyle>;       // text style only
   togglePercent?: number;                  // 0..1 (default 0.25)
 };
+
+
 
 const PasswordInputField = forwardRef<TextInput, PasswordInputFieldProps>(
   ({ containerStyle, style, inputStyle, secureTextEntry, togglePercent = 0.25, ...rest }, ref) => {
@@ -57,7 +61,18 @@ const PasswordInputField = forwardRef<TextInput, PasswordInputFieldProps>(
             accessibilityRole="button"
             accessibilityLabel={visible ? 'Hide password' : 'Show password'}
           >
-            <Text style={styles.toggleText}>{visible ? 'Hide' : 'Show'}</Text>
+            <Text style={styles.toggleText}>{
+            visible ? <Ionicons
+                    name="eye"
+                    size={scale(18)}
+                    color= "#FFFFFF"
+                  /> 
+            : <Ionicons
+                    name="eye-off"
+                    size={scale(18)}
+                    color= "#FFFFFF"
+                  /> }
+                  </Text>
           </TouchableOpacity>
         </View>
       </View>
