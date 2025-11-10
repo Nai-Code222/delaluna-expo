@@ -1,8 +1,10 @@
 import * as functions from "firebase-functions";
 import { db, admin } from "./initAdmin";
+import * as logger from "firebase-functions/logger";
 
-
-// Define the shape of the input data
+/* -------------------------------------------------
+   🔮 TYPES
+---------------------------------------------------*/
 interface UserProfile {
   firstName: string;
   lastName: string;
@@ -26,12 +28,9 @@ interface ConnectionInput {
   relationshipType?: string;
 }
 
-/**
- * Upserts a connection under:
- * users/{userId}/connections/{connectionId}
- * Document ID format:
- * "first_last-first_last"
- */
+/* -------------------------------------------------
+   🪩 upsertConnection
+---------------------------------------------------*/
 export const upsertConnection = functions.https.onCall(
   async (request: functions.https.CallableRequest<ConnectionInput>) => {
     try {
@@ -40,11 +39,11 @@ export const upsertConnection = functions.https.onCall(
       if (!userId || !userProfile || !partnerProfile) {
         throw new functions.https.HttpsError(
           "invalid-argument",
-          "Missing required parameters."
+          "Missing required parameters: userId, userProfile, partnerProfile"
         );
       }
 
-      // Format names for the ID: jeanai_roberts-ferdie_smith
+      // 🧩 Generate connection ID (first_last-first_last)
       const formatName = (first: string, last: string) =>
         `${first.trim().toLowerCase().replace(/\s+/g, "_")}_${last
           .trim()
@@ -63,8 +62,12 @@ export const upsertConnection = functions.https.onCall(
         .doc(connectionId);
 
       const connectionData = {
-        userName: userProfile.firstName,
-        partnerName: partnerProfile.firstName,
+        type: "compatibility",
+        status: "pending",
+        userFirstName: userProfile.firstName,
+        userLastName: userProfile.lastName,
+        partnerFirstName: partnerProfile.firstName,
+        partnerLastName: partnerProfile.lastName,
         userSun: userProfile.sun,
         userMoon: userProfile.moon,
         userRising: userProfile.rising,
@@ -75,23 +78,43 @@ export const upsertConnection = functions.https.onCall(
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
 
+      // 🧠 Check for existing connection
       const existingDoc = await ref.get();
-
       if (existingDoc.exists) {
+        const existingData = existingDoc.data();
+        const hasChanges = JSON.stringify(existingData) !== JSON.stringify(connectionData);
+
+        if (!hasChanges) {
+          logger.info(`⚠️ No changes detected for connection ${connectionId}`);
+          return { success: true, connectionId, partner: partnerProfile };
+        }
+
         await ref.update(connectionData);
-        console.log(`🔁 Updated existing connection: ${connectionId}`);
+        logger.info(`🔁 Updated existing connection: ${connectionId}`);
       } else {
         await ref.set({
           ...connectionData,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
-        console.log(`🌟 Created new connection: ${connectionId}`);
+        logger.info(`🌟 Created new connection: ${connectionId}`);
       }
 
-      return { success: true, connectionId };
-    } catch (error) {
-      console.error("❌ Error in upsertConnection:", error);
-      throw new functions.https.HttpsError("internal", "Failed to upsert connection");
+      // ✅ Return only partner’s signs to the frontend
+      return {
+        success: true,
+        connectionId,
+        partner: {
+          sun: partnerProfile.sun,
+          moon: partnerProfile.moon,
+          rising: partnerProfile.rising,
+        },
+      };
+    } catch (error: any) {
+      logger.error("❌ Error in upsertConnection:", error);
+      throw new functions.https.HttpsError(
+        "internal",
+        error.message || "Failed to upsert connection"
+      );
     }
   }
 );

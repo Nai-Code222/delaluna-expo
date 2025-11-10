@@ -1,91 +1,127 @@
-import { onCall, CallableRequest } from "firebase-functions/v2/https";
-import { FieldValue } from "firebase-admin/firestore";
-import * as admin from "firebase-admin";
+// functions/src/getConnection.ts
+import { onCall } from "firebase-functions/v2/https";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import * as logger from "firebase-functions/logger";
+import { buildCompatibilityPrompt } from "./utils/buildCompatibilityPrompt";
+import { getSignsCore } from "./utils/getSignsCore"; // 👈 helper that reuses your Swiss ephemeris logic
 
-const db = admin.firestore();
+export const getConnection = onCall(async (req) => {
+  const db = getFirestore();
+  const { userId, isMe, relationshipType, firstPerson, secondPerson } = req.data;
 
-interface PersonInput {
-  firstName: string;
-  lastName: string;
-  day: number;
-  month: number;
-  year: number;
-  hour: number;
-  min: number;
-  lat: number;
-  lon: number;
-  tzone: number;
-}
+  try {
+    if (!userId || !firstPerson || !secondPerson)
+      throw new Error("Missing required fields");
 
-interface GetConnectionRequest {
-  userId: string;
-  isMe: boolean;
-  relationshipType: "consistent" | "it’s complicated" | "toxic";
-  firstPerson: PersonInput;
-  secondPerson: PersonInput;
-}
+    const formatName = (first: string, last: string) =>
+      `${first.trim().toLowerCase().replace(/\s+/g, "_")}_${last
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_")}`;
 
-export const getConnection = onCall(
-  async (request: CallableRequest<GetConnectionRequest>) => {
-    try {
-      const { userId, firstPerson, secondPerson, relationshipType } =
-        request.data;
+    const connectionId = `${formatName(
+      firstPerson["First Name"],
+      firstPerson["Last Name"]
+    )}-${formatName(secondPerson["First Name"], secondPerson["Last Name"])}`;
 
-      if (!userId) throw new Error("Missing userId");
+    // 🧩 STEP 1: Ensure both people have signs
+    const ensureSigns = async (p: Record<string, any>) => {
+      const hasSigns =
+        p["Sun Sign"] && p["Moon Sign"] && p["Rising Sign"];
+      if (hasSigns) return p;
 
-      const normalize = (s: string) =>
-        (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const { day, month, year, hour, min, lat, lon, tzone } = p;
+      if (!day || !month || !year || lat === undefined || lon === undefined)
+        throw new Error(`Incomplete birth data for ${p["First Name"]}`);
 
-      const firstKey = `${normalize(firstPerson.firstName)}_${normalize(firstPerson.lastName)}`;
-      const secondKey = `${normalize(secondPerson.firstName)}_${normalize(secondPerson.lastName)}`;
-
-      // 💡 Deterministic ID, alphabetical to avoid duplicates both ways
-      const connectionId = [firstKey, secondKey].sort().join("-");
-
-      const ref = db.doc(`users/${userId}/connections/${connectionId}`);
-
-      // 🔍 Check if it already exists
-      const existingSnap = await ref.get();
-      if (existingSnap.exists) {
-        const existing = existingSnap.data();
-        console.log(`⚠️ Connection already exists → ${connectionId}`);
-        return {
-          connectionId,
-          success: true,
-          message: "Existing connection found",
-          existing,
-        };
-      }
-
-      // 🧩 Build new connection doc
-      const connectionDoc = {
-        type: "compatibility",
-        createdAt: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp(),
-        status: "pending",
-        relationshipType,
-        firstPerson,
-        secondPerson,
-        prompt: null,
-        response: null,
-        result: null,
-      };
-
-      // 📝 Create the new connection doc safely
-      await ref.set(connectionDoc, { merge: true });
-
-      console.log(`✅ Connection created → ${connectionId}`);
+      const signs = await getSignsCore({
+        day: Number(day),
+        month: Number(month),
+        year: Number(year),
+        hour: Number(hour) || 12,
+        min: Number(min) || 0,
+        lat: Number(lat),
+        lon: Number(lon),
+        tzone: Number(tzone) || -5,
+      });
 
       return {
-        connectionId,
-        success: true,
-        message: "Connection created successfully",
+        ...p,
+        "Sun Sign": signs.sunSign,
+        "Moon Sign": signs.moonSign,
+        "Rising Sign": signs.risingSign,
       };
-    } catch (error: any) {
-      console.error("❌ Error in getConnection:", error);
-      throw new Error(
-        error.message || "Failed to create or update connection"
-      );
+    };
+
+    const userPerson = await ensureSigns(firstPerson);
+    const partnerPerson = await ensureSigns(secondPerson);
+
+    // 🧩 STEP 2: Build Gemini prompt
+    const prompt = buildCompatibilityPrompt({
+      userSun: userPerson["Sun Sign"],
+      userMoon: userPerson["Moon Sign"],
+      userRising: userPerson["Rising Sign"],
+      partnerSun: partnerPerson["Sun Sign"],
+      partnerMoon: partnerPerson["Moon Sign"],
+      partnerRising: partnerPerson["Rising Sign"],
+      relationshipType,
+    });
+
+    // 🧾 STEP 3: Combined document structure
+    const connectionData = {
+      connectionId,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+      relationshipType: relationshipType || "consistent",
+      type: "compatibility",
+      status: { state: "pending", type: "compatibility" },
+      prompt,
+      firstPerson: {
+        firstName: userPerson["First Name"],
+        lastName: userPerson["Last Name"],
+        sun: userPerson["Sun Sign"],
+        moon: userPerson["Moon Sign"],
+        rising: userPerson["Rising Sign"],
+      },
+      secondPerson: {
+        firstName: partnerPerson["First Name"],
+        lastName: partnerPerson["Last Name"],
+        sun: partnerPerson["Sun Sign"],
+        moon: partnerPerson["Moon Sign"],
+        rising: partnerPerson["Rising Sign"],
+      },
+    };
+
+    // 🧩 STEP 4: Write or update connection
+    const ref = db.doc(`users/${userId}/connections/${connectionId}`);
+    const snap = await ref.get();
+
+    if (snap.exists) {
+      await ref.update(connectionData);
+      logger.info(`🔁 Updated existing connection: ${connectionId}`);
+    } else {
+      await ref.set(connectionData);
+      logger.info(`🌟 Created new connection: ${connectionId}`);
     }
+
+    // 🪩 STEP 5: Return safe info to frontend
+    return {
+      success: true,
+      connectionId,
+      message: "Signs verified and connection ready for Gemini",
+      userSigns: {
+        sun: userPerson["Sun Sign"],
+        moon: userPerson["Moon Sign"],
+        rising: userPerson["Rising Sign"],
+      },
+      partnerSigns: {
+        sun: partnerPerson["Sun Sign"],
+        moon: partnerPerson["Moon Sign"],
+        rising: partnerPerson["Rising Sign"],
+      },
+    };
+  } catch (err: any) {
+    logger.error("❌ Error in getConnection:", err);
+    throw new Error(err.message || "Failed to create or update connection");
   }
-);
+});

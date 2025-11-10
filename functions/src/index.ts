@@ -1,20 +1,24 @@
 /**
  * 🪩 Delaluna Cloud Functions Entry Point
- * Ensures Firebase Admin is initialized first
- * Then exports all callable and trigger-based functions.
+ * Ensures Firebase Admin is initialized before anything else.
+ * Then re-exports all callable and trigger-based functions.
  */
 
 import * as admin from "firebase-admin";
 import { setGlobalOptions } from "firebase-functions";
+import * as logger from "firebase-functions/logger";
 
-
-// ✅ Initialize Admin SDK safely before anything else
+/* -------------------------------------------------
+   🔥 Initialize Firebase Admin SDK
+---------------------------------------------------*/
 if (!admin.apps.length) {
   admin.initializeApp();
-  console.log("🔥 Firebase Admin initialized (index.ts)");
+  logger.info("🔥 Firebase Admin initialized (index.ts)");
 }
 
-// ✅ Global default settings for all deployed functions
+/* -------------------------------------------------
+   ⚙️ Global Runtime Configuration
+---------------------------------------------------*/
 setGlobalOptions({
   region: "us-central1",
   maxInstances: 10,
@@ -22,15 +26,28 @@ setGlobalOptions({
   memory: "256MiB",
 });
 
-// ✅ Export individual functions
+/* -------------------------------------------------
+   📦 Function Exports
+---------------------------------------------------*/
+
+// 🌞 Core Astrology
 export * from "./getSigns";
+
+// 💫 Compatibility & Connections
 export * from "./getConnection";
 export * from "./upsertConnection";
+export * from "./deleteConnection";
+
+// 🪄 Gemini AI Handlers
 export * from "./onGeminiCompatibility";
 export * from "./onGeminiResponse";
 
-// Export deleteConnection explicitly
-export { deleteConnection } from "./deleteConnection";
-
-// ✅ Optional: direct exports for testing / Postman
+// 🌐 Optional HTTP endpoints for Postman testing
 export { getSigns, getSignsHttp } from "./getSigns";
+
+/* -------------------------------------------------
+   🧭 Notes:
+   - Admin is initialized *once* globally.
+   - All functions inherit region/timeouts from setGlobalOptions().
+   - Each function file is fully modular, so deploys remain incremental.
+---------------------------------------------------*/

@@ -1,15 +1,13 @@
-// functions/src/onGeminiCompatibility.ts
-
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { FieldValue } from "firebase-admin/firestore";
 import { CompatibilityScores } from "./models/connection.model";
 import { calculateOverallCompatibility } from "./utils/calculateOverallCompatibility";
-import { db, admin } from "./initAdmin";
+import { db } from "./initAdmin";
+import * as logger from "firebase-functions/logger";
 
 /**
  * 🪩 onGeminiCompatibility
- * Parses Gemini’s compatibility JSON → creates clean Firestore result.
- * Runs after the Gemini extension writes a `response` field.
+ * Cleans Gemini’s response → saves structured result + score breakdown.
  */
 export const onGeminiCompatibility = onDocumentUpdated(
   "users/{userId}/connections/{docId}",
@@ -18,53 +16,51 @@ export const onGeminiCompatibility = onDocumentUpdated(
     const after = event.data?.after?.data();
     const docRef = event.data?.after?.ref;
 
-    // ✅ Guard: Make sure we actually have a doc to work with
+    // 🛑 Guard: Ensure document exists
     if (!docRef) {
-      console.warn("⚠️ No document reference found. Skipping...");
+      logger.warn("⚠️ No document reference found — skipping trigger.");
       return;
     }
 
-    // 🚫 Skip if no new response or no change
-    if (!after || before?.response === after.response) return;
-    if (!after.response) return;
+    // 🛑 Skip redundant triggers
+    if (!after?.response || before?.response === after.response) return;
 
     try {
-      console.log(`🔮 Processing Gemini response for ${docRef.path}`);
+      logger.info(`🔮 Processing Gemini response for → ${docRef.path}`);
 
-      // 🧠 Clean malformed JSON before parsing
-      const clean = (str: string) =>
-        str
-          .replace(/^```(?:json)?/i, "")      // remove starting ``` or ```json
-          .replace(/```$/, "")                // remove ending ```
-          .replace(/[\u201C\u201D\u2018\u2019]/g, '"') // smart/single quotes → "
+      // 🧽 Clean common Gemini formatting issues
+      const cleanJsonString = (raw: string) =>
+        raw
+          .replace(/^```(?:json)?/i, "")       // remove starting ``` or ```json
+          .replace(/```$/i, "")                // remove trailing ```
+          .replace(/[\u201C\u201D]/g, '"')     // smart quotes → "
+          .replace(/[\u2018\u2019]/g, "'")     // single curly quotes → '
           .replace(/“|”/g, '"')
           .replace(/‘|’/g, "'")
-          .replace(/,\s*}/g, "}")
-          .replace(/,\s*]/g, "]")
+          .replace(/(\r\n|\n|\r)/gm, " ")      // normalize line breaks
+          .replace(/,\s*([}\]])/g, "$1")       // trailing commas
           .trim();
 
       let parsed: any;
       try {
-        parsed = JSON.parse(clean(after.response));
+        parsed = JSON.parse(cleanJsonString(after.response));
       } catch (err) {
-        console.error("⚠️ JSON parse error:", err);
-        throw new Error("Failed to parse Gemini JSON — malformed format or code fences.");
+        logger.error("⚠️ Gemini JSON parse error:", err);
+        throw new Error("Failed to parse Gemini JSON — malformed format or code fences present.");
       }
 
-      // 🧩 Extract scores safely
+      // 🧩 Extract compatibility scores safely
       const scores: CompatibilityScores =
         parsed?.TypeCompatibility_Report?.Scores ||
         parsed?.scores ||
         {};
 
-      // 🧩 Normalize relationshipType
+      // 🧠 Normalize relationship type
       let relationshipType =
         (after.relationshipType as string)?.toLowerCase() || "consistent";
-
       if (relationshipType === "it’s complicated") relationshipType = "complicated";
-      if (!["consistent", "complicated", "toxic"].includes(relationshipType)) {
+      if (!["consistent", "complicated", "toxic"].includes(relationshipType))
         relationshipType = "consistent";
-      }
 
       // 💫 Calculate overall compatibility
       const overallCompatibility = calculateOverallCompatibility(
@@ -72,23 +68,23 @@ export const onGeminiCompatibility = onDocumentUpdated(
         relationshipType as "consistent" | "it’s complicated" | "toxic"
       );
 
-      // 🧾 Build structured result object
+      // 🪞 Build structured result
       const result = {
         title: parsed.title ?? "Compatibility Report",
         summary:
           parsed?.TypeCompatibility_Report?.Summary ??
           parsed?.summary ??
-          "No summary available.",
+          "No summary provided.",
         closing:
           parsed?.TypeCompatibility_Report?.Closing ??
           parsed?.closing ??
-          "No closing message.",
+          "No closing message provided.",
         scores,
         overallCompatibility,
         createdAt: new Date().toISOString(),
       };
 
-      // 📝 Write structured result → mark complete
+      // 📝 Write structured result → mark as complete
       await docRef.set(
         {
           result,
@@ -97,14 +93,13 @@ export const onGeminiCompatibility = onDocumentUpdated(
         },
         { merge: true }
       );
+      logger.info(`✅ Compatibility result saved → ${docRef.path}`);
 
-      console.log(`✅ Result saved → ${docRef.path}`);
-
-      // 🧹 Remove raw Gemini response
+      // 🧹 Remove raw Gemini response (to avoid reprocessing)
       await docRef.update({ response: FieldValue.delete() });
 
-      // 📊 Save each score to subcollection for analytics
-      if (scores && typeof scores === "object") {
+      // 📊 Save each score to subcollection (for analytics dashboards)
+      if (scores && typeof scores === "object" && Object.keys(scores).length) {
         const batch = db.batch();
         const scoresRef = docRef.collection("scores");
 
@@ -119,12 +114,12 @@ export const onGeminiCompatibility = onDocumentUpdated(
         }
 
         await batch.commit();
-        console.log(`📈 Scores saved → ${docRef.path}/scores`);
+        logger.info(`📈 Score breakdown saved → ${docRef.path}/scores`);
       }
     } catch (error: any) {
-      console.error(`❌ Error in onGeminiCompatibility:`, error);
+      logger.error("❌ Error in onGeminiCompatibility:", error);
 
-      // fallback reference if docRef is missing
+      // Fallback ref (in case docRef somehow failed)
       const fallbackRef =
         event.data?.after?.ref ??
         db.doc(`users/${event.params.userId}/connections/${event.params.docId}`);
@@ -133,7 +128,7 @@ export const onGeminiCompatibility = onDocumentUpdated(
         {
           status: "error",
           parseError: {
-            message: error.message || "Unknown error during parsing",
+            message: error.message || "Unknown parsing error",
             at: FieldValue.serverTimestamp(),
           },
         },
