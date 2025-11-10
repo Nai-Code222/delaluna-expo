@@ -154,10 +154,7 @@ export default function ConnectionsScreen() {
   };
 
   const handleOpenConnection = (connectionId: string) => {
-    router.push({
-      pathname: "../(supporting)/single-connection-view.screen",
-      params: { connectionId },
-    });
+    router.replace("../(supporting)/single-connection-view.screen");
   };
 
   if (loading) {

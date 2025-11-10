@@ -7,6 +7,7 @@ import TitleText from '@/app/components/typography/title-text';
 import PrimaryButton from '@/app/components/buttons/primary-button-component';
 import SecondaryButton from '@/app/components/buttons/secondary-button-component';
 import ButtonText from '@/app/components/typography/button-text';
+import { StatusBar } from 'expo-status-bar';
 
 export default function Welcome() {
   const { width } = useWindowDimensions();
@@ -16,6 +17,9 @@ export default function Welcome() {
 
   return (
     <View style={styles.container}>
+      <StatusBar>
+        
+      </StatusBar>
       {/* background image */}
       <ImageBackground
         source={require('../assets/images/background.jpg')}

@@ -1,8 +1,8 @@
-import 'intl';
-import 'intl/locale-data/jsonp/en';
+import "intl";
+import "intl/locale-data/jsonp/en";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   TouchableOpacity,
@@ -15,25 +15,21 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Alert,
-} from 'react-native';
-import { BlurView } from 'expo-blur';
-import { useRouter } from 'expo-router';
-import { UserCredential, sendEmailVerification, updateProfile } from 'firebase/auth';
-import { StatusBar } from 'expo-status-bar';
-import { verticalScale, scale, moderateScale } from '@/src/utils/responsive';
-import { useAuth } from '../backend/auth-context';
-import LoadingScreen from '../components/component-utils/loading-screen';
-import ChatFlow, { StepConfig, FinalSignupPayload } from '../components/sign-up/chat-flow';
-import { UserRecord } from '../model/user-record';
-import signUp from '../services/auth.service';
-import { createUserDoc } from '../services/user.service';
-import { getAstroSigns } from '../services/astrology-api.service';
+} from "react-native";
+import { BlurView } from "expo-blur";
+import { useRouter } from "expo-router";
+import { UserCredential, sendEmailVerification, updateProfile } from "firebase/auth";
+import { StatusBar } from "expo-status-bar";
+import { verticalScale, scale, moderateScale } from "@/src/utils/responsive";
+import { useAuth } from "../backend/auth-context";
+import LoadingScreen from "../components/component-utils/loading-screen";
+import ChatFlow, { StepConfig, FinalSignupPayload } from "../components/sign-up/chat-flow";
+import { UserRecord } from "../model/user-record";
+import signUp from "../services/auth.service";
+import { createUserDoc } from "../services/user.service";
+import { getAstroSigns } from "../services/astrology-api.service";
 
-
-
-
-// ----- Defaults for "I don't know" -----
-const FALLBACK_PLACE_LABEL = 'Greenwich, London, United Kingdom';
+const FALLBACK_PLACE_LABEL = "Greenwich, London, United Kingdom";
 const FALLBACK_LAT = 51.4779;
 const FALLBACK_LON = 0.0015;
 
@@ -45,28 +41,28 @@ export default function SignUpChatScreen() {
   const { user, initializing } = useAuth();
   const [confirmVisible, setConfirmVisible] = useState(false);
   const { width } = useWindowDimensions();
-  const modalCardWidth = width > 640 ? '55%' : width > 480 ? '70%' : '86%';
+  const modalCardWidth = width > 640 ? "55%" : width > 480 ? "70%" : "86%";
   const [headerHeight, setHeaderHeight] = useState(0);
 
   useEffect(() => {
     if (!initializing && user) {
-      router.replace('/(main)');
+      router.replace("/(main)");
     }
   }, [initializing, user]);
 
   const steps: StepConfig[] = [
-    { key: 'firstName', renderQuestion: () => `Hey, I’m glad you’re here! I have to ask a few quick questions for astrological reasons. Let’s start with some basic info to get you set up. \n\n What’s your name?`, inputType: 'text', placeholder: 'First name…' },
-    { key: 'lastName', renderQuestion: (answers) => `Alright, ${answers.firstName || '[First Name]'}! And, what is your last name?`, inputType: 'text', placeholder: 'Last name…' },
-    { key: 'pronouns', renderQuestion: (answers) => `What are your pronouns, ${answers.firstName || '[First Name]'}?`, inputType: 'choices', choices: ['She/Her', 'He/Him', 'They/Them', 'Non Binary'], placeholder: 'Pronouns…' },
-    { key: 'birthday', renderQuestion: () => `I need to calculate your birth chart. It’s basically a map of the planets and their coordinates at the time you were born. What is your birthdate?`, inputType: 'date', placeholder: 'Birth date…' },
-    { key: 'birthtime', renderQuestion: () => `Would you happen to know what time you were born?`, inputType: 'time', placeholder: 'Birth time…' },
-    { key: 'placeOfBirth', renderQuestion: () => `…and do you know where you were born?`, inputType: 'location', placeholder: 'Birth place…' },
-    { key: 'email', renderQuestion: () => `What’s your email?`, inputType: 'email', placeholder: 'Email…' },
-    { key: 'password', renderQuestion: () => `Alright, that’s it! The last thing I need you to do is create a password.`, inputType: 'secure', placeholder: 'Password…' },
-    { key: 'final', renderQuestion: () => `Your secrets are safe with us 🔐`, inputType: 'final' },
+    { key: "firstName", renderQuestion: () => `Hey, I’m glad you’re here! I have to ask a few quick questions for astrological reasons. Let’s start with some basic info to get you set up. \n\n What’s your name?`, inputType: "text", placeholder: "First name…" },
+    { key: "lastName", renderQuestion: (answers) => `Alright, ${answers.firstName || "[First Name]"}! And, what is your last name?`, inputType: "text", placeholder: "Last name…" },
+    { key: "pronouns", renderQuestion: (answers) => `What are your pronouns, ${answers.firstName || "[First Name]"}?`, inputType: "choices", choices: ["She/Her", "He/Him", "They/Them", "Non Binary"], placeholder: "Pronouns…" },
+    { key: "birthday", renderQuestion: () => `I need to calculate your birth chart. It’s basically a map of the planets and their coordinates at the time you were born. What is your birthdate?`, inputType: "date", placeholder: "Birth date…" },
+    { key: "birthtime", renderQuestion: () => `Would you happen to know what time you were born?`, inputType: "time", placeholder: "Birth time…" },
+    { key: "placeOfBirth", renderQuestion: () => `…and do you know where you were born?`, inputType: "location", placeholder: "Birth place…" },
+    { key: "email", renderQuestion: () => `What’s your email?`, inputType: "email", placeholder: "Email…" },
+    { key: "password", renderQuestion: () => `Alright, that’s it! The last thing I need you to do is create a password.`, inputType: "secure", placeholder: "Password…" },
+    { key: "final", renderQuestion: () => `Your secrets are safe with us 🔐`, inputType: "final" },
   ];
 
-  const setStepToKey = (key: StepConfig['key']) => {
+  const setStepToKey = (key: StepConfig["key"]) => {
     const index = steps.findIndex((s) => s.key === key);
     if (index !== -1) setStep(index);
   };
@@ -98,20 +94,15 @@ export default function SignUpChatScreen() {
       } = answers;
 
       const email = String(rawEmail ?? "").trim();
-
-      // Create Firebase user
       userCred = await signUp(email, password);
       const user = userCred.user;
       const uid = user.uid;
 
-      // Create display name
       const displayName = `${firstName?.trim()} ${lastName?.trim()}`
         .replace(/\s+/g, " ")
         .replace(/\b\w/g, (char) => char.toUpperCase());
-
       await updateProfile(user, { displayName });
 
-      // uild astro params
       const mm = rawBirthdayDate.getMonth() + 1;
       const dd = rawBirthdayDate.getDate();
       const yyyy = rawBirthdayDate.getFullYear();
@@ -122,7 +113,6 @@ export default function SignUpChatScreen() {
       const params = { day: dd, month: mm, year: yyyy, hour: hh24, min: mn, lat: birthLat, lon: birthLon, tzone: offset };
       const { sunSign, moonSign, risingSign } = await getAstroSigns(params);
 
-      // 4️⃣ Build full user record
       const userRecord: UserRecord = {
         id: uid,
         firstName,
@@ -150,7 +140,6 @@ export default function SignUpChatScreen() {
         astroParams: params,
       };
 
-      // Try Firestore write (retry once)
       let docCreated = false;
       for (let attempt = 1; attempt <= 2; attempt++) {
         try {
@@ -158,24 +147,18 @@ export default function SignUpChatScreen() {
           docCreated = true;
           break;
         } catch (err) {
-          console.warn(`⚠️ Firestore write failed (attempt ${attempt})`, err);
+          console.warn(`Firestore write failed (attempt ${attempt})`, err);
           if (attempt < 2) await new Promise((res) => setTimeout(res, 500));
         }
       }
 
       if (!docCreated) {
-        console.error("❌ Could not create Firestore doc — will retry later.");
+        console.error("Could not create Firestore doc — will retry later.");
         await logSignupError(email, uid, new Error("UserDoc creation failed"), userRecord);
-
-        Alert.alert(
-          "Syncing Profile",
-          "Your account was created successfully, but we’re still finishing setup in the background."
-        );
-        // Retry silently in background
+        Alert.alert("Syncing Profile", "Your account was created successfully, but setup is finishing in the background.");
         retryUserDocCreation(uid, userRecord);
       }
 
-      // 6️⃣ Send to home WITH userRecord
       setIsLoading(true);
       let currentProgress = 0;
       const interval = setInterval(() => {
@@ -186,66 +169,52 @@ export default function SignUpChatScreen() {
           sendEmailVerification(user);
           router.replace({
             pathname: "/(main)",
-            params: { user: JSON.stringify(userRecord) }, // 👈 pass full user record
+            params: { user: JSON.stringify(userRecord) },
           });
         }
       }, 200);
-
     } catch (e: any) {
-      console.warn("❌ Signup failed:", e);
+      console.warn("Signup failed:", e);
       await logSignupError(answers.email, userCred?.user?.uid, e);
       Alert.alert("Signup Error", e?.message || "We hit a snag creating your account. Please try again.");
     }
   };
 
-  // Retry background doc creation
-const retryUserDocCreation = async (uid: string, userRecord: UserRecord) => {
-  try {
-    console.log("🔁 Retrying user doc creation...");
-    await createUserDoc(uid, userRecord);
-    console.log("✅ User doc created successfully on retry.");
-  } catch (err) {
-    console.warn("⚠️ Retry failed:", err);
-    await logSignupError(userRecord.email, uid, err, userRecord);
-  }
-};
-
-// Log signup errors
-const logSignupError = async (email: string, uid: string | undefined, error: any, payload?: Record<string, any>) => {
-  const isDev = __DEV__ || process.env.NODE_ENV !== "production";
-  try {
-    const docData: any = {
-      email,
-      uid: uid ?? null,
-      message: error?.message ?? String(error),
-      code: error?.code ?? "unknown",
-      createdAt: serverTimestamp(),
-    };
-    if (isDev) {
-      docData.payload = payload;
-      docData.stack = error?.stack;
+  const retryUserDocCreation = async (uid: string, userRecord: UserRecord) => {
+    try {
+      await createUserDoc(uid, userRecord);
+    } catch (err) {
+      await logSignupError(userRecord.email, uid, err, userRecord);
     }
-    await setDoc(doc(db, "signup_errors", `${uid ?? email}-${Date.now()}`), docData);
-  } catch (err) {
-    console.warn("⚠️ Failed to log signup error:", err);
-  }
-};
+  };
 
-  // Cancel flow
+  const logSignupError = async (email: string, uid: string | undefined, error: any, payload?: Record<string, any>) => {
+    try {
+      const docData: any = {
+        email,
+        uid: uid ?? null,
+        message: error?.message ?? String(error),
+        code: error?.code ?? "unknown",
+        createdAt: serverTimestamp(),
+      };
+      await setDoc(doc(db, "signup_errors", `${uid ?? email}-${Date.now()}`), docData);
+    } catch (err) {
+      console.warn("Failed to log signup error:", err);
+    }
+  };
+
   const onCancelPress = () => {
-    if (step !== 0) {
-      setConfirmVisible(true);
-    } else {
+    if (step !== 0) setConfirmVisible(true);
+    else {
       setConfirmVisible(false);
-      setTimeout(() => router.replace('/welcome'), 0);
+      setTimeout(() => router.replace("/welcome"), 0);
     }
   };
 
   const confirmCancel = () => {
     setConfirmVisible(false);
-    setTimeout(() => router.replace('/welcome'), 0);
+    setTimeout(() => router.replace("/welcome"), 0);
   };
-  const dismissCancel = () => setConfirmVisible(false);
 
   if (isLoading || initializing) {
     return <LoadingScreen progress={progress} message="Reading your stars..." />;
@@ -253,7 +222,7 @@ const logSignupError = async (email: string, uid: string | undefined, error: any
 
   return (
     <ImageBackground
-      source={require('../assets/images/main-background.png')}
+      source={require("../assets/images/main-background.png")}
       style={styles.background}
       resizeMode="cover"
     >
@@ -261,10 +230,7 @@ const logSignupError = async (email: string, uid: string | undefined, error: any
         <View style={{ flex: 1 }}>
           <StatusBar style="light" translucent backgroundColor="transparent" />
           <BlurView intensity={10} tint="dark" style={styles.overlay}>
-            <View
-              style={styles.header}
-              onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
-            >
+            <View style={styles.header} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
               {step > 0 ? (
                 <TouchableOpacity onPress={() => { Keyboard.dismiss(); setStep(step - 1); }}>
                   <Text style={styles.goBackText}>← Go Back</Text>
@@ -290,14 +256,14 @@ const logSignupError = async (email: string, uid: string | undefined, error: any
         </View>
       </TouchableWithoutFeedback>
 
-      <Modal visible={confirmVisible} transparent animationType="fade" onRequestClose={dismissCancel}>
+      <Modal visible={confirmVisible} transparent animationType="fade" onRequestClose={() => setConfirmVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { width: modalCardWidth }]}>
             <Text style={styles.modalTitle}>Discard signup?</Text>
             <Text style={styles.modalBody}>Your answers will be lost. You can start again anytime.</Text>
 
             <View style={styles.modalActions}>
-              <TouchableOpacity onPress={dismissCancel} style={[styles.modalBtn, styles.btnGhost]}>
+              <TouchableOpacity onPress={() => setConfirmVisible(false)} style={[styles.modalBtn, styles.btnGhost]}>
                 <Text style={styles.btnGhostText}>Keep editing</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={confirmCancel} style={[styles.modalBtn, styles.btnDanger]}>
@@ -315,54 +281,57 @@ const styles = StyleSheet.create({
   background: { flex: 1 },
   overlay: {
     flex: 1,
-    paddingTop: verticalScale(Platform.OS === 'ios' ? 60 : 40),
-    paddingHorizontal: scale(0),
-    width: '100%',
+    paddingTop: verticalScale(Platform.OS === "ios" ? 60 : 40),
+    paddingHorizontal: scale(4),
+    width: "100%",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: scale(16),
     marginBottom: verticalScale(8),
-    position: 'relative',
   },
-  goBackText: { color: '#6FFFE9', fontSize: moderateScale(18), fontWeight: '500' },
-  cancelText: { color: '#6FFFE9', fontSize: moderateScale(18), fontWeight: '500' },
-
+  goBackText: { color: "#6FFFE9", fontSize: moderateScale(18), fontWeight: "500" },
+  cancelText: { color: "#6FFFE9", fontSize: moderateScale(18), fontWeight: "500" },
+  chatFlowWrapper: { flex: 1, width: "100%", alignSelf: "stretch" },
   modalOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: scale(12),
   },
   modalCard: {
     borderRadius: scale(14),
     paddingVertical: verticalScale(16),
     paddingHorizontal: scale(16),
-    backgroundColor: 'rgba(20,20,24,0.92)',
+    backgroundColor: "rgba(20,20,24,0.92)",
     maxWidth: scale(500),
   },
   modalTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: moderateScale(18),
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: verticalScale(6),
-    textAlign: 'center',
+    textAlign: "center",
   },
-  modalBody: { color: '#cfd3dc', fontSize: moderateScale(14), textAlign: 'center', marginBottom: verticalScale(16) },
-  modalActions: { flexDirection: 'row', gap: scale(12), justifyContent: 'center' },
+  modalBody: {
+    color: "#cfd3dc",
+    fontSize: moderateScale(14),
+    textAlign: "center",
+    marginBottom: verticalScale(16),
+  },
+  modalActions: { flexDirection: "row", gap: scale(12), justifyContent: "center" },
   modalBtn: {
     paddingVertical: verticalScale(10),
     paddingHorizontal: scale(14),
     borderRadius: scale(10),
     minWidth: scale(140),
-    alignItems: 'center',
+    alignItems: "center",
   },
-  btnGhost: { backgroundColor: 'rgba(255,255,255,0.08)' },
-  btnGhostText: { color: '#e6e9f0', fontWeight: '600' },
-  btnDanger: { backgroundColor: '#ff4d4f' },
-  btnDangerText: { color: '#fff', fontWeight: '700' },
-  chatFlowWrapper: { flex: 1, width: '100%', alignSelf: 'stretch' },
+  btnGhost: { backgroundColor: "rgba(255,255,255,0.08)" },
+  btnGhostText: { color: "#e6e9f0", fontWeight: "600" },
+  btnDanger: { backgroundColor: "#ff4d4f" },
+  btnDangerText: { color: "#fff", fontWeight: "700" },
 });

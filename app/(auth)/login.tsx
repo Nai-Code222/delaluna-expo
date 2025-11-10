@@ -142,19 +142,22 @@ export default function Login() {
 
 
   return (
+    <>
+    <StatusBar style="light" translucent backgroundColor="transparent" />
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#2D1B42' }}
+      style={{ flex: 1, backgroundColor: 'transparent' }}
       behavior={kbVisible && Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={KVO}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
     >
-      <StatusBar style="light" translucent backgroundColor="transparent" />
-      {/* Layer a full-bleed background so it also covers KAV padding */}
-      <View style={{ flex: 1 }}>
-        <ImageBackground
+
+      <ImageBackground
           source={require('../assets/images/background.jpg')}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
         />
+      
+      {/* Layer a full-bleed background so it also covers KAV padding */}
+      <View style={{ flex: 1 }}>
         {/* Foreground content stays the same */}
         <View style={{ flex: 1 }}>
           <View style={styles.logoContainer}>
@@ -220,6 +223,7 @@ export default function Login() {
         </View>
       </View>
     </KeyboardAvoidingView>
+    </>
   );
 }
 
@@ -233,23 +237,23 @@ const styles = StyleSheet.create({
   },
   logoContainer: { flex: 1, width: '100%', height: '60%', alignItems: 'center', justifyContent: 'flex-end' },
   card: {
-    width: '100%', flexGrow: 1,
+    width: '100%', flexGrow: 2,
     ...Platform.select({
       ios: { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 25 },
       android: { backgroundColor: 'rgba(255, 255, 255, 0.24)', borderRadius: 20 },
     }),
     gap: 25, paddingHorizontal: 20, paddingVertical: 24, justifyContent: 'space-between',
   },
-  logo: { width: '70%', height: '50%' },
-  bodyContainer: { width: '100%', marginTop: 24, marginBottom: 30, alignItems: 'center', flex: 1, justifyContent: 'space-between' },
+  logo: { width: '70%', height: '65%' },
+  bodyContainer: { width: '100%', marginTop: 15, marginBottom: 25, alignItems: 'center', flex: 1, justifyContent: 'space-between' },
   welcomeText: {
     color: 'white',
     fontFamily: 'Poppins',
     ...Platform.select({ ios: { fontSize: 40 }, android: { fontSize: 30 } }),
     fontWeight: '500',
-    marginBottom: 24,
+    ...Platform.select({ ios: {  marginTop: 5, marginBottom: 45 }, android: {  marginBottom: 45 } }),
   },
-  form: { width: '90%', height: 48, justifyContent: 'center' },
+  form: { width: '90%', height: 45, justifyContent: 'center', },
   textField: {
     ...Platform.select({ ios: { backgroundColor: 'rgba(255, 255, 255, 0.1)' }, android: { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }),
     borderRadius: 12, borderWidth: 1, borderColor: 'rgba(142, 68, 173, 0.6)', marginBottom: 16, paddingHorizontal: 16, height: 48, color: 'white',
@@ -257,10 +261,11 @@ const styles = StyleSheet.create({
   forgotPassword: { color: 'white', fontSize: 13, fontFamily: 'Inter', fontWeight: '600', textAlign: 'right', margin: 8 },
   forgotPasswordButton: {
     alignSelf: 'flex-end',
+    ...Platform.select({ ios: { marginTop: 10, marginBottom: 5 }, android: { marginTop: 10, marginBottom: 1  } }),
   },
   loginButton: {
-    width: '80%', backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: 40, paddingVertical: 12, alignItems: 'center', marginBottom: 16, justifyContent: 'center',
-    ...Platform.select({ ios: { marginTop: 10 }, android: { marginTop: 20 } }),
+    width: '80%', backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: 40, paddingVertical: 12, alignItems: 'center', marginBottom: 5, justifyContent: 'center',
+    ...Platform.select({ ios: { marginTop: 45 }, android: { marginTop: 55 } }),
   },
   loginButtonText: { color: 'white', fontSize: 20, fontFamily: 'Poppins', fontWeight: '600' },
   signUpText: { color: 'white', fontSize: 15, fontFamily: 'Inter', fontWeight: '600', textAlign: 'center', margin: 8 },
