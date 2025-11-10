@@ -1,65 +1,57 @@
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
-import * as admin from "firebase-admin";
+import { db, admin } from "./initAdmin";
+
 
 /**
- * 🪩 onGeminiResponse (fixed + safe initialization)
+ * 🪩 onGeminiResponse
  * Parses Gemini 'response' JSON → writes structured 'result'
  * and deletes the raw 'response' field.
  */
 export const onGeminiResponse = onDocumentUpdated(
-   "users/{userId}/connections/{docId}",
+  "users/{userId}/connections/{docId}",
   async (event) => {
-    // ✅ Ensure Firebase Admin is initialized before anything else
-    if (!admin.apps.length) {
-      admin.initializeApp();
-      console.log("🔥 Firebase Admin initialized inside onGeminiResponse");
-    }
-
-    const db = getFirestore();
-
     const before = event.data?.before?.data();
     const after = event.data?.after?.data();
-    const refPath = event.data?.after?.ref?.path;
-
-    if (!refPath) {
-      console.warn("⚠️ No Firestore ref path — skipping.");
-      return;
-    }
-
-    const docRef = db.doc(refPath);
-
-    // 🧠 Skip if no new response or no change
-    if (!after || before?.response === after.response) return;
+    const docRef = event.data?.after?.ref;
+    if (!docRef || !after || before?.response === after.response) return;
     if (!after.response) return;
 
     try {
-      // 🔮 Parse Gemini's JSON
+      console.log(`🔮 Parsing Gemini response for ${docRef.path}`);
       const parsed = JSON.parse(after.response);
 
       const result = {
-        Summary: parsed?.["Type{Compatibility}_Report"]?.Summary ?? "",
-        Scores: parsed?.["Type{Compatibility}_Report"]?.Scores ?? {},
-        Closing: parsed?.["Type{Compatibility}_Report"]?.Closing ?? "",
+        summary:
+          parsed?.["Type{Compatibility}_Report"]?.Summary ??
+          parsed?.summary ??
+          "",
+        scores:
+          parsed?.["Type{Compatibility}_Report"]?.Scores ??
+          parsed?.scores ??
+          {},
+        closing:
+          parsed?.["Type{Compatibility}_Report"]?.Closing ??
+          parsed?.closing ??
+          "",
       };
 
-      // 📝 Write clean result
       await docRef.set(
         {
           result,
+          status: "complete",
           lastProcessedAt: FieldValue.serverTimestamp(),
         },
         { merge: true }
       );
 
-      // 🧹 Delete the raw 'response' field
       await docRef.update({ response: FieldValue.delete() });
-
-      console.log(`✅ Clean result saved → ${refPath}`);
+      console.log(`✅ Clean result saved → ${docRef.path}`);
     } catch (err: any) {
-      console.error(`❌ Failed to parse Gemini response for ${refPath}:`, err);
+      console.error(`❌ Failed to parse Gemini response for ${docRef.path}:`, err);
       await docRef.set(
         {
+          status: "error",
           parseError: {
             message: err.message ?? "Unknown error",
             at: FieldValue.serverTimestamp(),
