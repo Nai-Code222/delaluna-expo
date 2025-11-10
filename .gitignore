@@ -1,48 +1,126 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# ========================================================
+# 🌙 DELALUNA / EXPO + FIREBASE + ANDROID + IOS GITIGNORE
+# ========================================================
 
-# dependencies
+# Learn more: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# ----------------------------------------
+# 🧩 Dependencies
+# ----------------------------------------
 node_modules/
+npm-debug.*
+yarn-debug.*
+yarn-error.*
 
-# Expo
+# ----------------------------------------
+# ⚡️ Expo
+# ----------------------------------------
 .expo/
 dist/
 web-build/
+.expo-shared/
 expo-env.d.ts
+.expo-dev-tools/
+*.expo-dev-client.json
 
-# Native
-*.orig.*
-*.jks
+# ----------------------------------------
+# 🧠 TypeScript / Metro
+# ----------------------------------------
+*.tsbuildinfo
+.metro-health-check*
+
+# ----------------------------------------
+# 🧭 Environment & Local Config
+# ----------------------------------------
+.env
+.env*.local
+.env.development
+.env.production
+.env.staging
+.env.backup
+*.pem
 *.p8
 *.p12
 *.key
 *.mobileprovision
 
-# Metro
-.metro-health-check*
+# ----------------------------------------
+# 🔥 Firebase / Cloud Functions
+# ----------------------------------------
+functions/lib/
+functions/node_modules/
+functions/.runtimeconfig.json
+functions/firebase-debug.log
+functions/.firebase/
+firebase-debug.log
+.firebaserc.local
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+# Local test or script files (safe to ignore)
+scripts/testFirestoreWrite.js
+src/utils/testCompatibilityWrite.ts
 
-# macOS
-.DS_Store
-*.pem
-
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-
-app-example
-.env
-.DS_Store
-.DS_Store
+# Service account and credentials (🚫 sensitive)
 src/utils/serviceAccountKey.json
 credentials/serviceAccountKey.json
-src/utils/testCompatibilityWrite.ts
 credentials/android/keystore.jks
-scripts/testFirestoreWrite.js
-functions/firebase-debug.log
-scripts
+
+# ----------------------------------------
+# 🤖 Android
+# ----------------------------------------
+android/.gradle/
+android/.idea/
+android/local.properties
+android/app/build/
+android/build/
+*.iml
+*.apk
+*.aab
+
+# Signing + Keystores (🚫 sensitive)
+android/app/debug.keystore
+android/app/release.keystore
+android/key.properties
+
+# Gradle wrapper (✅ keep .jar + .properties)
+.gradle/
+!android/gradle/wrapper/gradle-wrapper.jar
+!android/gradle/wrapper/gradle-wrapper.properties
+
+# ----------------------------------------
+# 🍎 iOS
+# ----------------------------------------
+ios/Pods/
+ios/build/
+ios/DerivedData/
+*.xcworkspace
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+
+# ----------------------------------------
+# 🧰 IDEs / OS Files
+# ----------------------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ----------------------------------------
+# 📱 Expo / Build Outputs
+# ----------------------------------------
+*.aab
+*.apk
+*.ipa
+*.app
+*.xcarchive
+*.jks
+*.keystore
+*.tar.gz
+
+# ----------------------------------------
+# 🧩 Project Examples / Backups
+# ----------------------------------------
+app-example
+package-lock.json.lock
+*.orig.*
+*.rej
