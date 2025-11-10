@@ -1,17 +1,18 @@
-import React from "react";
+import React, { memo } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
 import splitConnectionId from "@/app/utils/splitConnectionId.util";
 import { Ionicons } from "@expo/vector-icons";
-
 
 interface ConnectionListItemProps {
   connection: any;
   onPress?: () => void;
 }
 
-export default function ConnectionListItem({ connection, onPress }: ConnectionListItemProps) {
-  const { first, second } = splitConnectionId(connection.id);
+function ConnectionListItem({ connection, onPress }: ConnectionListItemProps) {
+  const { first = "", second = "" } = splitConnectionId(connection?.id || "");
+  const relationshipType =
+    connection?.relationshipType?.toUpperCase() || "UNKNOWN";
 
   return (
     <TouchableOpacity
@@ -21,17 +22,21 @@ export default function ConnectionListItem({ connection, onPress }: ConnectionLi
     >
       <View style={styles.textContainer}>
         <Text style={styles.nameText}>
-          {first}  <Ionicons
-                    name="heart"
-                    size={scale(12)}
-                    color= "#FFFFFF"
-                  />  {second}
+          {first}{" "}
+          <Ionicons
+            name="heart"
+            size={scale(12)}
+            color="#FFFFFF"
+          />{" "}
+          {second}
         </Text>
-        <Text style={styles.statusText}>{connection.relationshipType}</Text>
+        <Text style={styles.statusText}>{relationshipType}</Text>
       </View>
     </TouchableOpacity>
   );
 }
+
+export default memo(ConnectionListItem);
 
 const styles = StyleSheet.create({
   card: {
