@@ -1,46 +1,36 @@
 /**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ * 🪩 Delaluna Cloud Functions Entry Point
+ * Ensures Firebase Admin is initialized first
+ * Then exports all callable and trigger-based functions.
  */
 
-import {setGlobalOptions} from "firebase-functions";
-import {onRequest} from "firebase-functions/https";
-import * as logger from "firebase-functions/logger";
-import { onGeminiResponse } from "./onGeminiResponse";
-export * from "./getConnection";
-export * from "./getSigns";
-export * from "./onGeminiCompatibility";
+import * as admin from "firebase-admin";
+import { setGlobalOptions } from "firebase-functions";
 
 
+// ✅ Initialize Admin SDK safely before anything else
+if (!admin.apps.length) {
+  admin.initializeApp();
+  console.log("🔥 Firebase Admin initialized (index.ts)");
+}
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
-
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
+// ✅ Global default settings for all deployed functions
 setGlobalOptions({
-  region: "us-central1",      // ensures consistent deployment
-  maxInstances: 10,           // cost control
-  timeoutSeconds: 60,         // optional, default is 60s
-  memory: "256MiB",           // or "512MiB" for heavier calculations
+  region: "us-central1",
+  maxInstances: 10,
+  timeoutSeconds: 60,
+  memory: "256MiB",
 });
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+// ✅ Export individual functions
+export * from "./getSigns";
+export * from "./getConnection";
+export * from "./upsertConnection";
+export * from "./onGeminiCompatibility";
+export * from "./onGeminiResponse";
 
+// Export deleteConnection explicitly
+export { deleteConnection } from "./deleteConnection";
+
+// ✅ Optional: direct exports for testing / Postman
 export { getSigns, getSignsHttp } from "./getSigns";
-export { onGeminiResponse };

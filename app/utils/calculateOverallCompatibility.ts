@@ -1,26 +1,25 @@
-// utils/calculateOverallCompatibility.ts
-
 import { CompatibilityScores } from "../model/user-compatibility.model";
 
 /**
+ * 🔮 calculateOverallCompatibility
  * Calculates the overall compatibility percentage (0–100)
- * using a weighted average of the 16 category scores
- * and adjusts based on relationshipType.
+ * using a weighted average of the 16 category scores,
+ * adjusted slightly by relationship type.
  */
 export const calculateOverallCompatibility = (
   scores: CompatibilityScores,
-  relationshipType: "consistent" | "complicated" | "toxic"
+  relationshipType: "consistent" | "it’s complicated" | "toxic"
 ): number => {
-  // Assign weights to emphasize emotional and communication factors
+  // 🧭 Weights emphasize communication, empathy, and responsibility.
   const weights: Record<keyof CompatibilityScores, number> = {
-    interest: 1,
+    interest: 1.0,
     communication: 1.5,
     resonation: 1.5,
     loyalty: 1.4,
     attraction: 1.2,
     empathy: 1.3,
-    reasoning: 1,
-    persuasion: 1,
+    reasoning: 1.0,
+    persuasion: 1.0,
     stubbornness: 0.8,
     ego: 0.8,
     sacrifice: 1.1,
@@ -28,48 +27,36 @@ export const calculateOverallCompatibility = (
     adaptability: 1.2,
     responsibility: 1.4,
     accountability: 1.4,
-    hostility: -1 // Negative weight: higher hostility reduces total
+    hostility: -1.0, // 🚫 Negative weight — high hostility lowers overall
   };
 
   let weightedSum = 0;
   let totalWeight = 0;
 
+  // 🧮 Apply weighting to each score
   for (const [key, value] of Object.entries(scores)) {
     const weight = weights[key as keyof CompatibilityScores] ?? 1;
     weightedSum += value * weight;
-    totalWeight += Math.abs(weight); // use abs to normalize even negative weights
+    totalWeight += Math.abs(weight);
   }
 
   let overall = weightedSum / totalWeight;
 
-  // Relationship type adjustments
+  // 💞 Adjust based on relationship dynamics
   switch (relationshipType) {
     case "consistent":
-      overall += 5; // reward stable energy
+      overall += 5; // reward emotional stability
       break;
-    case "complicated":
-      overall -= 5; // introduce slight volatility
+    case "it’s complicated":
+      overall -= 5; // slight uncertainty
       break;
     case "toxic":
-      overall -= 15; // penalize chaotic energy
+      overall -= 15; // heavy penalty for chaotic dynamics
       break;
   }
 
-  // Clamp between 0–100
-  if (overall > 100) overall = 100;
-  if (overall < 0) overall = 0;
+  // 🧩 Clamp & round the result (0–100)
+  overall = Math.max(0, Math.min(100, Math.round(overall)));
 
-  // Round to a clean integer
-  return Math.round(overall);
+  return overall;
 };
-
-// Firestore collection path
-// /users/{userId}/compatibility/{partnerName}
-// {partnerName} : First-Last (no spaces, no special chars)
-// After AI returns the JSON (scores only), run:
-// response.overallCompatibility = calculateOverallCompatibility(response.scores, relationshipType);
-// Save the computed result in Firestore:
-// await compatibilityDocRef.set({ ...response, overallCompatibility: response.overallCompatibility });
-// await setDoc(doc(db, "compatibility_reports", docId), response);
-
-
