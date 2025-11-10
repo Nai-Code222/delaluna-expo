@@ -124,3 +124,14 @@ app-example
 package-lock.json.lock
 *.orig.*
 *.rej
+scripts/buildDelalunaPrompt.mjs
+scripts/copyCompatibilityToConnections.mjs
+scripts/setupUserCollections.mjs
+scripts/testCompatibilityWrite.mjs
+scripts/testDailyHoroscopeWrite.js
+scripts/testGeminiCompatibility.mjs
+scripts/testGetSignsCallable.mjs
+scripts/testPromptOnline.js
+scripts/testPromptWrite.js
+scripts/testTransitsWrite.js
+scripts/testWeeklyTransitsWrite.js
