@@ -2,8 +2,6 @@
 # 🌙 DELALUNA / EXPO + FIREBASE + ANDROID + IOS GITIGNORE
 # ========================================================
 
-# Learn more: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
 # ----------------------------------------
 # 🧩 Dependencies
 # ----------------------------------------
@@ -11,6 +9,26 @@ node_modules/
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+
+# ----------------------------------------
+# 🧭 Environment & Local Config
+# ----------------------------------------
+.env
+.env*.local
+.env.development
+.env.production
+.env.staging
+.env.backup
+*.pem
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Sensitive configs (do NOT commit)
+firebaseConfig.ts
+credentials/
+credentials/android/keystore.jks
 
 # ----------------------------------------
 # ⚡️ Expo
@@ -30,21 +48,6 @@ expo-env.d.ts
 .metro-health-check*
 
 # ----------------------------------------
-# 🧭 Environment & Local Config
-# ----------------------------------------
-.env
-.env*.local
-.env.development
-.env.production
-.env.staging
-.env.backup
-*.pem
-*.p8
-*.p12
-*.key
-*.mobileprovision
-
-# ----------------------------------------
 # 🔥 Firebase / Cloud Functions
 # ----------------------------------------
 functions/lib/
@@ -55,19 +58,19 @@ functions/.firebase/
 firebase-debug.log
 .firebaserc.local
 
-# Local test or script files (safe to ignore)
+# Local test or script files
 scripts/testFirestoreWrite.js
 src/utils/testCompatibilityWrite.ts
 
 # Service account and credentials (🚫 sensitive)
 src/utils/serviceAccountKey.json
 credentials/serviceAccountKey.json
-credentials/android/keystore.jks
 
 # ----------------------------------------
 # 🤖 Android
 # ----------------------------------------
 android/.gradle/
+android/gradle/wrapper/gradle-wrapper.jar
 android/.idea/
 android/local.properties
 android/app/build/
@@ -75,6 +78,7 @@ android/build/
 *.iml
 *.apk
 *.aab
+google-services.json
 
 # Signing + Keystores (🚫 sensitive)
 android/app/debug.keystore
@@ -120,10 +124,12 @@ Thumbs.db
 # ----------------------------------------
 # 🧩 Project Examples / Backups
 # ----------------------------------------
-app-example
+app-example/
 package-lock.json.lock
 *.orig.*
 *.rej
+
+# Custom helper scripts
 scripts/buildDelalunaPrompt.mjs
 scripts/copyCompatibilityToConnections.mjs
 scripts/setupUserCollections.mjs
