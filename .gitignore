@@ -141,3 +141,4 @@ scripts/testPromptOnline.js
 scripts/testPromptWrite.js
 scripts/testTransitsWrite.js
 scripts/testWeeklyTransitsWrite.js
+android/gradle/wrapper/gradle-wrapper.jar
