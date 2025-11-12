@@ -14,8 +14,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import AuthContext from "../backend/auth-context";
 import HeaderNav from "../components/component-utils/header-nav";
 import { ThemeContext } from "../theme-context";

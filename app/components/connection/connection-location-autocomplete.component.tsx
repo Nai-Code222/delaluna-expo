@@ -222,7 +222,6 @@ const styles = StyleSheet.create({
   },
   item: {
     padding: 12,
-    backgroundColor: '#1C2541',
     borderBottomWidth: 1,
     borderBottomColor: '#3A506B',
   },

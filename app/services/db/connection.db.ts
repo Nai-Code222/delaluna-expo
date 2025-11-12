@@ -1,87 +1,79 @@
+// app/services/connection.service.ts
 import {
-  getFirestore,
   collection,
-  addDoc,
   doc,
-  updateDoc,
-  deleteDoc,
   getDocs,
-  serverTimestamp,
+  deleteDoc,
+  getFirestore,
 } from "firebase/firestore";
-import { app } from "@/firebaseConfig";
+import { httpsCallable } from "firebase/functions";
+import { app, functions } from "@/firebaseConfig";
 
 const db = getFirestore(app);
 
-/**
- * Create a new connection under a user
- */
-export const saveConnection = async (uid: string, connectionData: Record<string, any>) => {
-  try {
-    const connectionsRef = collection(db, "users", uid, "connections");
-    const docRef = await addDoc(connectionsRef, {
-      ...connectionData,
-      createdAt: serverTimestamp(),
-    });
-    console.log("✅ Connection saved:", docRef.id);
-    return docRef.id;
-  } catch (error) {
-    console.error("❌ Error saving connection:", error);
-    throw error;
-  }
-};
+/* -------------------------------------------------
+   🔮 CALLABLE FUNCTIONS (from Cloud Functions)
+--------------------------------------------------- */
 
 /**
- * Update an existing connection
+ * Create or update a connection using Cloud Function
+ * → This ensures Gemini triggers properly and IDs are consistent
  */
-export const updateConnection = async (
-  uid: string,
-  connectionId: string,
-  updatedData: Record<string, any>
-) => {
-  try {
-    const connectionRef = doc(db, "users", uid, "connections", connectionId);
-    await updateDoc(connectionRef, {
-      ...updatedData,
-      updatedAt: serverTimestamp(),
-    });
-    console.log("✅ Connection updated:", connectionId);
-  } catch (error) {
-    console.error("❌ Error updating connection:", error);
-    throw error;
-  }
-};
+export async function upsertConnection(data: {
+  userId: string;
+  userProfile: {
+    firstName: string;
+    lastName: string;
+    sun: string;
+    moon: string;
+    rising: string;
+  };
+  partnerProfile: {
+    firstName: string;
+    lastName: string;
+    sun: string;
+    moon: string;
+    rising: string;
+  };
+  relationshipType?: string;
+}) {
+  const callable = httpsCallable(functions, "upsertConnection");
+  const res = await callable(data);
+  return res.data as {
+    success: boolean;
+    connectionId: string;
+    partner: { sun: string; moon: string; rising: string };
+  };
+}
 
 /**
- * Delete a single connection document
+ * Delete a connection using Cloud Function
  */
-export const deleteConnection = async (uid: string, connectionId: string) => {
-  try {
-    const connectionRef = doc(db, "users", uid, "connections", connectionId);
-    await deleteDoc(connectionRef);
-    console.log("🗑️ Connection deleted:", connectionId);
-  } catch (error) {
-    console.error("❌ Error deleting connection:", error);
-    throw error;
-  }
-};
+export async function deleteConnection(data: { userId: string; connectionId: string }) {
+  const callable = httpsCallable(functions, "deleteConnection");
+  const res = await callable(data);
+  return res.data as { success: boolean; connectionId: string };
+}
+
+/* -------------------------------------------------
+   🧩 LOCAL FIRESTORE HELPERS (read-only)
+--------------------------------------------------- */
 
 /**
- * Delete all connections under a specific user
- * (useful when deleting a user account)
+ * Get all connections for a user (read-only)
  */
-export const deleteAllConnectionsForUser = async (uid: string) => {
-  try {
-    const connectionsRef = collection(db, "users", uid, "connections");
-    const snapshot = await getDocs(connectionsRef);
+export async function getAllConnections(uid: string) {
+  const connectionsRef = collection(db, "users", uid, "connections");
+  const snapshot = await getDocs(connectionsRef);
+  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
 
-    const deletePromises = snapshot.docs.map((docSnap) =>
-      deleteDoc(docSnap.ref)
-    );
-    await Promise.all(deletePromises);
-
-    console.log(`🧹 Deleted all connections for user: ${uid}`);
-  } catch (error) {
-    console.error("❌ Error deleting all connections:", error);
-    throw error;
-  }
-};
+/**
+ * Local-only delete (bypass Cloud Function)
+ * – Only use for dev cleanup or test mode
+ */
+export async function deleteConnectionLocal(uid: string, connectionId: string) {
+  const connectionRef = doc(db, "users", uid, "connections", connectionId);
+  await deleteDoc(connectionRef);
+  console.log("🗑️ Locally deleted:", connectionId);
+}

@@ -23,7 +23,6 @@ export interface FieldConfig {
   hasUnknownToggle?: boolean;
 }
 
-
 export interface DelalunaInputRowProps<
   T extends string | boolean | number = string | boolean | number
 > {
@@ -40,8 +39,8 @@ export default function DelalunaInputRow({
   mode = "new",
 }: DelalunaInputRowProps) {
   const [formValues, setFormValues] = useState<Record<string, string>>(
-  Object.fromEntries(fields.map((f) => [f.label, String(f.value ?? "")]))
-);
+    Object.fromEntries(fields.map((f) => [f.label, String(f.value ?? "")]))
+  );
 
   const [unknownStates, setUnknownStates] = useState<Record<string, boolean>>({});
   const [activePicker, setActivePicker] = useState<string | null>(null);
@@ -82,11 +81,9 @@ export default function DelalunaInputRow({
 
         return (
           <View key={field.label}>
-            {/* Field container */}
             <View style={styles.row}>
               <Text style={styles.label}>{field.label}</Text>
 
-              {/* Input Types */}
               {field.type === "date" ? (
                 <>
                   <TouchableOpacity
@@ -130,13 +127,14 @@ export default function DelalunaInputRow({
                   )}
                 </>
               ) : field.type === "location" ? (
+                // ✅ Styled exactly like other input boxes
                 <View style={styles.inputBox}>
                   <ConnectionLocationAutocomplete
                     value={isUnknown ? "I don't know" : value}
                     onInputChange={(text) => handleChange(field.label, text)}
-                    onResultsVisibilityChange={(visible) => {
-                      if (onScrollToggle) onScrollToggle(!visible);
-                    }}
+                    onResultsVisibilityChange={(visible) =>
+                      onScrollToggle?.(!visible)
+                    }
                     onSelect={(place) => {
                       handleChange(field.label, place.label);
                       onChange({
@@ -146,7 +144,7 @@ export default function DelalunaInputRow({
                         birthLon: place.lon,
                         birthTimezone: place.timezone,
                       });
-                      if (onScrollToggle) onScrollToggle(true);
+                      onScrollToggle?.(true);
                     }}
                   />
                 </View>
@@ -161,18 +159,6 @@ export default function DelalunaInputRow({
                 />
               )}
             </View>
-
-            {/* ✅ Toggle OUTSIDE the bordered container */}
-            {(field.label === "Place of Birth" || field.label === "Time of Birth") &&
-              field.hasUnknownToggle && (
-                <View style={styles.toggleWrapperOutside}>
-                  <DelalunaToggle
-                    label="I don’t know"
-                    value={!!isUnknown}
-                    onToggle={(v) => handleUnknownToggle(field.label, v)}
-                  />
-                </View>
-              )}
           </View>
         );
       })}
@@ -180,6 +166,7 @@ export default function DelalunaInputRow({
   );
 }
 
+/* 🎨 Styles */
 const styles = StyleSheet.create({
   container: {
     width: "100%",

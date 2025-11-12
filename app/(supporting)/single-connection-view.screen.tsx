@@ -1,235 +1,228 @@
-// app/(supporting)/single-connection-view.screen.tsx
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
+  TouchableOpacity,
+  LayoutAnimation,
+  Platform,
+  UIManager,
   Animated,
-  Easing,
 } from "react-native";
-import { doc, onSnapshot } from "firebase/firestore";
+import { useLocalSearchParams } from "expo-router";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import HeaderNav from "../components/component-utils/header-nav";
-import useRenderBackground from "../hooks/useRenderBackground";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
-import AuthContext from "../backend/auth-context";
-import CompatibilityProgressBarComponent from "../components/connection/compatability-progress-bar.component";
+import { LinearGradient } from "expo-linear-gradient";
+import { scale, verticalScale } from "@/src/utils/responsive";
 
-/* -------------------------------------------------
-   🔮 TYPE DEFINITIONS
----------------------------------------------------*/
-interface CompatibilityScores {
-  [keyword: string]: number;
+// Enable smooth expand animations on Android
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-interface CompatibilityResult {
-  title: string;
-  summary: string;
-  closing?: string;
-  scores: CompatibilityScores;
-}
+// 💫 Keyword definitions
+const keywordDefinitions: Record<string, string> = {
+  Interest: "How naturally your attention and curiosity gravitate toward each other.",
+  Communication: "How clearly you exchange thoughts, emotions, and ideas.",
+  Resonation: "The level of emotional frequency and energy alignment.",
+  Reasoning: "Your shared logic, perspective, and problem-solving flow.",
+  Loyalty: "Consistency, dependability, and commitment to the bond.",
+  Attraction: "Physical and magnetic chemistry that draws you together.",
+  Stubbornness: "Your ability (or inability) to compromise when differences arise.",
+  Sacrifice: "How much each person is willing to give for the relationship.",
+};
 
-interface ConnectionDoc {
-  status?: string;
-  result?: CompatibilityResult;
-}
+// 🎨 Bar color by percentage
+const getBarColor = (value: number) => {
+  if (value >= 75) return "#41FF88"; // green
+  if (value >= 50) return "#FFDD00"; // yellow
+  return "#FF3B3B"; // red
+};
 
-/* -------------------------------------------------
-   🪩 MAIN COMPONENT
----------------------------------------------------*/
 export default function SingleConnectionViewScreen() {
-  const { connectionId } = useLocalSearchParams<{ connectionId: string }>();
-  const { user } = useContext(AuthContext);
-  const router = useRouter();
-  const renderBackground = useRenderBackground();
-
-  const [connectionData, setConnectionData] = useState<ConnectionDoc | null>(null);
-  const [loading, setLoading] = useState(true);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { connectionId } = useLocalSearchParams();
+  const [result, setResult] = useState<any>(null);
+  const [expandedKeyword, setExpandedKeyword] = useState<string | null>(null);
+  const [animatedValues, setAnimatedValues] = useState<Record<string, Animated.Value>>({});
 
   useEffect(() => {
-    if (!user?.uid || !connectionId) return;
-
-    console.log("🔎 Listening for connection:", connectionId);
-    const ref = doc(db, "users", user.uid, "connections", connectionId);
-
-    const unsub = onSnapshot(ref, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data() as ConnectionDoc;
-        console.log("🪩 Connection Data:", data);
-        setConnectionData(data);
-        setLoading(false);
-      } else {
-        setConnectionData(null);
-        setLoading(false);
+    const fetchConnection = async () => {
+      try {
+        const userId = "your-user-id"; // 🔑 replace with AuthContext user.uid
+        const ref = doc(db, "users", userId, "connections", connectionId as string);
+        const snap = await getDoc(ref);
+        if (snap.exists()) setResult(snap.data()?.result);
+      } catch (error) {
+        console.error("❌ Error loading compatibility:", error);
       }
+    };
+    fetchConnection();
+  }, [connectionId]);
+
+  // Animate bars once data loads
+  useEffect(() => {
+    if (!result?.scores) return;
+    const anims: Record<string, Animated.Value> = {};
+
+    Object.keys(result.scores).forEach((key) => {
+      anims[key] = new Animated.Value(0);
     });
 
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      easing: Easing.out(Easing.ease),
-      useNativeDriver: true,
-    }).start();
+    setAnimatedValues(anims);
 
-    return () => unsub();
-  }, [user?.uid, connectionId]);
+    Object.entries(result.scores).forEach(([key, val], index) => {
+      const target = Number(val);
+      Animated.timing(anims[key], {
+        toValue: target,
+        duration: 900,
+        delay: index * 80,
+        useNativeDriver: false,
+      }).start();
+    });
+  }, [result]);
 
-  if (!user) {
-    return renderBackground(
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>Please log in to view this report.</Text>
+  const handleToggleKeyword = (keyword: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedKeyword((prev) => (prev === keyword ? null : keyword));
+  };
+
+  if (!result) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.loading}>Loading Compatibility...</Text>
       </View>
     );
   }
 
-  if (loading) {
-    return renderBackground(
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#fff" />
-        <Text style={styles.loadingText}>✨ Loading Compatibility Report...</Text>
-      </View>
-    );
-  }
+  return (
+    <LinearGradient
+      colors={["#1C003F", "#300067", "#4C008A"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.header}>Compatibility</Text>
+        <Text style={styles.subHeader}>First Individual ⚡ Second Individual</Text>
 
-  if (!connectionData?.result) {
-    return renderBackground(
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>
-          This connection doesn’t have a completed compatibility report yet.
-        </Text>
-      </View>
-    );
-  }
+        {/* 🌙 Animated Scores */}
+        {Object.entries(result.scores || {}).map(([keyword, value]) => {
+          const numValue = Number(value);
+          const barColor = getBarColor(numValue);
+          const animWidth = animatedValues[keyword] || new Animated.Value(0);
+          const definition = keywordDefinitions[keyword] ?? "Definition not available.";
 
-  const { result } = connectionData;
-  const { title, summary, closing, scores } = result;
+          return (
+            <View key={keyword} style={styles.keywordContainer}>
+              <TouchableOpacity onPress={() => handleToggleKeyword(keyword)} activeOpacity={0.7}>
+                <View style={styles.row}>
+                  <Text style={styles.keyword}>{keyword}</Text>
+                  <Text style={styles.value}>{Math.round(numValue)}%</Text>
+                </View>
 
-  return renderBackground(
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <HeaderNav
-        title="Compatibility Report"
-        leftLabel="Back"
-        onLeftPress={() => router.back()}
-      />
+                <View style={styles.barBackground}>
+                  <Animated.View
+                    style={[
+                      styles.barFill,
+                      {
+                        width: animWidth.interpolate({
+                          inputRange: [0, 100],
+                          outputRange: ["0%", "100%"],
+                        }),
+                        backgroundColor: barColor,
+                      },
+                    ]}
+                  />
+                </View>
+              </TouchableOpacity>
 
-      <ScrollView
-        style={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: verticalScale(40) }}
-      >
-        {/* Title */}
-        <Text style={styles.titleText}>{title || "Connection Report"}</Text>
+              {expandedKeyword === keyword && (
+                <Text style={styles.definition}>{definition}</Text>
+              )}
+            </View>
+          );
+        })}
 
-        {/* Summary */}
-        {summary && <Text style={styles.summaryText}>{summary}</Text>}
-
-        {/* Compatibility Bars */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Compatibility Breakdown</Text>
-
-          {scores &&
-            Object.entries(scores).map(([keyword, value]) => {
-              const numericValue =
-                typeof value === "number" ? value : Number(value) || 0;
-
-              return (
-                <CompatibilityProgressBarComponent
-                  key={keyword}
-                  keywordLabel={keyword}
-                  keywordDefinition={getKeywordDefinition(keyword)}
-                  scoreValue={numericValue}
-                />
-              );
-            })}
-        </View>
-
-        {/* Closing */}
-        {closing && (
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Final Thoughts</Text>
-            <Text style={styles.closingText}>{closing}</Text>
-          </View>
-        )}
+        {result.closing && <Text style={styles.closing}>✨ {result.closing}</Text>}
       </ScrollView>
-    </Animated.View>
+    </LinearGradient>
   );
 }
 
-/* -------------------------------------------------
-   🌙 KEYWORD DEFINITIONS
----------------------------------------------------*/
-function getKeywordDefinition(keyword: string): string {
-  const definitions: Record<string, string> = {
-    Resonation: "How deeply your personalities and energies align.",
-    Chemistry: "The magnetic attraction and spark between you.",
-    Vibe: "The overall energy or atmosphere between you.",
-    Attraction: "The physical and emotional pull between you.",
-    Intensity: "The strength and emotional charge in your bond.",
-    Understanding: "The ability to empathize and interpret each other.",
-    Communication: "How effectively you exchange ideas and feelings.",
-    Logic: "How aligned your reasoning and decision-making are.",
-    Empathy: "Emotional awareness and compassion for each other.",
-    Reasoning: "Shared ability to think through and resolve issues.",
-    Romance: "Your gestures of affection and connection.",
-    Loyalty: "Mutual trust, dependability, and devotion.",
-    Devotion: "How committed and emotionally invested you are.",
-    Trust: "Confidence in one another’s integrity and honesty.",
-    Sacrifice: "Willingness to compromise or put each other first.",
-    Stubbornness: "Resistance to compromise or change.",
-    PowerStruggle: "Balance of control or influence in the relationship.",
-    Patience: "How well you handle tension, time, or differences.",
-    Boundaries: "Respect for each other's limits and independence.",
-    Independence: "Ability to maintain individuality while connected.",
-  };
-  return definitions[keyword] || "";
-}
-
-/* -------------------------------------------------
-   🎨 STYLES
----------------------------------------------------*/
 const styles = StyleSheet.create({
-  container: { flex: 1, width: "100%" },
-  scrollContainer: { paddingHorizontal: scale(16), paddingTop: verticalScale(20) },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-  loadingText: {
-    color: "#FFFFFF",
-    marginTop: verticalScale(8),
-    fontSize: moderateScale(15),
+  container: {
+    flex: 1,
   },
-  errorText: {
-    color: "#C5AFFF",
+  content: {
+    paddingHorizontal: scale(18),
+    paddingVertical: verticalScale(25),
+  },
+  header: {
+    color: "#FFFFFF",
+    fontSize: 22,
+    fontWeight: "700",
     textAlign: "center",
-    fontSize: moderateScale(14),
-    marginHorizontal: scale(20),
+    marginBottom: verticalScale(8),
   },
-  titleText: {
+  subHeader: {
+    color: "#B8A3FF",
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: verticalScale(20),
+  },
+  keywordContainer: {
+    marginBottom: verticalScale(15),
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  keyword: {
     color: "#FFFFFF",
-    fontSize: moderateScale(22),
-    fontWeight: "700",
-    marginBottom: verticalScale(12),
+    fontSize: 16,
+    fontWeight: "600",
   },
-  summaryText: {
-    color: "#C5AFFF",
-    fontSize: moderateScale(14),
-    lineHeight: verticalScale(20),
-    marginBottom: verticalScale(18),
-  },
-  sectionContainer: {
-    marginBottom: verticalScale(25),
-  },
-  sectionTitle: {
+  value: {
     color: "#FFFFFF",
-    fontWeight: "700",
-    fontSize: moderateScale(15),
-    marginBottom: verticalScale(10),
+    fontSize: 15,
+    fontWeight: "500",
   },
-  closingText: {
+  barBackground: {
+    height: 8,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 6,
+    marginTop: 4,
+    overflow: "hidden",
+  },
+  barFill: {
+    height: 8,
+    borderRadius: 6,
+  },
+  definition: {
+    color: "#D3CFFF",
+    fontSize: 13,
+    lineHeight: 20,
+    fontStyle: "italic",
+    marginTop: verticalScale(6),
+    paddingLeft: 4,
+  },
+  closing: {
+    color: "#D0B8FF",
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: "center",
+    marginTop: verticalScale(25),
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#1C003F",
+  },
+  loading: {
     color: "#FFFFFF",
-    fontSize: moderateScale(14),
-    lineHeight: verticalScale(20),
+    fontSize: 16,
   },
 });
