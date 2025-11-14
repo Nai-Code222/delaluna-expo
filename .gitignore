@@ -26,7 +26,6 @@ yarn-error.*
 *.mobileprovision
 
 # Sensitive configs (do NOT commit)
-firebaseConfig.ts
 credentials/
 credentials/android/keystore.jks
 
@@ -69,8 +68,10 @@ credentials/serviceAccountKey.json
 # ----------------------------------------
 # 🤖 Android
 # ----------------------------------------
+# ✅ Keep Gradle wrapper (required for EAS)
+!android/gradle/wrapper/gradle-wrapper.jar
+!android/gradle/wrapper/gradle-wrapper.properties
 android/.gradle/
-android/gradle/wrapper/gradle-wrapper.jar
 android/.idea/
 android/local.properties
 android/app/build/
@@ -84,11 +85,6 @@ google-services.json
 android/app/debug.keystore
 android/app/release.keystore
 android/key.properties
-
-# Gradle wrapper (✅ keep .jar + .properties)
-.gradle/
-!android/gradle/wrapper/gradle-wrapper.jar
-!android/gradle/wrapper/gradle-wrapper.properties
 
 # ----------------------------------------
 # 🍎 iOS
@@ -129,7 +125,9 @@ package-lock.json.lock
 *.orig.*
 *.rej
 
-# Custom helper scripts
+# ----------------------------------------
+# 🧠 Custom helper scripts
+# ----------------------------------------
 scripts/buildDelalunaPrompt.mjs
 scripts/copyCompatibilityToConnections.mjs
 scripts/setupUserCollections.mjs
@@ -141,4 +139,3 @@ scripts/testPromptOnline.js
 scripts/testPromptWrite.js
 scripts/testTransitsWrite.js
 scripts/testWeeklyTransitsWrite.js
-android/gradle/wrapper/gradle-wrapper.jar
