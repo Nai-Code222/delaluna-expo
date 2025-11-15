@@ -23,22 +23,27 @@ export default function ConnectionsTimeOfBirthField({
   const [showPicker, setShowPicker] = useState(false);
   const [isUnknown, setIsUnknown] = useState(false);
 
+  /** When user selects a real time */
   const handleConfirm = (date: Date) => {
     const h = date.getHours().toString().padStart(2, "0");
     const m = date.getMinutes().toString().padStart(2, "0");
-    const formatted = `${h}:${m}`;
+
+    setIsUnknown(false);
     onChange({
-      "Time of Birth": formatted,
+      "Time of Birth": `${h}:${m}`,
       isBirthTimeUnknown: false,
     });
+
     setShowPicker(false);
   };
 
+  /** When user toggles “I don’t know” */
   const handleUnknownToggle = (val: boolean) => {
     setIsUnknown(val);
+
     if (val) {
-      const updated = applyUnknownTime({});
-      onChange(updated);
+      // 🔥 Same behavior as Place of Birth
+      onChange(applyUnknownTime({}));
     } else {
       onChange({
         "Time of Birth": "",
@@ -53,16 +58,24 @@ export default function ConnectionsTimeOfBirthField({
         <Text style={styles.label}>Time of Birth</Text>
 
         <View style={styles.rightContainer}>
+          {/* Input */}
           <TouchableOpacity
             activeOpacity={0.7}
             style={styles.inputBox}
+            disabled={isUnknown} // disables like place-of-birth
             onPress={() => setShowPicker(true)}
           >
-            <Text style={[styles.text, !value && { opacity: 0.6 }]}>
+            <Text
+              style={[
+                styles.text,
+                isUnknown && styles.disabledText, // 🔥 matches place-of-birth disabled color
+              ]}
+            >
               {isUnknown ? "I don't know" : value || "Select time"}
             </Text>
           </TouchableOpacity>
 
+          {/* Toggle */}
           <View style={styles.toggleInline}>
             <DelalunaToggle
               label="I don’t know"
@@ -73,6 +86,7 @@ export default function ConnectionsTimeOfBirthField({
         </View>
       </View>
 
+      {/* Time Picker */}
       <DateTimePickerModal
         isVisible={showPicker}
         mode="time"
@@ -93,7 +107,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(142,68,173,0.6)",
     paddingVertical: verticalScale(6),
     paddingHorizontal: scale(10),
-    marginBottom: verticalScale(16),  // uniform stack spacing
+    marginBottom: verticalScale(16),
   },
   row: {
     flexDirection: "row",
@@ -110,22 +124,23 @@ const styles = StyleSheet.create({
     flex: 1.3,
     borderLeftWidth: 1,
     borderLeftColor: "rgba(255,255,255,0.2)",
-    paddingLeft: scale(12),       // unified spacing
-    paddingBottom: verticalScale(2),
+    paddingLeft: scale(12),
   },
   inputBox: {
-  paddingVertical: verticalScale(4),
-  justifyContent: "center",
-},
+    paddingVertical: verticalScale(4),
+    justifyContent: "center",
+  },
   text: {
     color: "#FFFFFF",
     fontSize: moderateScale(14),
   },
+  disabledText: {
+    color: "rgba(255, 255, 255, 0.35)",
+  },
   toggleInline: {
-    marginTop: verticalScale(8),  // consistent toggle gap
-    paddingLeft: scale(4),        // aligns toggle text with field text
     alignSelf: "flex-start",
-    flexDirection: "row",
-    alignItems: "center",
-  }
+    marginTop: verticalScale(5),   
+    marginBottom: verticalScale(5),
+    marginLeft: scale(4),
+  },
 });

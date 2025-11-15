@@ -1,61 +1,59 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import ConnectionLocationAutocomplete from "./connection-location-autocomplete.component";
-import DelalunaToggle from "../component-utils/delaluna-toggle.component";
 import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
-import { isIDK, applyUnknownPlace } from "@/src/utils/answers.helpers";
+import { isIDK } from "@/src/utils/answers.helpers";
 
-interface ConnectionsPlaceOfBirthFieldProps {
+const DEFAULT_PLACE = {
+  label: "Greenwich, London, United Kingdom",
+  lat: 51.4779,
+  lon: 0.0015,
+  timezone: "Europe/London",
+};
+
+interface Props {
   value: string;
   onChange: (values: Record<string, any>) => void;
 }
 
-export default function ConnectionsPlaceOfBirthField({
-  value,
-  onChange,
-}: ConnectionsPlaceOfBirthFieldProps) {
+export default function ConnectionsPlaceOfBirthField({ value, onChange }: Props) {
   const [isUnknown, setIsUnknown] = useState(false);
 
-  const handleSelect = (place: {
-    label: string;
-    lat: number;
-    lon: number;
-    timezone: string;
-  }) => {
+  /** When user selects from results */
+  const handleSelect = (place: any) => {
+    setIsUnknown(false);
     onChange({
       "Place of Birth": place.label,
+      isPlaceOfBirthUnknown: false,
       birthLat: place.lat,
       birthLon: place.lon,
       birthTimezone: place.timezone,
-      isPlaceOfBirthUnknown: false,
     });
   };
 
+  /** When user types */
   const handleInputChange = (text: string) => {
+    // user typed I don't know
     if (isIDK(text)) {
-      const updated = applyUnknownPlace({});
       setIsUnknown(true);
-      onChange(updated);
-    } else {
-      onChange({ "Place of Birth": text });
-    }
-  };
 
-  const handleUnknownToggle = (val: boolean) => {
-    setIsUnknown(val);
-    if (val) {
-      const updated = applyUnknownPlace({});
-      onChange(updated);
-    } else {
-      // Reset when toggled off
+      // 🔥 UI shows IDK, DB receives default fallback
       onChange({
-        "Place of Birth": "",
-        birthLat: undefined,
-        birthLon: undefined,
-        birthTimezone: undefined,
-        isPlaceOfBirthUnknown: false,
+        "Place of Birth": DEFAULT_PLACE.label,
+        isPlaceOfBirthUnknown: true,
+        birthLat: DEFAULT_PLACE.lat,
+        birthLon: DEFAULT_PLACE.lon,
+        birthTimezone: DEFAULT_PLACE.timezone,
       });
+      return;
     }
+
+    // normal entry
+    setIsUnknown(false);
+    onChange({
+      "Place of Birth": text,
+      isPlaceOfBirthUnknown: false,
+    });
   };
 
   return (
@@ -68,22 +66,20 @@ export default function ConnectionsPlaceOfBirthField({
             value={isUnknown ? "I don't know" : value}
             onSelect={handleSelect}
             onInputChange={handleInputChange}
+            defaultLocation={{
+              label: "I don't know",
+              lat: DEFAULT_PLACE.lat,
+              lon: DEFAULT_PLACE.lon,
+              timezone: DEFAULT_PLACE.timezone,
+            }}
           />
-
-          <View style={styles.toggleInline}>
-            <DelalunaToggle
-              label="I don’t know"
-              value={isUnknown}
-              onToggle={handleUnknownToggle}
-            />
-          </View>
         </View>
       </View>
     </View>
   );
 }
 
-/* 🎨 Styles */
+/* 🎨 Styles preserved */
 const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: "rgba(255,255,255,0.05)",
@@ -92,7 +88,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(142,68,173,0.6)",
     paddingVertical: verticalScale(6),
     paddingHorizontal: scale(10),
-    marginBottom: verticalScale(16),  // uniform stack spacing
+    marginBottom: verticalScale(16),
   },
   row: {
     flexDirection: "row",
@@ -109,16 +105,7 @@ const styles = StyleSheet.create({
     flex: 1.3,
     borderLeftWidth: 1,
     borderLeftColor: "rgba(255,255,255,0.2)",
-    paddingLeft: scale(12),       // unified spacing
-    paddingBottom: verticalScale(2),
-    paddingVertical: verticalScale(4),
+    paddingLeft: scale(5),
     justifyContent: "center",
   },
-  toggleInline: {
-    marginTop: verticalScale(8),  // consistent toggle gap
-    paddingLeft: scale(4),        // aligns toggle text with field text
-    alignSelf: "flex-start",
-    flexDirection: "row",
-    alignItems: "center",
-  }
 });
