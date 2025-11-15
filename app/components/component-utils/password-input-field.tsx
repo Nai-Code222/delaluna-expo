@@ -1,5 +1,3 @@
-import { scale } from "@/src/utils/responsive";
-import { Ionicons } from "@expo/vector-icons"; 
 import React, { useState, forwardRef } from "react";
 import {
   View,
@@ -7,70 +5,77 @@ import {
   TouchableOpacity,
   StyleSheet,
   TextInputProps,
-  StyleProp,
-  ViewStyle,
-  TextStyle,
-  LayoutChangeEvent,
+  Animated,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { scale } from "@/src/utils/responsive";
 
-export type PasswordInputFieldProps = TextInputProps & {
-  containerStyle?: StyleProp<ViewStyle>;
-  style?: StyleProp<ViewStyle>;
-  inputStyle?: StyleProp<TextStyle>;
-  togglePercent?: number; // 0..1 (default 0.25)
+export type DelalunaPasswordInputProps = TextInputProps & {
+  containerStyle?: object;
+  inputStyle?: object;
+  iconSize?: number;
 };
 
-const PasswordInputField = forwardRef<TextInput, PasswordInputFieldProps>(
+const DelalunaPasswordInput = forwardRef<TextInput, DelalunaPasswordInputProps>(
   (
-    { containerStyle, style, inputStyle, secureTextEntry, togglePercent = 0.25, ...rest },
+    {
+      containerStyle,
+      inputStyle,
+      secureTextEntry,
+      iconSize = scale(20),
+      ...rest
+    },
     ref
   ) => {
     const [visible, setVisible] = useState(false);
-    const [toggleW, setToggleW] = useState(0);
 
-    const onToggleLayout = (e: LayoutChangeEvent) => {
-      if (toggleW === 0) setToggleW(e.nativeEvent.layout.width);
+    // animated fade between icons
+    const opacityAnim = new Animated.Value(1);
+
+    const toggleVisibility = () => {
+      Animated.sequence([
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      setVisible((v) => !v);
     };
 
     return (
       <View style={[styles.container, containerStyle]}>
-        <View style={[styles.field, style]}>
-          {/* Text input */}
+        <View style={styles.field}>
           <TextInput
             ref={ref}
             {...rest}
             secureTextEntry={secureTextEntry ?? !visible}
-            style={[
-              styles.input,
-              inputStyle,
-              { paddingRight: Math.max(toggleW, 50) + 10 },
-            ]}
-            multiline={false}
-            numberOfLines={1}
             autoCorrect={false}
             autoCapitalize="none"
+            style={[styles.input, inputStyle, { paddingRight: 55 }]} // ← fixed padding to avoid jump
           />
 
-          {/* Toggle icon */}
+          {/* Toggle Button */}
           <TouchableOpacity
-            onLayout={onToggleLayout}
             activeOpacity={0.7}
-            style={[
-              styles.toggleWrap,
-              {
-                width: `${Math.min(Math.max(togglePercent, 0.15), 0.4) * 100}%`,
-              },
-            ]}
-            onPressIn={() => setVisible((v) => !v)} // Prevent losing focus
+            onPress={toggleVisibility}
+            onPressIn={() => {}} // prevents blur
+            style={styles.iconContainer}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            accessibilityRole="button"
-            accessibilityLabel={visible ? "Hide password" : "Show password"}
           >
-            <Ionicons
-              name={visible ? "eye" : "eye-off"}
-              size={scale(20)}
-              color="#FFFFFF"
-            />
+            <Animated.View style={{ opacity: opacityAnim }}>
+              <Ionicons
+                name={visible ? "eye" : "eye-off"}
+                size={iconSize}
+                color="#FFFFFF"
+              />
+            </Animated.View>
           </TouchableOpacity>
         </View>
       </View>
@@ -78,11 +83,14 @@ const PasswordInputField = forwardRef<TextInput, PasswordInputFieldProps>(
   }
 );
 
-PasswordInputField.displayName = "PasswordInputField";
-export default PasswordInputField;
+DelalunaPasswordInput.displayName = "DelalunaPasswordInput";
+
+export default DelalunaPasswordInput;
 
 const styles = StyleSheet.create({
-  container: { width: "100%" },
+  container: {
+    width: "100%",
+  },
   field: {
     position: "relative",
     borderRadius: 12,
@@ -92,17 +100,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   input: {
-    color: "#fff",
-    paddingVertical: 10,
+    width: "100%",
+    color: "#FFFFFF",
+    paddingVertical: 12,
     paddingHorizontal: 14,
     fontSize: 16,
   },
-  toggleWrap: {
+  iconContainer: {
     position: "absolute",
+    right: 12,
     top: 0,
-    right: 0,
     bottom: 0,
-    alignItems: "center",
+    width: 40, /// ← FIXED WIDTH (no movement / no jump)
     justifyContent: "center",
+    alignItems: "center",
   },
 });
