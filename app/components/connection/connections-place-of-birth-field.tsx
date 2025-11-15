@@ -37,7 +37,7 @@ export default function ConnectionsPlaceOfBirthField({ value, onChange }: Props)
     if (isIDK(text)) {
       setIsUnknown(true);
 
-      // 🔥 UI shows IDK, DB receives default fallback
+      // UI shows IDK, DB receives default fallback
       onChange({
         "Place of Birth": DEFAULT_PLACE.label,
         isPlaceOfBirthUnknown: true,

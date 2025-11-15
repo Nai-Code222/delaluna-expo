@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
-import DelalunaToggle from "./delaluna-toggle.component";
 import ConnectionLocationAutocomplete from "../connection/connection-location-autocomplete.component";
 
 export type FieldType = "text" | "date" | "time" | "location";
@@ -18,46 +17,31 @@ export interface FieldConfig {
   label: string;
   type: FieldType;
   placeholder?: string;
-  value?: string | number | boolean;
+  value?: string | number;
   editable?: boolean;
-  hasUnknownToggle?: boolean;
 }
 
-export interface DelalunaInputRowProps<
-  T extends string | boolean | number = string | boolean | number
-> {
+export interface DelalunaInputRowProps {
   fields: FieldConfig[];
-  onChange: (values: Record<string, T>) => void;
+  onChange: (values: Record<string, any>) => void;
   onScrollToggle?: (enabled: boolean) => void;
-  mode?: "new" | "edit";
 }
 
 export default function DelalunaInputRow({
   fields,
   onChange,
   onScrollToggle,
-  mode = "new",
 }: DelalunaInputRowProps) {
   const [formValues, setFormValues] = useState<Record<string, string>>(
     Object.fromEntries(fields.map((f) => [f.label, String(f.value ?? "")]))
   );
 
-  const [unknownStates, setUnknownStates] = useState<Record<string, boolean>>({});
   const [activePicker, setActivePicker] = useState<string | null>(null);
 
   const handleChange = (label: string, val: string) => {
     const updated = { ...formValues, [label]: val };
     setFormValues(updated);
-    onChange({ ...updated, ...unknownStates });
-  };
-
-  const handleUnknownToggle = (label: string, val: boolean) => {
-    const newValue = val ? "I don't know" : "";
-    const updated = { ...formValues, [label]: newValue };
-    const newUnknown = { ...unknownStates, [label]: val };
-    setFormValues(updated);
-    setUnknownStates(newUnknown);
-    onChange({ ...updated, ...newUnknown });
+    onChange(updated);
   };
 
   const handleDateConfirm = (label: string, date: Date) => {
@@ -76,7 +60,6 @@ export default function DelalunaInputRow({
     <View style={styles.container}>
       {fields.map((field) => {
         const value = formValues[field.label];
-        const isUnknown = unknownStates[field.label];
         const isEditable = field.editable ?? true;
 
         return (
@@ -84,17 +67,19 @@ export default function DelalunaInputRow({
             <View style={styles.row}>
               <Text style={styles.label}>{field.label}</Text>
 
+              {/* DATE FIELD */}
               {field.type === "date" ? (
                 <>
                   <TouchableOpacity
                     onPress={() => isEditable && setActivePicker(field.label)}
-                    activeOpacity={0.7}
                     style={styles.inputBox}
+                    activeOpacity={0.7}
                   >
                     <Text style={[styles.text, !value && { opacity: 0.6 }]}>
                       {value || field.placeholder || "Select date"}
                     </Text>
                   </TouchableOpacity>
+
                   {activePicker === field.label && (
                     <DateTimePickerModal
                       isVisible
@@ -107,15 +92,17 @@ export default function DelalunaInputRow({
                 </>
               ) : field.type === "time" ? (
                 <>
+                  {/* TIME FIELD */}
                   <TouchableOpacity
                     onPress={() => isEditable && setActivePicker(field.label)}
-                    activeOpacity={0.7}
                     style={styles.inputBox}
+                    activeOpacity={0.7}
                   >
                     <Text style={[styles.text, !value && { opacity: 0.6 }]}>
                       {value || field.placeholder || "Select time"}
                     </Text>
                   </TouchableOpacity>
+
                   {activePicker === field.label && (
                     <DateTimePickerModal
                       isVisible
@@ -127,10 +114,10 @@ export default function DelalunaInputRow({
                   )}
                 </>
               ) : field.type === "location" ? (
-                // ✅ Styled exactly like other input boxes
+                // LOCATION AUTOCOMPLETE
                 <View style={styles.inputBox}>
                   <ConnectionLocationAutocomplete
-                    value={isUnknown ? "I don't know" : value}
+                    value={value}
                     onInputChange={(text) => handleChange(field.label, text)}
                     onResultsVisibilityChange={(visible) =>
                       onScrollToggle?.(!visible)
@@ -149,11 +136,12 @@ export default function DelalunaInputRow({
                   />
                 </View>
               ) : (
+                // NORMAL TEXT FIELD
                 <TextInput
                   editable={isEditable}
                   value={value}
                   placeholder={field.placeholder}
-                  placeholderTextColor="rgba(255, 255, 255, 0.95)"
+                  placeholderTextColor="rgba(255,255,255,0.6)"
                   onChangeText={(t) => handleChange(field.label, t)}
                   style={[styles.inputBox, !isEditable && { opacity: 0.6 }]}
                 />
@@ -166,7 +154,7 @@ export default function DelalunaInputRow({
   );
 }
 
-/* 🎨 Styles */
+/* 🎨 CLEAN STYLES — MATCH YOUR PURPLE THEME */
 const styles = StyleSheet.create({
   container: {
     width: "100%",
@@ -200,13 +188,5 @@ const styles = StyleSheet.create({
   text: {
     color: "#FFFFFF",
     fontSize: moderateScale(14),
-  },
-  toggleWrapperOutside: {
-    marginTop: verticalScale(10),
-    marginLeft: scale(115),
-    alignItems: "flex-start",
-    zIndex: 10,
-    elevation: 10,
-    position: "relative",
   },
 });
