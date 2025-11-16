@@ -11,7 +11,8 @@ import {
 } from "firebase/firestore";
 import { getFunctions } from "firebase/functions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getReactNativePersistence, initializeAuth } from "firebase/auth";
+import { initializeAuth } from "firebase/auth";
+import { getReactNativePersistence } from "firebase/auth/react-native";
 
 // 🧩 Grab Firebase settings from Expo extra config
 const extra =
