@@ -26,7 +26,7 @@ import { auth } from '@/firebaseConfig';
 import PasswordInputField from '../component-utils/password-input-field';
 import LocationAutocomplete from './location-autocomplete';
 import PolicyModal from './policy-modals';
-import { privacyPolicy, termsAndConditions } from '@/app/assets/legal/legal-texts';
+import { privacyPolicy, termsAndConditions } from '@/src/assets/legal/legal-texts';
 
 const INPUT_H = verticalScale(50);
 const FIELD_BORDER = 'rgba(142, 68, 173, 0.6)';
