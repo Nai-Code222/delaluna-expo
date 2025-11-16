@@ -1,26 +1,61 @@
-// ✅ Polyfills must come FIRST
+// -------------------------------------------------------------
+// Required polyfills for Firebase + React Native / Expo
+// -------------------------------------------------------------
 import "text-encoding-polyfill";
 import "react-native-get-random-values";
 
 import Constants from "expo-constants";
-import { getApp, getApps, initializeApp, type FirebaseOptions } from "firebase/app";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// -------------------------------------------------------------
+// Firebase Core
+// -------------------------------------------------------------
+import {
+  initializeApp,
+  getApps,
+  getApp,
+  FirebaseOptions,
+} from "firebase/app";
+
+// -------------------------------------------------------------
+// Firebase AUTH (React Native)
+// -------------------------------------------------------------
+// With Firebase v11, `getReactNativePersistence` is imported from:
+//    firebase/auth
+// And TypeScript type resolution is fixed via tsconfig.json path override
+import {
+  initializeAuth,
+  getReactNativePersistence,
+} from "firebase/auth";
+
+// -------------------------------------------------------------
+// ☁ Firebase Firestore (new style local persistence)
+// -------------------------------------------------------------
 import {
   initializeFirestore,
   persistentLocalCache,
   persistentSingleTabManager,
 } from "firebase/firestore";
-import { getFunctions } from "firebase/functions";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { initializeAuth } from "firebase/auth";
-import { getReactNativePersistence } from "firebase/auth/react-native";
 
-// 🧩 Grab Firebase settings from Expo extra config
+
+
+// -------------------------------------------------------------
+// ⚡ Cloud Functions
+// -------------------------------------------------------------
+import { getFunctions } from "firebase/functions";
+
+// -------------------------------------------------------------
+// 🧩 Load Firebase keys from app.config.js (Expo Extra)
+// -------------------------------------------------------------
 const extra =
   (Constants.expoConfig as any)?.extra ??
   (Constants.manifest as any)?.extra;
-if (!extra) throw new Error("Missing Expo constants extra");
 
-// 🔥 Firebase config (from app.config.js / app.json)
+if (!extra) throw new Error("❌ Missing Firebase config in Expo extra");
+
+// -------------------------------------------------------------
+// 🔥 Firebase Config
+// -------------------------------------------------------------
 const firebaseConfig: FirebaseOptions = {
   apiKey: extra.FIREBASE_API_KEY,
   authDomain: extra.FIREBASE_AUTH_DOMAIN,
@@ -30,24 +65,34 @@ const firebaseConfig: FirebaseOptions = {
   appId: extra.FIREBASE_APP_ID,
 };
 
-// ✅ Initialize or re-use the app
+// -------------------------------------------------------------
+// ⚙️ Initialize Firebase App (singleton)
+// -------------------------------------------------------------
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-// 💾 Firestore — with modern offline persistence
-export const db = initializeFirestore(app, {
-  experimentalAutoDetectLongPolling: true, // 🩹 Fixes Android connectivity edge cases
-  localCache: persistentLocalCache({
-    tabManager: persistentSingleTabManager({}), // ✅ enables multi-tab safe offline persistence
-  }),
-});
-
-// 🔐 Auth (React-Native compatible)
+// -------------------------------------------------------------
+// 🔐 AUTH (React Native persistence)
+// -------------------------------------------------------------
 export const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
 
-// ⚡ Cloud Functions — specify deployed region
+// -------------------------------------------------------------
+// ☁ FIRESTORE (offline-first, RN safe)
+// -------------------------------------------------------------
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true, // fixes Android slow networks
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager({}),
+  }),
+});
+
+// -------------------------------------------------------------
+// ⚡ FUNCTIONS
+// -------------------------------------------------------------
 export const functions = getFunctions(app, "us-central1");
 
-// 📦 Export app for re-use
+// -------------------------------------------------------------
+// 📦 EXPORT APP
+// -------------------------------------------------------------
 export { app };
