@@ -12,7 +12,7 @@ import { scale, verticalScale, moderateScale } from "@/utils/responsive";
 interface Props {
   value: string;
   onChange: (values: Record<string, any>) => void;
-  onRequestDismiss?: () => void;         // ⭐ NEW — parent tap-away dismissal
+  onRequestDismiss?: () => void; // request parent to dismiss all open fields
 }
 
 const DEFAULT_PLACE = {
@@ -29,17 +29,15 @@ const ConnectionsPlaceOfBirthField = forwardRef(
       value?.toLowerCase()?.includes("i don't") ?? false
     );
 
-    /** This ref controls the autocomplete’s dismissSuggestions()  */
     const autocompleteRef = useRef<{ dismissSuggestions: () => void }>(null);
 
-    /** Allow parent to call dismissSuggestions() */
     useImperativeHandle(ref, () => ({
       dismissSuggestions: () => {
         autocompleteRef.current?.dismissSuggestions();
       },
     }));
 
-    /** SELECT from suggestions */
+    /**  SELECT FROM RESULTS  */
     const handleSelect = (place: any) => {
       setIsUnknown(false);
 
@@ -51,12 +49,11 @@ const ConnectionsPlaceOfBirthField = forwardRef(
         birthTimezone: place.timezone,
       });
 
-      // ⭐ Do NOT reopen suggestions after selecting
       autocompleteRef.current?.dismissSuggestions();
       onRequestDismiss?.();
     };
 
-    /** TYPING in search */
+    /**  USER TYPES  */
     const handleInputChange = (text: string) => {
       if (isUnknown) setIsUnknown(false);
 
@@ -66,16 +63,14 @@ const ConnectionsPlaceOfBirthField = forwardRef(
       });
     };
 
-    /** Toggle for "I don't know" */
+    /**  TOGGLE UNKNOWN  */
     const handleToggle = (val: boolean) => {
       setIsUnknown(val);
 
-      // Always dismiss results when toggling
       autocompleteRef.current?.dismissSuggestions();
       onRequestDismiss?.();
 
       if (val) {
-        // UI shows "I don't know" — backend uses Greenwich default
         onChange({
           "Place of Birth": "I don't know",
           isPlaceOfBirthUnknown: true,
@@ -93,26 +88,33 @@ const ConnectionsPlaceOfBirthField = forwardRef(
 
     return (
       <View>
-        {/* FIELD BOX */}
         <View style={styles.wrapper}>
           <View style={styles.row}>
             <Text style={styles.label}>Place of Birth</Text>
 
             <View style={styles.right}>
-              <ConnectionLocationAutocomplete
-                ref={autocompleteRef}
-                value={isUnknown ? "I don't know" : value}
-                disabled={isUnknown}
-                onSelect={handleSelect}
-                onInputChange={handleInputChange}
-                onResultsVisibilityChange={() => {}} // optional no-op
-                onSubmitRequest={() => autocompleteRef.current?.dismissSuggestions()}
-              />
+              {/* -------------------------------
+                👇 REPLACE INPUT COMPLETELY WHEN UNKNOWN
+              -------------------------------- */}
+              {isUnknown ? (
+                <Text style={styles.disabledText}>I don't know</Text>
+              ) : (
+                <ConnectionLocationAutocomplete
+                  ref={autocompleteRef}
+                  value={value}              // never override value → no flicker
+                  disabled={false}
+                  onSelect={handleSelect}
+                  onInputChange={handleInputChange}
+                  onResultsVisibilityChange={() => {}}
+                  onSubmitRequest={() =>
+                    autocompleteRef.current?.dismissSuggestions()
+                  }
+                />
+              )}
             </View>
           </View>
         </View>
 
-        {/* I DON'T KNOW TOGGLE */}
         <View style={styles.toggleRow}>
           <DelalunaToggle
             label="I don't know"
@@ -124,6 +126,7 @@ const ConnectionsPlaceOfBirthField = forwardRef(
     );
   }
 );
+
 
 /* Styles */
 const styles = StyleSheet.create({
@@ -157,6 +160,11 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(10),
     marginRight: scale(5),
   },
+  disabledText: {
+  color: "rgba(255,255,255,0.8)",
+  fontSize: moderateScale(15),
+  paddingVertical: verticalScale(10),
+},
 });
 
 export default ConnectionsPlaceOfBirthField;

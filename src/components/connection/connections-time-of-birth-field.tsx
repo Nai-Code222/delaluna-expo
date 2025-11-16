@@ -1,8 +1,4 @@
-import React, {
-  useState,
-  forwardRef,
-  useImperativeHandle,
-} from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import {
   View,
   Text,
@@ -14,132 +10,113 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { scale, verticalScale, moderateScale } from "@/utils/responsive";
 import DelalunaToggle from "../component-utils/delaluna-toggle.component";
 
-const DEFAULT_TIME = "12:00 PM"; // backend fallback
+const DEFAULT_TIME = "12:00 PM";
 
-export type ConnectionsTimeOfBirthFieldRef = {
-  dismissPicker: () => void;
-};
-
-interface Props {
+interface ConnectionsTimeOfBirthFieldProps {
   value?: string;
   onChange: (values: Record<string, any>) => void;
+  onRequestDismiss?: () => void; // ⭐ optional but NOT used automatically
 }
 
-const ConnectionsTimeOfBirthField = forwardRef<ConnectionsTimeOfBirthFieldRef, Props>(
-  ({ value, onChange }, ref) => {
-    const [showPicker, setShowPicker] = useState(false);
-    const [isUnknown, setIsUnknown] = useState(
-      value?.toLowerCase()?.includes("i don't") ?? false
-    );
+const ConnectionsTimeOfBirthField = forwardRef<
+  { dismissSuggestions?: () => void },
+  ConnectionsTimeOfBirthFieldProps
+>(({ value, onChange, onRequestDismiss }, ref) => {
+  const [showPicker, setShowPicker] = useState(false);
+  const [isUnknown, setIsUnknown] = useState(
+    value?.toLowerCase()?.includes("i don't") ?? false
+  );
 
-    /** Expose dismiss method to parent */
-    useImperativeHandle(ref, () => ({
-      dismissPicker: () => setShowPicker(false),
-    }));
+  useImperativeHandle(ref, () => ({
+    dismissSuggestions: () => {},
+  }));
 
-    /** Convert Date → 12hr formatted time string */
-    const formatTime12hr = (date: Date) => {
-      let hours = date.getHours();
-      const minutes = date.getMinutes().toString().padStart(2, "0");
-      const ampm = hours >= 12 ? "PM" : "AM";
+  const isEmptyValue = !value || value.trim() === "";
 
-      hours = hours % 12;
-      hours = hours || 12; // 0 → 12
+  const formatTime12hr = (date: Date) => {
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
 
-      return `${hours}:${minutes} ${ampm}`;
-    };
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes} ${ampm}`;
+  };
 
-    /** When user selects a time */
-    const handleConfirm = (date: Date) => {
-      const formatted = formatTime12hr(date);
+  const handleConfirm = (date: Date) => {
+    const formatted = formatTime12hr(date);
 
+    onChange({
+      "Time of Birth": formatted,
+      isBirthTimeUnknown: false,
+    });
+
+    setShowPicker(false);
+    setIsUnknown(false);
+  };
+
+  const handleUnknownToggle = (val: boolean) => {
+    setIsUnknown(val);
+
+    if (val) {
       onChange({
-        "Time of Birth": formatted,
+        "Time of Birth": "I don't know",
+        isBirthTimeUnknown: true,
+        defaultBirthTime: DEFAULT_TIME,
+      });
+    } else {
+      onChange({
+        "Time of Birth": "",
         isBirthTimeUnknown: false,
       });
+    }
+  };
 
-      setShowPicker(false);
-      setIsUnknown(false);
-    };
+  return (
+    <View style={styles.wrapper}>
+      {/* MAIN ROW */}
+      <View style={styles.row}>
+        <Text style={styles.label}>Time of Birth</Text>
 
-    /** Toggle: I don't know */
-    const handleUnknownToggle = (val: boolean) => {
-      setIsUnknown(val);
-
-      // Always close picker when toggled
-      setShowPicker(false);
-
-      if (val) {
-        onChange({
-          "Time of Birth": "I don't know",
-          isBirthTimeUnknown: true,
-          defaultBirthTime: DEFAULT_TIME,
-        });
-      } else {
-        onChange({
-          "Time of Birth": "",
-          isBirthTimeUnknown: false,
-        });
-      }
-    };
-
-    const isEmptyValue = !value || value.trim() === "";
-
-    return (
-      <View style={styles.wrapper}>
-        {/* MAIN ROW */}
-        <View
-          style={[
-            styles.row,
-            isUnknown && { opacity: 0.4 },
-          ]}
-          pointerEvents={isUnknown ? "none" : "auto"}
-        >
-          <Text style={styles.label}>Time of Birth</Text>
-
-          <View style={styles.rightContainer}>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.inputBox}
-              onPress={() => setShowPicker(true)}
+        <View style={styles.rightContainer}>
+          {/* 👇 No fade, no disable */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={styles.inputBox}
+            onPress={() => !isUnknown && setShowPicker(true)}
+          >
+            <Text
+              style={[
+                styles.text,
+                (isEmptyValue && !isUnknown) && { color: "rgba(255,255,255,0.6)" },
+              ]}
             >
-              <Text
-                style={[
-                  styles.text,
-                  (isEmptyValue && !isUnknown) && { color: "rgba(255,255,255,0.6)" },
-                ]}
-              >
-                {isUnknown ? "I don't know" : value || "Select time"}
-              </Text>
-            </TouchableOpacity>
-          </View>
+              {isUnknown ? "I don't know" : value || "Select time"}
+            </Text>
+          </TouchableOpacity>
         </View>
+      </View>
 
-        {/* I DON'T KNOW TOGGLE */}
-        <View style={styles.toggleRow}>
-          <DelalunaToggle
-            label="I don't know"
-            value={isUnknown}
-            onToggle={handleUnknownToggle}
-          />
-        </View>
-
-        {/* TIME PICKER */}
-        <DateTimePickerModal
-          isVisible={showPicker}
-          mode="time"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
-          onConfirm={handleConfirm}
-          onCancel={() => setShowPicker(false)}
+      {/* TOGGLE */}
+      <View style={styles.toggleRow}>
+        <DelalunaToggle
+          label="I don't know"
+          value={isUnknown}
+          onToggle={handleUnknownToggle}
         />
       </View>
-    );
-  }
-);
 
-export default ConnectionsTimeOfBirthField;
+      {/* TIME PICKER */}
+      <DateTimePickerModal
+        isVisible={showPicker}
+        mode="time"
+        display={Platform.OS === "ios" ? "spinner" : "default"}
+        onConfirm={handleConfirm}
+        onCancel={() => setShowPicker(false)}
+      />
+    </View>
+  );
+});
 
-/* Styles */
 const styles = StyleSheet.create({
   wrapper: {
     marginBottom: verticalScale(10),
@@ -182,3 +159,6 @@ const styles = StyleSheet.create({
     marginRight: scale(5),
   },
 });
+
+export default ConnectionsTimeOfBirthField;
+

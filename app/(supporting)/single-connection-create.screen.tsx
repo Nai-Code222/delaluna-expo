@@ -14,19 +14,24 @@ import {
   Alert,
 } from "react-native";
 
+import {
+  PersonBirthData,
+  PersonBirthUpdate,
+} from "@/model/connection.types";
+
 import { ThemeContext } from "../theme-context";
-import DelalunaToggle from "../../src/components/component-utils/delaluna-toggle.component";
+import DelalunaToggle from "@/components/component-utils/delaluna-toggle.component";
 import DelalunaInputRow, {
   FieldConfig,
   FieldType,
-} from "../../src/components/component-utils/delaluna-input-form.component";
-import HeaderNav from "../../src/components/component-utils/header-nav";
-import AuthContext from "../../src/backend/auth-context";
+} from "@/components/component-utils/delaluna-input-form.component";
+import HeaderNav from "@/components/component-utils/header-nav";
+import AuthContext from "@/backend/auth-context";
 import { httpsCallable } from "firebase/functions";
-import HomeSignsDisplay from "../../src/components/home/home-signs-display.component";
-import ConnectionsPlaceOfBirthField from "../../src/components/connection/connections-place-of-birth-field";
-import ConnectionsTimeOfBirthField from "../../src/components/connection/connections-time-of-birth-field";
-import GlassButton from "../../src/components/buttons/glass-button";
+import HomeSignsDisplay from "@/components/home/home-signs-display.component";
+import ConnectionsPlaceOfBirthField from "@/components/connection/connections-place-of-birth-field";
+import ConnectionsTimeOfBirthField from "@/components/connection/connections-time-of-birth-field";
+import GlassButton from "@/components/buttons/glass-button";
 import useRenderBackground from "@/hooks/useRenderBackground";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { verticalScale, scale } from "@/utils/responsive";
@@ -50,15 +55,30 @@ export default function SingleConnectionCreateScreen() {
 
   const [isMe, setIsMe] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [firstPerson, setFirstPerson] = useState<Record<string, any>>({});
-  const [secondPerson, setSecondPerson] = useState<Record<string, any>>({});
+
+  /** FIRST PERSON */
+  const [firstPerson, setFirstPerson] = useState<PersonBirthData>({
+    "First Name": "",
+    "Last Name": "",
+    Birthday: "",
+    "Place of Birth": "",
+    "Time of Birth": "",
+  });
+
+  /** SECOND PERSON */
+  const [secondPerson, setSecondPerson] = useState<PersonBirthData>({
+    "First Name": "",
+    "Last Name": "",
+    Birthday: "",
+    "Place of Birth": "",
+    "Time of Birth": "",
+  });
+
   const [relationshipType, setRelationshipType] = useState<string | null>(null);
 
   const fade = useRef(new Animated.Value(0)).current;
 
-  const getSignsCallable = httpsCallable(functions, "getSigns");
-
-  /** Fade animation on theme change */
+  /** Fade on theme change */
   useEffect(() => {
     fade.setValue(0);
     Animated.timing(fade, {
@@ -69,22 +89,23 @@ export default function SingleConnectionCreateScreen() {
     }).start();
   }, [theme]);
 
-  /** Populate Me card data */
+  /** Populate ME with signs */
   useEffect(() => {
-    if (!isMe && userRecord) {
+    if (isMe && userRecord) {
       setFirstPerson({
         "First Name": toTitleCase(userRecord.firstName || ""),
         "Last Name": toTitleCase(userRecord.lastName || ""),
         "Sun Sign": toTitleCase(userRecord.sunSign || ""),
         "Moon Sign": toTitleCase(userRecord.moonSign || ""),
         "Rising Sign": toTitleCase(userRecord.risingSign || ""),
+        Birthday: "",
+        "Place of Birth": "",
+        "Time of Birth": "",
       });
-    } else {
-      setFirstPerson({});
     }
   }, [isMe, userRecord]);
 
-  /** FIELD DEFINITIONS */
+  /** Birth fields */
   const birthFields: FieldConfig[] = [
     { label: "First Name", type: "text", placeholder: "Enter first name" },
     { label: "Last Name", type: "text", placeholder: "Enter last name" },
@@ -93,11 +114,16 @@ export default function SingleConnectionCreateScreen() {
     { label: "Time of Birth", type: "time", placeholder: "Select time" },
   ];
 
+  /** Ensure ME fields never contain boolean */
+  const sanitizeValue = (val: any): string | number | undefined =>
+    typeof val === "boolean" ? "" : val;
+
+  /** ME fields (LOCKED) */
   const firstFields: FieldConfig[] = isMe
     ? Object.keys(firstPerson).map((label) => ({
       label,
       type: "text" as FieldType,
-      value: firstPerson[label],
+      value: sanitizeValue(firstPerson[label as keyof PersonBirthData]),
       editable: false,
     }))
     : birthFields;
@@ -124,44 +150,16 @@ export default function SingleConnectionCreateScreen() {
   const isEmpty = (val: any) =>
     val == null || (typeof val === "string" && val.trim().length === 0);
 
-  /** Default fallback */
-  const fillDefaultsIfNeeded = (person: Record<string, any>) => {
-    const cloned = { ...person };
-    const place = cloned["Place of Birth"];
-    const time = cloned["Time of Birth"];
-
-    if (!place) {
-      cloned["Place of Birth"] = GREENWICH.place;
-      cloned.birthLat = GREENWICH.lat;
-      cloned.birthLon = GREENWICH.lon;
-      cloned.birthTimezone = GREENWICH.tzone;
-    }
-
-    if (!time) {
-      cloned["Time of Birth"] = GREENWICH.time;
-    }
-
-    return cloned;
-  };
-
-  // Refs to dismiss suggestions
-  const firstLocationRef = useRef<{ dismissSuggestions: () => void }>(null);
-  const secondLocationRef = useRef<{ dismissSuggestions: () => void }>(null);
-
-  const dismissAllSuggestions = () => {
-    firstLocationRef.current?.dismissSuggestions();
-    secondLocationRef.current?.dismissSuggestions();
-  };
-
-
-  const validatePerson = (person: Record<string, any>, label: string) => {
-    const required = [
+  /** Validate required fields */
+  const validatePerson = (person: PersonBirthData, label: string) => {
+    const required: (keyof PersonBirthData)[] = [
       "First Name",
       "Last Name",
       "Birthday",
       "Place of Birth",
       "Time of Birth",
     ];
+
     const missing = required.filter((f) => isEmpty(person[f]));
     if (missing.length > 0) {
       Alert.alert(
@@ -173,6 +171,15 @@ export default function SingleConnectionCreateScreen() {
     return true;
   };
 
+  /** Dismiss suggestion refs */
+  const firstLocationRef = useRef<{ dismissSuggestions: () => void }>(null);
+  const secondLocationRef = useRef<{ dismissSuggestions: () => void }>(null);
+
+  const dismissAllSuggestions = () => {
+    firstLocationRef.current?.dismissSuggestions();
+    secondLocationRef.current?.dismissSuggestions();
+  };
+
   return renderBackground(
     <Animated.View style={[styles.container, { opacity: fade }]}>
       <HeaderNav title="New Connection" leftLabel="Cancel" />
@@ -180,9 +187,7 @@ export default function SingleConnectionCreateScreen() {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FFFFFF" />
-          <Text style={styles.loadingText}>
-            Calculating and saving connection...
-          </Text>
+          <Text style={styles.loadingText}>Calculating and saving connection...</Text>
         </View>
       ) : (
         <KeyboardAvoidingView
@@ -204,11 +209,7 @@ export default function SingleConnectionCreateScreen() {
                   <Text style={styles.titleText}>{item.title}</Text>
 
                   {item.toggle && (
-                    <DelalunaToggle
-                      label="Me"
-                      value={isMe}
-                      onToggle={setIsMe}
-                    />
+                    <DelalunaToggle label="Me" value={isMe} onToggle={setIsMe} />
                   )}
                 </View>
 
@@ -229,7 +230,7 @@ export default function SingleConnectionCreateScreen() {
                     />
                   </View>
                 ) : (
-                  /* FIELDS */
+                  /** Render fields */
                   item.fields.map((field) => {
                     if (field.label === "Place of Birth") {
                       return (
@@ -237,16 +238,19 @@ export default function SingleConnectionCreateScreen() {
                           key={field.label}
                           value={
                             item.key === "first"
-                              ? firstPerson["Place of Birth"]
-                              : secondPerson["Place of Birth"]
+                              ? firstPerson["Place of Birth"] ?? ""
+                              : secondPerson["Place of Birth"] ?? ""
                           }
-                          onChange={(values) =>
-                            item.onChange((prev: any) => ({
+                          onChange={(values: PersonBirthUpdate) =>
+                            item.onChange((prev: PersonBirthData) => ({
                               ...prev,
                               ...values,
                             }))
                           }
+                          ref={item.key === "first" ? firstLocationRef : secondLocationRef}
+                          onRequestDismiss={() => dismissAllSuggestions()}
                         />
+
                       );
                     }
 
@@ -259,12 +263,13 @@ export default function SingleConnectionCreateScreen() {
                               ? firstPerson["Time of Birth"]
                               : secondPerson["Time of Birth"]
                           }
-                          onChange={(values) =>
-                            item.onChange((prev: any) => ({
+                          onChange={(values: PersonBirthUpdate) =>
+                            item.onChange((prev: PersonBirthData) => ({
                               ...prev,
                               ...values,
                             }))
                           }
+                          onRequestDismiss={() => dismissAllSuggestions()}
                         />
                       );
                     }
@@ -275,14 +280,15 @@ export default function SingleConnectionCreateScreen() {
                         fields={[
                           {
                             ...field,
-                            value:
+                            value: sanitizeValue(
                               item.key === "first"
-                                ? firstPerson[field.label]
-                                : secondPerson[field.label],
+                                ? firstPerson[field.label as keyof PersonBirthData]
+                                : secondPerson[field.label as keyof PersonBirthData]
+                            ),
                           },
                         ]}
-                        onChange={(values) =>
-                          item.onChange((prev: any) => ({
+                        onChange={(values: PersonBirthUpdate) =>
+                          item.onChange((prev: PersonBirthData) => ({
                             ...prev,
                             ...values,
                           }))
@@ -309,10 +315,12 @@ export default function SingleConnectionCreateScreen() {
                           key={option}
                           style={[
                             styles.relationshipButton,
-                            relationshipType === option &&
-                            styles.relationshipSelected,
+                            relationshipType === option && styles.relationshipSelected,
                           ]}
-                          onPress={() => setRelationshipType(option)}
+                          onPress={() => {
+                            dismissAllSuggestions();
+                            setRelationshipType(option);
+                          }}
                           activeOpacity={0.8}
                         >
                           <Image
@@ -333,7 +341,7 @@ export default function SingleConnectionCreateScreen() {
             )}
             ListFooterComponent={
               <View style={styles.footerSections}>
-                <GlassButton title={"Thassit"} onPress={() => { }} />
+                <GlassButton title="Thassit" onPress={() => { }} />
               </View>
             }
           />
@@ -343,14 +351,14 @@ export default function SingleConnectionCreateScreen() {
   );
 }
 
-/* STYLES */
+/* ------------------  STYLES (UNCHANGED) ------------------ */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
     backgroundColor: "transparent",
   },
-
   section: {
     width: "100%",
     paddingHorizontal: 10,
@@ -359,25 +367,21 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     gap: verticalScale(12),
   },
-
   userRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-
   titleText: {
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "600",
   },
-
   divider: {
     height: 1,
     backgroundColor: "rgba(255,255,255,0.15)",
     marginVertical: verticalScale(6),
   },
-
   meCard: {
     padding: verticalScale(20),
     borderRadius: scale(12),
@@ -387,19 +391,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: verticalScale(15),
   },
-
   meName: {
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "700",
   },
-
   relationshipRow: {
     flexDirection: "row",
     height: 85,
     marginTop: verticalScale(5),
   },
-
   relationshipButton: {
     flex: 1,
     borderWidth: 1,
@@ -409,36 +410,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   relationshipSelected: {
     backgroundColor: "rgba(142,68,173,0.7)",
     borderColor: "#FFFFFF",
   },
-
   relationshipIcon: {
     width: scale(65),
     height: scale(65),
     opacity: 0.8,
     tintColor: "rgba(255,255,255,0.85)",
   },
-
   relationshipIconSelected: {
     opacity: 1,
     tintColor: "#FFFFFF",
   },
-
   footerSections: {
     paddingBottom: verticalScale(35),
     alignItems: "center",
     gap: verticalScale(15),
   },
-
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-
   loadingText: {
     color: "#FFFFFF",
     marginTop: 12,
