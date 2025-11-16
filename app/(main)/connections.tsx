@@ -14,21 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { httpsCallable } from "firebase/functions";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-
-// ✅ alias-correct Firebase
-
-// ❌ WRONG → "../theme-context"
-// ❌ WRONG → "@src/theme-context"
-// ✅ Correct
-
-// 🚫 WRONG → "@/hooks/useRenderBackground"
-// 🚫 WRONG → "../hooks/useRenderBackground"
-// ✅ Correct
 import useRenderBackground from "@/hooks/useRenderBackground";
-
-// 🚫 WRONG → "../../src/components/..."
-// 🚫 WRONG → "../@/..."
-// ✅ Correct
 import HeaderNav from "@/components/component-utils/header-nav";
 import AddConnectionButton from "@/components/buttons/add-connection-button.component";
 import ConnectionListItem from "@/components/connection/connection-list-item.component";
@@ -115,9 +101,9 @@ export default function ConnectionsScreen() {
   const fade = useRef(new Animated.Value(0)).current;
 
   const goToNewConnectionScreen = () =>
-    router.push("/(supporting)/single-connection-create.screen");
+    router.replace("/(supporting)/single-connection-create.screen");
 
-  // ✨ Fade animation
+  // Fade animation
   useEffect(() => {
     Animated.timing(fade, {
       toValue: 1,
