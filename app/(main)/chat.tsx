@@ -13,7 +13,8 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ThemeContext } from "../theme-context";
-import useRenderBackground from "@/src/hooks/useRenderBackground";import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
+import useRenderBackground from "@/hooks/useRenderBackground";
+import { scale, verticalScale, moderateScale } from "@/utils/responsive";
 
 type Message = {
   id: string;
@@ -139,7 +140,7 @@ export default function ChatScreen() {
         />
         <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
           <Image
-            source={require("../assets/icons/arrow-right-icon.png")}
+            source={require("@/assets/icons/arrow-right-icon.png")}
             style={styles.sendIcon}
           />
         </TouchableOpacity>

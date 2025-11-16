@@ -11,9 +11,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { ThemeContext } from "@/app/theme-context";
-import { scale, moderateScale } from "@/src/utils/responsive";
-import { HEADER_HEIGHT } from "@/src/utils/responsive-header";
+import { scale, moderateScale } from "@/utils/responsive";
+import { HEADER_HEIGHT } from "@/utils/responsive-header";
+import { ThemeContext } from "../../../app/theme-context";
 
 type HeaderNavProps = {
   title?: string;

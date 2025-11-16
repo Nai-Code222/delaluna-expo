@@ -8,8 +8,8 @@ import {
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import DelalunaToggle from "../component-utils/delaluna-toggle.component";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
-import { applyUnknownTime } from "@/src/utils/answers.helpers";
+import { scale, verticalScale, moderateScale } from "@/utils/responsive";
+import { applyUnknownTime } from "@/utils/answers.helpers";
 
 interface ConnectionsTimeOfBirthFieldProps {
   value?: string;
@@ -42,7 +42,6 @@ export default function ConnectionsTimeOfBirthField({
     setIsUnknown(val);
 
     if (val) {
-      // 🔥 Same behavior as Place of Birth
       onChange(applyUnknownTime({}));
     } else {
       onChange({

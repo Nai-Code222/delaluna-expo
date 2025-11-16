@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db } from "@/firebaseConfig";
+import { db } from "../../firebaseConfig";
 
 export function useUserConnections(userId?: string) {
   const [connections, setConnections] = useState<any[]>([]);

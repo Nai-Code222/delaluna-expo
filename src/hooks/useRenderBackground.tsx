@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { View, ImageBackground, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { ThemeContext } from "../theme-context";
+import { ThemeContext } from "../../app/theme-context";
 
 /**
  * Returns a function that wraps children in the correct themed background.

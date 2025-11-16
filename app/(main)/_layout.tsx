@@ -3,9 +3,9 @@ import React, { useContext, useEffect, useRef } from 'react';
 import { Tabs } from 'expo-router';
 import { Image, ImageBackground, StyleSheet, Platform, View, Animated, Easing } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ThemeContext } from '@/app/theme-context'; // ← match file case/path
-import { LinearGradient } from 'expo-linear-gradient';
-import useRenderBackground from "@/src/hooks/useRenderBackground";
+import { ThemeContext } from '../theme-context';
+import useRenderBackground from '@/hooks/useRenderBackground';
+
 
 export default function HomeLayout() {
   const insets = useSafeAreaInsets();
@@ -44,7 +44,7 @@ export default function HomeLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <Image source={require('../assets/icons/home.png')} style={[styles.icon, { tintColor: color, width: size, height: size }]} />
+            <Image source={require('@/assets/icons/home.png')} style={[styles.icon, { tintColor: color, width: size, height: size }]} />
           ),
         }}
       />
@@ -53,7 +53,7 @@ export default function HomeLayout() {
         options={{
           title: 'Connections',
           tabBarIcon: ({ color, size }) => (
-            <Image source={require('../assets/icons/connections.png')} style={[styles.icon, { tintColor: color, width: size, height: size }]} />
+            <Image source={require('@/assets/icons/connections.png')} style={[styles.icon, { tintColor: color, width: size, height: size }]} />
           ),
         }}
       />
@@ -62,7 +62,7 @@ export default function HomeLayout() {
         options={{
           title: 'Transits',
           tabBarIcon: ({ color, size }) => (
-            <Image source={require('../assets/icons/transits.png')} style={[styles.icon, { tintColor: color, width: size, height: size }]} />
+            <Image source={require('@/assets/icons/transits.png')} style={[styles.icon, { tintColor: color, width: size, height: size }]} />
           ),
         }}
       />
@@ -71,7 +71,7 @@ export default function HomeLayout() {
         options={{
           title: 'Chat',
           tabBarIcon: ({ color, size }) => (
-            <Image source={require('../assets/icons/chat.png')} style={[styles.icon, { tintColor: color, width: size, height: size }]} />
+            <Image source={require('@/assets/icons/chat.png')} style={[styles.icon, { tintColor: color, width: size, height: size }]} />
           ),
         }}
       />

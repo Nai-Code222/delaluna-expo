@@ -14,9 +14,9 @@ import {
   query,
   getDocs,
 } from "firebase/firestore";
-import { db } from "@/firebaseConfig";
+import { db } from "../../firebaseConfig";
 import ConnectionListItem from "./connection-list-item.component";
-import { scale, verticalScale } from "@/src/utils/responsive";
+import { scale, verticalScale } from "@/utils/responsive";
 
 interface ConnectionListProps {
   userId: string;

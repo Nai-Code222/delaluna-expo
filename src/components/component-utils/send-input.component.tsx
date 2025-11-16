@@ -10,7 +10,7 @@ import {
   Text,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { scale, verticalScale } from "@/src/utils/responsive";
+import { scale, verticalScale } from "@/utils/responsive";
 
 interface SendInputProps {
   placeholder?: string;

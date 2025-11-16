@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../src/backend/auth-context';
 import { Buffer } from "buffer";
-import { scale } from '@/src/utils/responsive';
+import { scale } from '@/utils/responsive';
 global.Buffer = Buffer;
 
 export default function SplashScreen() {
@@ -34,12 +34,12 @@ export default function SplashScreen() {
   return (
 
     <ImageBackground
-      source={require('./assets/images/background.jpg')}
+      source={require('@/assets/images/background.jpg')}
       style={styles.background}
       resizeMode="cover">
       <View style={styles.overlay}>
         <LottieView
-              source={require('./assets/animations/splash-loop.json')}
+              source={require('@/assets/animations/splash-loop.json')}
               autoPlay
               loop
               style={styles.animation}  // absolute fill inside top container

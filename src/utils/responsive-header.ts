@@ -1,5 +1,5 @@
 import { Dimensions, Platform } from "react-native";
-import { verticalScale } from "@/src/utils/responsive";
+import { verticalScale } from "@/utils/responsive";
 
 const { height } = Dimensions.get("window");
 const isSmallScreen = height < 750;

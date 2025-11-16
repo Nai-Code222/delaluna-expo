@@ -1,8 +1,8 @@
 import React, { memo } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
-import splitConnectionId from "@/app/utils/splitConnectionId.util";
+import { scale, verticalScale, moderateScale } from "@/utils/responsive";
 import { Ionicons } from "@expo/vector-icons";
+import splitConnectionId from "@/utils/splitConnectionId.util";
 
 interface ConnectionListItemProps {
   connection: any;

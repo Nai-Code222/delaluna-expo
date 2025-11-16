@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
-import { scale, moderateScale } from "@/src/utils/responsive";
+import { scale, moderateScale } from "@/utils/responsive";
 
 interface DelalunaToggleProps {
   label: string;

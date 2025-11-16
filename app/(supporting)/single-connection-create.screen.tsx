@@ -15,7 +15,6 @@ import {
 } from "react-native";
 
 import { ThemeContext } from "../theme-context";
-import useRenderBackground from "@/src/hooks/useRenderBackground";
 import DelalunaToggle from "../../src/components/component-utils/delaluna-toggle.component";
 import DelalunaInputRow, {
   FieldConfig,
@@ -23,16 +22,17 @@ import DelalunaInputRow, {
 } from "../../src/components/component-utils/delaluna-input-form.component";
 import HeaderNav from "../../src/components/component-utils/header-nav";
 import AuthContext from "../../src/backend/auth-context";
-import { scale, verticalScale } from "@/src/utils/responsive";
-import { HEADER_HEIGHT } from "@/src/utils/responsive-header";
 import { httpsCallable } from "firebase/functions";
-import { functions } from "@/firebaseConfig";
 import HomeSignsDisplay from "../../src/components/home/home-signs-display.component";
 import ConnectionsPlaceOfBirthField from "../../src/components/connection/connections-place-of-birth-field";
 import ConnectionsTimeOfBirthField from "../../src/components/connection/connections-time-of-birth-field";
 import GlassButton from "../../src/components/buttons/glass-button";
-import { useUserProfile } from "@/src/hooks/useUserProfile";
-import toTitleCase from "@/src/utils/toTitleCase.util";
+import useRenderBackground from "@/hooks/useRenderBackground";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { verticalScale, scale } from "@/utils/responsive";
+import { HEADER_HEIGHT } from "@/utils/responsive-header";
+import toTitleCase from "@/utils/toTitleCase.util";
+import { functions } from "../../firebaseConfig";
 
 const GREENWICH = {
   place: "Greenwich, UK",
@@ -248,10 +248,10 @@ export default function SingleConnectionCreateScreen() {
                     {relationshipOptions.map((option) => {
                       const iconSource =
                         option === "consistent"
-                          ? require("../assets/icons/satisfied_icon_words.png")
+                          ? require("@/assets/icons/satisfied_icon_words.png")
                           : option === "complicated"
-                            ? require("../assets/icons/neutral_icon_words.png")
-                            : require("../assets/icons/dissatisfied_icon_words.png");
+                            ? require("@/assets/icons/neutral_icon_words.png")
+                            : require("@/assets/icons/dissatisfied_icon_words.png");
 
                       return (
                         <TouchableOpacity

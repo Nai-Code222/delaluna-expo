@@ -1,7 +1,6 @@
 import "intl";
 import "intl/locale-data/jsonp/en";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/firebaseConfig";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -20,7 +19,6 @@ import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 import { UserCredential, sendEmailVerification, updateProfile } from "firebase/auth";
 import { StatusBar } from "expo-status-bar";
-import { verticalScale, scale, moderateScale } from "@/src/utils/responsive";
 import { useAuth } from "../../src/backend/auth-context";
 import LoadingScreen from "../../src/components/component-utils/loading-screen";
 import ChatFlow, { StepConfig, FinalSignupPayload } from "../../src/components/sign-up/chat-flow";
@@ -28,6 +26,8 @@ import { UserRecord } from "../../src/model/user-record";
 import signUp from "../../src/services/auth.service";
 import { createUserDoc } from "../../src/services/user.service";
 import { getAstroSigns } from "../../src/services/astrology-api.service";
+import { verticalScale, scale, moderateScale } from "@/utils/responsive";
+import { db } from "../../firebaseConfig";
 
 const FALLBACK_PLACE_LABEL = "Greenwich, London, United Kingdom";
 const FALLBACK_LAT = 51.4779;
@@ -222,7 +222,7 @@ export default function SignUpChatScreen() {
 
   return (
     <ImageBackground
-      source={require("../assets/images/main-background.png")}
+      source={require("@/assets/images/main-background.png")}
       style={styles.background}
       resizeMode="cover"
     >

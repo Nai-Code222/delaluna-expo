@@ -12,9 +12,9 @@ import {
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/firebaseConfig";
 import { LinearGradient } from "expo-linear-gradient";
-import { scale, verticalScale } from "@/src/utils/responsive";
+import { db } from "../../firebaseConfig";
+import { scale, verticalScale } from "@/utils/responsive";
 
 // Enable smooth expand animations on Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {

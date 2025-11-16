@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import ConnectionLocationAutocomplete from "./connection-location-autocomplete.component";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
-import { isIDK } from "@/src/utils/answers.helpers";
+import { scale, verticalScale, moderateScale } from "@/utils/responsive";
+import { isIDK } from "@/utils/answers.helpers";
 
 const DEFAULT_PLACE = {
   label: "Greenwich, London, United Kingdom",

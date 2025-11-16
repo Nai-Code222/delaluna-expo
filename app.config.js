@@ -40,9 +40,9 @@ export default withComposeCompilerVersion({
     slug: 'delaluna-expo',
     version: '2.0.0',
     orientation: 'portrait',
-    icon: './app/assets/images/delaluna_app_icon.png',
+    icon: './src/assets/images/delaluna_app_icon.png',
     splash: {
-      image: './app/assets/images/delaluna_app_icon.png',
+      image: './src/assets/images/delaluna_app_icon.png',
       resizeMode: 'contain',
       backgroundColor: '#ffffff',
     },
@@ -77,7 +77,7 @@ export default withComposeCompilerVersion({
       jsEngine: 'jsc',
       softwareKeyboardLayoutMode: 'resize',
       adaptiveIcon: {
-        foregroundImage: './app/assets/images/delaluna_app_icon.png',
+        foregroundImage: './src/assets/images/delaluna_app_icon.png',
         backgroundColor: '#ffffff',
       },
       package: 'com.app.delaluna_answers',
@@ -104,7 +104,7 @@ export default withComposeCompilerVersion({
       [
         'expo-splash-screen',
         {
-          image: './app/assets/images/delaluna_app_icon.png',
+          image: './src/assets/images/delaluna_app_icon.png',
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#ffffff',

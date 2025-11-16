@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, Text, StyleSheet, ViewStyle, TextStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
+import { scale, verticalScale, moderateScale } from "@/utils/responsive";
 
 interface GlassButtonProps {
   title: string;

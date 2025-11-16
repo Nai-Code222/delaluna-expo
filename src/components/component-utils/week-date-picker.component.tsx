@@ -7,7 +7,7 @@ import {
   FlatList,
   Animated,
 } from "react-native";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
+import { scale, verticalScale, moderateScale } from "@/utils/responsive";
 
 interface WeekDate {
   dayLabel: string;

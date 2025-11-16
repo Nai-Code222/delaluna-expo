@@ -10,14 +10,14 @@ import { useIsFocused } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { format } from 'date-fns';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { auth } from '@/firebaseConfig'
-import LoadingScreen from '@/src/components/component-utils/loading-screen'
-import AlertModal from '@/src/components/alerts/alert-modal'
 import { useAuth } from '../../src/backend/auth-context'
 import { UserRecord } from '../../src/model/user-record'
 import HeaderNav from '../../src/components/component-utils/header-nav'
 import { ThemeContext } from '../theme-context'
 import { getUserDocRef } from '../../src/services/user.service'
+import AlertModal from '@/components/alerts/alert-modal'
+import LoadingScreen from '@/components/component-utils/loading-screen'
+import { auth } from '../../firebaseConfig'
 
 
 // Base canvas + scaling clamps
@@ -314,22 +314,22 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToUpdateTheme}>
-              <Image source={require('../assets/icons/change-theme-icon.png')} style={styles.leftIconContainer} />
+              <Image source={require('@/assets/icons/change-theme-icon.png')} style={styles.leftIconContainer} />
               <Text style={styles.buttonText}>Change Color Theme</Text>
-              <Image source={require('../assets/icons/arrow-right-icon.png')} style={styles.rightIconContainer} />
+              <Image source={require('@/assets/icons/arrow-right-icon.png')} style={styles.rightIconContainer} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.profileButtonWithIcons} onPress={goToChangePassword}>
-              <Image source={require('../assets/icons/change-password-icon.png')} style={styles.leftIconContainer} />
+              <Image source={require('@/assets/icons/change-password-icon.png')} style={styles.leftIconContainer} />
               <Text style={styles.buttonText}>Change Password</Text>
-              <Image source={require('../assets/icons/arrow-right-icon.png')} style={styles.rightIconContainer} />
+              <Image source={require('@/assets/icons/arrow-right-icon.png')} style={styles.rightIconContainer} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.profileButton} onPress={handleLogout}>
-              <Image source={require('../assets/icons/log-out-icon.png')} style={styles.leftIconContainer} />
+              <Image source={require('@/assets/icons/log-out-icon.png')} style={styles.leftIconContainer} />
               <Text style={styles.buttonText}>Logout</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
-            <Image source={require('../assets/icons/delete-account-icon.png')} style={styles.leftIconContainer} />
+            <Image source={require('@/assets/icons/delete-account-icon.png')} style={styles.leftIconContainer} />
             <Text style={styles.buttonText}>Delete Account</Text>
           </TouchableOpacity>
         </View>

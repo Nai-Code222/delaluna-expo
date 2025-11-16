@@ -1,6 +1,6 @@
+import { verticalScale, scale, moderateScale } from "@/utils/responsive";
 import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
 
 interface HomeSignsDisplayProps {
   sun: string;
@@ -14,7 +14,8 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
       {/* ☀️ Sun Sign */}
       <View style={styles.signItem}>
         <Image
-          source={require("../../assets/icons/sun_icon.png")}
+          source={require("@/assets/icons/sun_icon.png")}
+
           style={styles.icon}
         />
         <Text style={styles.text}>{sun}</Text>
@@ -23,7 +24,7 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
       {/* 🌙 Moon Sign */}
       <View style={styles.signItem}>
         <Image
-          source={require("../../assets/icons/moon_icon.png")}
+          source={require("@/assets/icons/moon_icon.png")}
           style={styles.icon}
         />
         <Text style={styles.text}>{moon}</Text>
@@ -32,7 +33,7 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
       {/* ⬆️ Rising Sign */}
       <View style={styles.signItem}>
         <Image
-          source={require("../../assets/icons/arrow_upward_icon.png")}
+          source={require("@/assets/icons/arrow_upward_icon.png")}
           style={styles.icon}
         />
         <Text style={styles.text}>{rising}</Text>

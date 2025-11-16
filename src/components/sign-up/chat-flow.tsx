@@ -19,14 +19,14 @@ import {
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { fetchSignInMethodsForEmail } from 'firebase/auth';
 import { format as formatDate } from 'date-fns';
-import { scale, verticalScale, moderateScale } from '@/src/utils/responsive';
 import { DateTime } from 'luxon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { auth } from '@/firebaseConfig';
 import PasswordInputField from '../component-utils/password-input-field';
 import LocationAutocomplete from './location-autocomplete';
 import PolicyModal from './policy-modals';
-import { privacyPolicy, termsAndConditions } from '@/src/assets/legal/legal-texts';
+import { verticalScale, scale, moderateScale } from '@/utils/responsive';
+import { auth } from '../../../firebaseConfig';
+import { privacyPolicy, termsAndConditions } from '@/assets/legal/legal-texts';
 
 const INPUT_H = verticalScale(50);
 const FIELD_BORDER = 'rgba(142, 68, 173, 0.6)';
@@ -207,7 +207,7 @@ const SendButton = ({ disabled, onPress }: { disabled?: boolean; onPress: () => 
     accessibilityLabel="Send"
   >
     <Image
-      source={require('../../assets/icons/arrow-right-icon.png')}
+      source={require('@/assets/icons/arrow-right-icon.png')}
       style={styles.sendIcon}
       resizeMode="contain"
     />

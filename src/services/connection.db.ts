@@ -7,7 +7,7 @@ import {
   getFirestore,
 } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
-import { app, functions } from "@/firebaseConfig";
+import { app, functions } from "../../firebaseConfig";
 
 const db = getFirestore(app);
 

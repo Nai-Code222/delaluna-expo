@@ -10,7 +10,7 @@ import {
   LayoutChangeEvent,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
+import { scale, verticalScale, moderateScale } from "@/utils/responsive";
 import DelalunaContainer from "./delaluna-container.component";
 
 interface ExpandableDelalunaContainerProps {

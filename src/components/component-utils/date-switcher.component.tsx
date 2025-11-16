@@ -7,7 +7,7 @@ import {
   Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
+import { scale, verticalScale, moderateScale } from "@/utils/responsive";
 
 export default function DateSwitcher() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());

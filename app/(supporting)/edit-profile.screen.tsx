@@ -19,7 +19,6 @@ import {
   Pressable,
   Dimensions,
 } from 'react-native';
-import tzlookup from '@photostructure/tz-lookup';
 import { DateTime } from 'luxon';
 import { format, parse, parseISO, isValid } from 'date-fns';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -908,3 +907,7 @@ const styles = StyleSheet.create({
   successCheckDefault: { fontSize: 26, color: '#6FFFE9', fontWeight: 'bold', marginRight: 10 },
   successAlertTextDefault: { color: '#fff', fontSize: 17, fontWeight: '600', textAlign: 'center' },
 });
+function tzlookup(lat: number, lon: number): string {
+  throw new Error('Function not implemented.');
+}
+

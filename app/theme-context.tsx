@@ -7,13 +7,13 @@ import { useAuth } from '../src/backend/auth-context';
 
 
 // ===== Images =====
-const deafult = require('./assets/colors/default-theme.png');
-const blueTheme = require('./assets/colors/blue-theme.png');
-const greenTheme = require('./assets/colors/green-theme.png');
-const orangeTheme = require('./assets/colors/orange-theme.png');
-const redTheme = require('./assets/colors/red-theme.png');
-const yellowTheme = require('./assets/colors/yellow-theme.png');
-const pinkTheme = require('./assets/colors/pink-theme.png');
+const deafult = require('@/assets/colors/default-theme.png');
+const blueTheme = require('@/assets/colors/blue-theme.png');
+const greenTheme = require('@/assets/colors/green-theme.png');
+const orangeTheme = require('@/assets/colors/orange-theme.png');
+const redTheme = require('@/assets/colors/red-theme.png');
+const yellowTheme = require('@/assets/colors/yellow-theme.png');
+const pinkTheme = require('@/assets/colors/pink-theme.png');
 
 export interface Theme {
   key: string;

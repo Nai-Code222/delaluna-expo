@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/firebaseConfig";
 import { useAuth } from "../../src/backend/auth-context";
+import { db } from "../../firebaseConfig";
 
 const PREMIUM_KEY = "delaluna_premium_access";
 

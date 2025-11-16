@@ -14,17 +14,40 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { httpsCallable } from "firebase/functions";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { functions, db } from "@/firebaseConfig";
-import { ThemeContext } from "../theme-context";
-import useRenderBackground from "@/src/hooks/useRenderBackground";import HeaderNav from "../../src/components/component-utils/header-nav";
-import AddConnectionButton from "../../src/components/buttons/add-connection-button.component";
-import { HEADER_HEIGHT } from "@/src/utils/responsive-header";
-import AuthContext from "../../src/backend/auth-context";
-import splitConnectionId from "../utils/splitConnectionId.util";
+
+// ✅ alias-correct Firebase
+
+// ❌ WRONG → "../theme-context"
+// ❌ WRONG → "@src/theme-context"
+// ✅ Correct
+
+// 🚫 WRONG → "@/hooks/useRenderBackground"
+// 🚫 WRONG → "../hooks/useRenderBackground"
+// ✅ Correct
+import useRenderBackground from "@/hooks/useRenderBackground";
+
+// 🚫 WRONG → "../../src/components/..."
+// 🚫 WRONG → "../@/..."
+// ✅ Correct
+import HeaderNav from "@/components/component-utils/header-nav";
+import AddConnectionButton from "@/components/buttons/add-connection-button.component";
+import ConnectionListItem from "@/components/connection/connection-list-item.component";
+
+// utilities
+import { HEADER_HEIGHT } from "@/utils/responsive-header";
+import splitConnectionId from "@/utils/splitConnectionId.util";
+
+// backend
+import AuthContext from "@/backend/auth-context";
+
+// RN libs
 import { Swipeable } from "react-native-gesture-handler";
-import ConnectionListItem from "../../src/components/connection/connection-list-item.component";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
+
+// responsive utils
+import { scale, verticalScale, moderateScale } from "@/utils/responsive";
+import { ThemeContext } from "../theme-context";
+import { db, functions } from "../../firebaseConfig";
 
 /** 🌀 Animated wrapper for each connection card */
 const AnimatedConnectionItem = memo(
@@ -92,7 +115,7 @@ export default function ConnectionsScreen() {
   const fade = useRef(new Animated.Value(0)).current;
 
   const goToNewConnectionScreen = () =>
-    router.replace("../(supporting)/single-connection-create.screen");
+    router.push("/(supporting)/single-connection-create.screen");
 
   // ✨ Fade animation
   useEffect(() => {
@@ -152,8 +175,8 @@ export default function ConnectionsScreen() {
     );
   };
 
-  const handleOpenConnection = (connectionId: string) => {
-    router.replace("../(supporting)/single-connection-view.screen");
+  const handleOpenConnection = () => {
+    router.push("/(supporting)/single-connection-view.screen");
   };
 
   if (loading) {
@@ -213,9 +236,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(16),
     paddingTop: verticalScale(20),
   },
-  deleteActionContainer: {
-    justifyContent: "center",
-  },
+  deleteActionContainer: { justifyContent: "center" },
   deleteButton: {
     backgroundColor: "rgba(255,0,60,0.85)",
     justifyContent: "center",

@@ -8,7 +8,7 @@ import {
   Platform,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
+import { scale, verticalScale, moderateScale } from "@/utils/responsive";
 import ConnectionLocationAutocomplete from "../connection/connection-location-autocomplete.component";
 
 export type FieldType = "text" | "date" | "time" | "location";

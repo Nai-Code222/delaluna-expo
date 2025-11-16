@@ -21,7 +21,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { ThemeContext } from "../theme-context";
-import { GlassButton } from '@/src/components/buttons/glass-button';
+import { GlassButton } from '@/components/buttons/glass-button';
 
 
 // Helper to validate new password strength

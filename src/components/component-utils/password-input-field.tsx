@@ -8,7 +8,7 @@ import {
   Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { scale } from "@/src/utils/responsive";
+import { scale } from "@/utils/responsive";
 
 export type DelalunaPasswordInputProps = TextInputProps & {
   containerStyle?: object;

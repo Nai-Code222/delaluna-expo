@@ -18,7 +18,7 @@ export default function AddConnectionButton({
       activeOpacity={0.8}
     >
       <Image
-        source={require("../../assets/icons/add_circle_icon.png")}
+        source={require("@/assets/icons/add_circle_icon.png")}
         style={styles.icon}
       />
       <Text style={styles.addText}>{label}</Text>

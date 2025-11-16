@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { doc, onSnapshot, getDoc } from "firebase/firestore";
-import { db } from "@/firebaseConfig";
+import { db } from "../../firebaseConfig";
 
 export interface CachedUserProfile<T = any> {
   data: T;

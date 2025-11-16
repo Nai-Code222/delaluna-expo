@@ -13,8 +13,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ThemeContext } from "../theme-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
-import { auth } from "@/firebaseConfig";
-import HeaderNav from "@/src/components/component-utils/header-nav";
+import HeaderNav from "@/components/component-utils/header-nav";
+import { auth } from "../../firebaseConfig";
 
 type Params = { userID: string };
 

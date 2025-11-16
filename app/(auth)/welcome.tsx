@@ -2,12 +2,12 @@ import React from 'react';
 import { View, StyleSheet, ImageBackground, useWindowDimensions } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { router } from 'expo-router';
-import { scale, verticalScale } from '@/src/utils/responsive';
-import TitleText from '@/src/components/typography/title-text';
-import PrimaryButton from '@/src/components/buttons/primary-button-component';
-import SecondaryButton from '@/src/components/buttons/secondary-button-component';
-import ButtonText from '@/src/components/typography/button-text';
+
 import { StatusBar } from 'expo-status-bar';
+import PrimaryButton from '@/components/buttons/primary-button-component';
+import SecondaryButton from '@/components/buttons/secondary-button-component';
+import ButtonText from '@/components/typography/button-text';
+import { scale, verticalScale } from '@/utils/responsive';
 
 export default function Welcome() {
   const { width } = useWindowDimensions();
@@ -22,7 +22,7 @@ export default function Welcome() {
       </StatusBar>
       {/* background image */}
       <ImageBackground
-        source={require('../assets/images/background.jpg')}
+        source={require('@/assets/images/background.jpg')}
         style={styles.background}
         resizeMode="cover"
       />
@@ -30,7 +30,7 @@ export default function Welcome() {
       {/* TOP: animation fills, logo centered on top */}
       <View style={styles.topContainer}>
         <LottieView
-          source={require('../assets/animations/galaxy.json')}
+          source={require('@/assets/animations/galaxy.json')}
           autoPlay
           loop
           style={styles.topAnimation}  // absolute fill inside top container
@@ -39,7 +39,7 @@ export default function Welcome() {
         {/* centered logo (over the animation) */}
         <View style={styles.logoWrap}>
           <LottieView
-            source={require('../assets/animations/logo.json')}
+            source={require('@/assets/animations/logo.json')}
             autoPlay
             loop={false}
             style={{ width: '100%', aspectRatio: 1 / 0.95 /* W/H */, height: undefined }}

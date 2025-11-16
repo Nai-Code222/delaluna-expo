@@ -24,7 +24,6 @@ import { useHeaderHeight } from '@react-navigation/elements';
 import { StatusBar } from 'expo-status-bar';
 import { DateTime } from 'luxon';
 
-import { auth } from '@/firebaseConfig';
 import { useAuth } from '../../src/backend/auth-context';
 import SecondaryButtonComponent from '../../src/components/buttons/secondary-button-component';
 import LoadingScreen from '../../src/components/component-utils/loading-screen';
@@ -32,9 +31,10 @@ import LoadingScreen from '../../src/components/component-utils/loading-screen';
 // ⭐ UPDATED PASSWORD INPUT
 import DelalunaPasswordInput from '../../src/components/component-utils/password-input-field';
 
-import { ThemeContext } from '@/app/theme-context';
 import { updateUserDoc } from '../../src/services/user.service';
-import { verticalScale } from '@/src/utils/responsive';
+import { ThemeContext } from '../theme-context';
+import { verticalScale } from '@/utils/responsive';
+import { auth } from '../../firebaseConfig';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -165,7 +165,7 @@ export default function Login() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
       >
         <ImageBackground
-          source={require('../assets/images/background.jpg')}
+          source={require('@/assets/images/background.jpg')}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
         />
@@ -173,7 +173,7 @@ export default function Login() {
         <View style={{ flex: 1 }}>
           <View style={styles.logoContainer}>
             <Image
-              source={require('../assets/images/delaluna_logo.png')}
+              source={require('@/assets/images/delaluna_logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />

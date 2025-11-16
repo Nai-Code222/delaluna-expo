@@ -1,11 +1,9 @@
 import LottieView from 'lottie-react-native';
 import React, { useContext } from 'react';
 import { View, ImageBackground, StyleSheet, Animated, Easing, Image, StatusBar } from 'react-native';
-import { ThemeContext } from '@/app/theme-context';
 import { BodyText } from '../typography/body-text';
-const backgroundImg = require('../../assets/images/main-background.png');
-const splashAnimation = require('../../assets/animations/splash-animation.json'); // Replace with your animation asset
-type LoadingScreenProps = {
+import { ThemeContext } from '../../../app/theme-context';
+const  splashAnimation = require('@/assets/animations/splash-animation.json');type LoadingScreenProps = {
     progress: number; // 0 to 1
     message?: string;
 };
@@ -27,18 +25,18 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ progress }) => {
         <ImageBackground source={theme.backgroundImage} style={styles.background}>
             <StatusBar barStyle="light-content" backgroundColor="#1C2541" />
             <View style={styles.centerContent}>
-            <View style={styles.overlay}></View>
-            <LottieView
-                source={splashAnimation}
-                autoPlay
-                style={{ width: 500, height: 500 }}
-            />
-            {progress < 1 && (
-                <BodyText>{`Loading...`}</BodyText>
-            )}
-            {progress === 1 && (
-                <BodyText>Loading complete!</BodyText>
-            )}
+                <View style={styles.overlay}></View>
+                <LottieView
+                    source={splashAnimation}
+                    autoPlay
+                    style={{ width: 500, height: 500 }}
+                />
+                {progress < 1 && (
+                    <BodyText>{`Loading...`}</BodyText>
+                )}
+                {progress === 1 && (
+                    <BodyText>Loading complete!</BodyText>
+                )}
             </View>
         </ImageBackground>
     );

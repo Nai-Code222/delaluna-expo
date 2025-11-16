@@ -6,7 +6,7 @@ import {
   signOut as fbSignOut,
 } from 'firebase/auth';
 import { UserRecord } from '../model/user-record';
-import { auth, db } from '@/firebaseConfig';
+import { auth, db } from '../../firebaseConfig';
 
 /**
  * Create a new Firebase Auth user
