@@ -42,34 +42,47 @@ interface LocationAutocompleteProps {
   onResultsVisibilityChange?: (visible: boolean) => void;
   onSelect: (place: SelectedPlace) => void;
   onSubmitRequest?: () => void;
+  defaultLocation?: SelectedPlace;
+  disabled?: boolean; // ✅ NEW
 }
-
 
 const ConnectionLocationAutocomplete = forwardRef<
   { dismissSuggestions: () => void },
   LocationAutocompleteProps
 >(
   (
-    { value, onSelect, onResultsVisibilityChange, onInputChange, onSubmitRequest },
+    {
+      value,
+      onSelect,
+      onResultsVisibilityChange,
+      onInputChange,
+      onSubmitRequest,
+      defaultLocation,
+      disabled = false, // ✅ default false
+    },
     ref
   ) => {
     const [results, setResults] = useState<PhotonFeature[]>([]);
-    const [showResults, setShowResults] = useState<boolean>(true);
+    const [showResults, setShowResults] = useState<boolean>(false);
 
-    /** Expose dismissSuggestions() to parent */
+    /** Expose dismiss */
     useImperativeHandle(ref, () => ({
       dismissSuggestions: () => {
         setShowResults(false);
-        setResults([]);
         onResultsVisibilityChange?.(false);
       },
     }));
 
-    /** Autocomplete fetch */
     useEffect(() => {
+      if (disabled) {
+        setResults([]);
+        setShowResults(false);
+        return;
+      }
+
       const q = (value || "").trim();
 
-      if (!showResults || q.length < 3) {
+      if (q.length < 3) {
         setResults([]);
         onResultsVisibilityChange?.(false);
         return;
@@ -78,84 +91,67 @@ const ConnectionLocationAutocomplete = forwardRef<
       onResultsVisibilityChange?.(true);
 
       const handler = setTimeout(() => {
-        fetch(
-          `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`
-        )
+        fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`)
           .then((res) => res.json())
           .then((json) => setResults(json.features || []))
-          .catch((e) => console.warn("Photon lookup failed", e));
+          .catch(() => {});
       }, 300);
 
       return () => clearTimeout(handler);
-    }, [value, showResults, onResultsVisibilityChange]);
+    }, [value, disabled]);
 
     return (
-      <View style={styles.container}>
-        {/* Input field */}
-        <View style={styles.inputRow}>
-          <TextInput
-            style={styles.input}
-            placeholder="Type your birth city…"
-            placeholderTextColor="#fff"
-            value={value}
-            onChangeText={(text) => {
-              onInputChange?.(text);
-              setShowResults(true);
-              onResultsVisibilityChange?.(text.length > 0);
-            }}
-            autoCorrect={false}
-            onSubmitEditing={() => onSubmitRequest?.()}
-            returnKeyType={Platform.select({
-              ios: "done",
-              android: "send",
-            }) as any}
-            blurOnSubmit
-            enablesReturnKeyAutomatically
-          />
+      <View
+        style={[
+          styles.container,
+          disabled && { opacity: 0.4 }, // fade effect
+        ]}
+        pointerEvents={disabled ? "none" : "auto"} // block touches
+      >
+        {/* INPUT */}
+        <TextInput
+          style={styles.input}
+          placeholder="Type your birth city..."
+          placeholderTextColor="rgba(255,255,255,0.5)"
+          editable={!disabled}
+          value={value}
+          onChangeText={(text) => {
+            onInputChange?.(text);
+            setShowResults(true);
+            onResultsVisibilityChange?.(true);
+          }}
+          autoCorrect={false}
+          returnKeyType={Platform.select({ ios: "done", android: "send" }) as any}
+          onSubmitEditing={() => onSubmitRequest?.()}
+        />
 
-          {/* Clear button */}
-          {!!value?.length && (
-            <TouchableOpacity
-              onPress={() => {
-                onInputChange?.("");
-                setResults([]);
-                setShowResults(false);
-                onResultsVisibilityChange?.(false);
-              }}
-              style={styles.clearBtn}
-              accessibilityRole="button"
-              accessibilityLabel="Clear input"
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.clearText}>×</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Autocomplete results */}
-        {showResults && results.length > 0 && (
+        {/* RESULTS LIST */}
+        {showResults && results.length > 0 && !disabled && (
           <FlatList
             data={results}
             keyExtractor={(item) => item.properties.osm_id.toString()}
             keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => {
               const { name, city, state, country } = item.properties;
-              const label = [name, city, state, country]
-                .filter(Boolean)
-                .join(", ");
+              const label = [name, city, state, country].filter(Boolean).join(", ");
 
               return (
                 <TouchableOpacity
                   style={styles.item}
                   onPress={() => {
                     const [lon, lat] = item.geometry.coordinates;
-
                     let timezone = "UTC";
+
                     try {
                       timezone = tzlookup(lat, lon);
                     } catch {}
 
-                    onSelect({ label, lat, lon, timezone });
+                    onSelect({
+                      label,
+                      lat,
+                      lon,
+                      timezone,
+                    });
 
                     setShowResults(false);
                     onResultsVisibilityChange?.(false);
@@ -174,45 +170,22 @@ const ConnectionLocationAutocomplete = forwardRef<
 
 export default ConnectionLocationAutocomplete;
 
+/* Styles */
 const styles = StyleSheet.create({
-  container: { width: "100%" },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
+  container: {
+    width: "100%",
   },
   input: {
-    flex: 1,
-    borderRadius: scale(25),
-    paddingHorizontal: scale(5),
-    color: "#fff",
-    height: verticalScale(45),
-    marginBottom: verticalScale(5),
-    alignSelf: "center",
-  },
-  clearBtn: {
-    marginLeft: 8,
-    width: scale(20),
-    height: scale(20),
-    borderRadius: scale(14),
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "absolute",
-    right: scale(5),
-    top: scale(25),
-    marginTop: -15,
-  },
-  clearText: {
-    color: "rgba(255,255,255,0.65)",
-    lineHeight: 18,
-    fontWeight: "700",
+    color: "#FFFFFF",
+    fontSize: 15,
+    paddingVertical: verticalScale(10),
   },
   item: {
-    padding: 12,
+    padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#3A506B",
+    borderBottomColor: "rgba(255,255,255,0.15)",
   },
-  itemText: { color: "#fff" },
+  itemText: {
+    color: "#FFFFFF",
+  },
 });

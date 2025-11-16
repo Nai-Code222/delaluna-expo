@@ -8,6 +8,9 @@ import {
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { scale, verticalScale, moderateScale } from "@/utils/responsive";
+import DelalunaToggle from "../component-utils/delaluna-toggle.component";
+
+const DEFAULT_TIME = "12:00 PM"; // 12-hour default
 
 interface ConnectionsTimeOfBirthFieldProps {
   value?: string;
@@ -19,23 +22,65 @@ export default function ConnectionsTimeOfBirthField({
   onChange,
 }: ConnectionsTimeOfBirthFieldProps) {
   const [showPicker, setShowPicker] = useState(false);
+  const [isUnknown, setIsUnknown] = useState(
+    value?.toLowerCase()?.includes("i don't") ?? false
+  );
 
-  /** When user picks a real time */
+  /** Convert date → 12hr time */
+  const formatTime12hr = (date: Date) => {
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12;
+    hours = hours || 12; // 0 → 12
+
+    return `${hours}:${minutes} ${ampm}`;
+  };
+
+  /** When user picks time */
   const handleConfirm = (date: Date) => {
-    const h = date.getHours().toString().padStart(2, "0");
-    const m = date.getMinutes().toString().padStart(2, "0");
+    const formatted = formatTime12hr(date);
 
     onChange({
-      "Time of Birth": `${h}:${m}`,
+      "Time of Birth": formatted,
       isBirthTimeUnknown: false,
     });
 
     setShowPicker(false);
+    setIsUnknown(false);
+  };
+
+  /** Toggle: I don’t know */
+  const handleUnknownToggle = (val: boolean) => {
+    setIsUnknown(val);
+
+    if (val) {
+      // Show "I don't know" to user, but store Greenwich fallback
+      onChange({
+        "Time of Birth": "I don't know",
+        isBirthTimeUnknown: true,
+        defaultBirthTime: DEFAULT_TIME,
+      });
+    } else {
+      // Reset UI
+      onChange({
+        "Time of Birth": "",
+        isBirthTimeUnknown: false,
+      });
+    }
   };
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.row}>
+      {/* MAIN ROW */}
+      <View
+        style={[
+          styles.row,
+          isUnknown && { opacity: 0.4 },
+        ]}
+        pointerEvents={isUnknown ? "none" : "auto"}
+      >
         <Text style={styles.label}>Time of Birth</Text>
 
         <View style={styles.rightContainer}>
@@ -45,13 +90,22 @@ export default function ConnectionsTimeOfBirthField({
             onPress={() => setShowPicker(true)}
           >
             <Text style={styles.text}>
-              {value ? value : "Select time"}
+              {isUnknown ? "I don't know" : value || "Select time"}
             </Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Time Picker */}
+      {/* I DON'T KNOW TOGGLE BELOW FIELD */}
+      <View style={styles.toggleRow}>
+        <DelalunaToggle
+          label="I don’t know"
+          value={isUnknown}
+          onToggle={handleUnknownToggle}
+        />
+      </View>
+
+      {/* TIME PICKER */}
       <DateTimePickerModal
         isVisible={showPicker}
         mode="time"
@@ -63,21 +117,21 @@ export default function ConnectionsTimeOfBirthField({
   );
 }
 
-/* 🎨 Styles */
+/* Styles */
 const styles = StyleSheet.create({
   wrapper: {
+    marginBottom: verticalScale(10),
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: "rgba(255,255,255,0.05)",
     borderRadius: scale(5),
     borderWidth: 1.5,
     borderColor: "rgba(142,68,173,0.6)",
     paddingVertical: verticalScale(5),
     paddingHorizontal: scale(10),
-    marginBottom: verticalScale(5),
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
   },
   label: {
     color: "#FFFFFF",
@@ -90,6 +144,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderLeftColor: "rgba(255,255,255,0.2)",
     paddingLeft: scale(10),
+    justifyContent: "center",
   },
   inputBox: {
     paddingVertical: verticalScale(5),
@@ -98,5 +153,10 @@ const styles = StyleSheet.create({
   text: {
     color: "#FFFFFF",
     fontSize: moderateScale(15),
+  },
+  toggleRow: {
+    alignSelf: "flex-end",
+    marginTop: verticalScale(10),
+    marginRight: scale(5),
   },
 });

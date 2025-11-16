@@ -11,7 +11,7 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { scale, verticalScale, moderateScale } from "@/utils/responsive";
 import ConnectionLocationAutocomplete from "../connection/connection-location-autocomplete.component";
 
-export type FieldType = "text" | "date" | "time" | "location";
+export type FieldType = "text" | "date" | "location" | "time";
 
 export interface FieldConfig {
   label: string;
@@ -49,18 +49,14 @@ export default function DelalunaInputRow({
     setActivePicker(null);
   };
 
-  const handleTimeConfirm = (label: string, date: Date) => {
-    const h = date.getHours().toString().padStart(2, "0");
-    const m = date.getMinutes().toString().padStart(2, "0");
-    handleChange(label, `${h}:${m}`);
-    setActivePicker(null);
-  };
-
   return (
     <View style={styles.container}>
       {fields.map((field) => {
         const value = formValues[field.label];
         const isEditable = field.editable ?? true;
+
+        // 🔥 Time fields are handled by a dedicated component
+        if (field.type === "time") return null;
 
         return (
           <View key={field.label}>
@@ -90,31 +86,7 @@ export default function DelalunaInputRow({
                     />
                   )}
                 </>
-              ) : field.type === "time" ? (
-                <>
-                  {/* TIME FIELD */}
-                  <TouchableOpacity
-                    onPress={() => isEditable && setActivePicker(field.label)}
-                    style={styles.inputBox}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[styles.text, !value && { opacity: 0.6 }]}>
-                      {value || field.placeholder || "Select time"}
-                    </Text>
-                  </TouchableOpacity>
-
-                  {activePicker === field.label && (
-                    <DateTimePickerModal
-                      isVisible
-                      mode="time"
-                      display={Platform.OS === "ios" ? "spinner" : "default"}
-                      onConfirm={(d) => handleTimeConfirm(field.label, d)}
-                      onCancel={() => setActivePicker(null)}
-                    />
-                  )}
-                </>
               ) : field.type === "location" ? (
-                // LOCATION AUTOCOMPLETE
                 <View style={styles.inputBox}>
                   <ConnectionLocationAutocomplete
                     value={value}
@@ -136,7 +108,7 @@ export default function DelalunaInputRow({
                   />
                 </View>
               ) : (
-                // NORMAL TEXT FIELD
+                /* TEXT FIELD */
                 <TextInput
                   editable={isEditable}
                   value={value}
@@ -154,7 +126,7 @@ export default function DelalunaInputRow({
   );
 }
 
-/* 🎨 CLEAN STYLES — MATCH YOUR PURPLE THEME */
+/* Clean Purple Theme Styles */
 const styles = StyleSheet.create({
   container: {
     width: "100%",
@@ -184,6 +156,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(10),
     borderLeftWidth: 1,
     borderLeftColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
   },
   text: {
     color: "#FFFFFF",
