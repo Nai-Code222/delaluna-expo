@@ -1,4 +1,4 @@
-import { CompatibilityScores } from "../model/user-compatibility.model";
+import { CompatibilityScores } from "../../src/model/user-compatibility.model";
 
 /**
  * 🔮 calculateOverallCompatibility

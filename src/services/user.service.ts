@@ -5,7 +5,7 @@ import {
   onAuthStateChanged as fbOnAuthStateChanged,
   signOut as fbSignOut,
 } from 'firebase/auth';
-import { UserRecord } from '../../src/model/user-record';
+import { UserRecord } from '../model/user-record';
 import { auth, db } from '@/firebaseConfig';
 
 /**

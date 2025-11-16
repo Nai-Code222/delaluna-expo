@@ -1,6 +1,6 @@
 // app/utils/buildCompatibilityPrompt.ts
 
-import { CompatibilityInput } from "../model/user-compatibility.model";
+import { CompatibilityInput } from "../../src/model/user-compatibility.model";
 
 /**
  * 🪩 buildCompatibilityPrompt

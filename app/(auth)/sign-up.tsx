@@ -24,7 +24,7 @@ import { verticalScale, scale, moderateScale } from "@/src/utils/responsive";
 import { useAuth } from "../backend/auth-context";
 import LoadingScreen from "../components/component-utils/loading-screen";
 import ChatFlow, { StepConfig, FinalSignupPayload } from "../components/sign-up/chat-flow";
-import { UserRecord } from "../model/user-record";
+import { UserRecord } from "../../src/model/user-record";
 import signUp from "../services/auth.service";
 import { createUserDoc } from "../services/user.service";
 import { getAstroSigns } from "../services/astrology-api.service";
