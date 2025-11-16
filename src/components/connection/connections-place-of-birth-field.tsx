@@ -1,15 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import ConnectionLocationAutocomplete from "./connection-location-autocomplete.component";
 import { scale, verticalScale, moderateScale } from "@/utils/responsive";
-import { isIDK } from "@/utils/answers.helpers";
-
-const DEFAULT_PLACE = {
-  label: "Greenwich, London, United Kingdom",
-  lat: 51.4779,
-  lon: 0.0015,
-  timezone: "Europe/London",
-};
 
 interface Props {
   value: string;
@@ -17,14 +9,10 @@ interface Props {
 }
 
 export default function ConnectionsPlaceOfBirthField({ value, onChange }: Props) {
-  const [isUnknown, setIsUnknown] = useState(false);
-
-  /** When user selects from results */
+  /** When user selects from autocomplete */
   const handleSelect = (place: any) => {
-    setIsUnknown(false);
     onChange({
       "Place of Birth": place.label,
-      isPlaceOfBirthUnknown: false,
       birthLat: place.lat,
       birthLon: place.lon,
       birthTimezone: place.timezone,
@@ -33,26 +21,8 @@ export default function ConnectionsPlaceOfBirthField({ value, onChange }: Props)
 
   /** When user types */
   const handleInputChange = (text: string) => {
-    // user typed I don't know
-    if (isIDK(text)) {
-      setIsUnknown(true);
-
-      // UI shows IDK, DB receives default fallback
-      onChange({
-        "Place of Birth": DEFAULT_PLACE.label,
-        isPlaceOfBirthUnknown: true,
-        birthLat: DEFAULT_PLACE.lat,
-        birthLon: DEFAULT_PLACE.lon,
-        birthTimezone: DEFAULT_PLACE.timezone,
-      });
-      return;
-    }
-
-    // normal entry
-    setIsUnknown(false);
     onChange({
       "Place of Birth": text,
-      isPlaceOfBirthUnknown: false,
     });
   };
 
@@ -63,15 +33,11 @@ export default function ConnectionsPlaceOfBirthField({ value, onChange }: Props)
 
         <View style={styles.rightContainer}>
           <ConnectionLocationAutocomplete
-            value={isUnknown ? "I don't know" : value}
+            value={value}
             onSelect={handleSelect}
             onInputChange={handleInputChange}
-            defaultLocation={{
-              label: "I don't know",
-              lat: DEFAULT_PLACE.lat,
-              lon: DEFAULT_PLACE.lon,
-              timezone: DEFAULT_PLACE.timezone,
-            }}
+            onResultsVisibilityChange={() => {}}
+            onSubmitRequest={() => {}}
           />
         </View>
       </View>
@@ -79,16 +45,16 @@ export default function ConnectionsPlaceOfBirthField({ value, onChange }: Props)
   );
 }
 
-/* 🎨 Styles preserved */
+/* 🎨 Styles */
 const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: scale(8),
+    borderRadius: scale(5),
     borderWidth: 1.5,
     borderColor: "rgba(142,68,173,0.6)",
-    paddingVertical: verticalScale(6),
+    paddingVertical: verticalScale(5),
     paddingHorizontal: scale(10),
-    marginBottom: verticalScale(16),
+    marginBottom: verticalScale(5),
   },
   row: {
     flexDirection: "row",
@@ -97,7 +63,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#FFFFFF",
-    fontSize: moderateScale(14),
+    fontSize: moderateScale(15),
     fontWeight: "700",
     flex: 0.9,
   },
@@ -105,7 +71,7 @@ const styles = StyleSheet.create({
     flex: 1.3,
     borderLeftWidth: 1,
     borderLeftColor: "rgba(255,255,255,0.2)",
-    paddingLeft: scale(5),
+    paddingLeft: scale(10),
     justifyContent: "center",
   },
 });

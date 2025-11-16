@@ -7,9 +7,7 @@ import {
   Platform,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import DelalunaToggle from "../component-utils/delaluna-toggle.component";
 import { scale, verticalScale, moderateScale } from "@/utils/responsive";
-import { applyUnknownTime } from "@/utils/answers.helpers";
 
 interface ConnectionsTimeOfBirthFieldProps {
   value?: string;
@@ -21,14 +19,12 @@ export default function ConnectionsTimeOfBirthField({
   onChange,
 }: ConnectionsTimeOfBirthFieldProps) {
   const [showPicker, setShowPicker] = useState(false);
-  const [isUnknown, setIsUnknown] = useState(false);
 
-  /** When user selects a real time */
+  /** When user picks a real time */
   const handleConfirm = (date: Date) => {
     const h = date.getHours().toString().padStart(2, "0");
     const m = date.getMinutes().toString().padStart(2, "0");
 
-    setIsUnknown(false);
     onChange({
       "Time of Birth": `${h}:${m}`,
       isBirthTimeUnknown: false,
@@ -37,51 +33,21 @@ export default function ConnectionsTimeOfBirthField({
     setShowPicker(false);
   };
 
-  /** When user toggles “I don’t know” */
-  const handleUnknownToggle = (val: boolean) => {
-    setIsUnknown(val);
-
-    if (val) {
-      onChange(applyUnknownTime({}));
-    } else {
-      onChange({
-        "Time of Birth": "",
-        isBirthTimeUnknown: false,
-      });
-    }
-  };
-
   return (
     <View style={styles.wrapper}>
       <View style={styles.row}>
         <Text style={styles.label}>Time of Birth</Text>
 
         <View style={styles.rightContainer}>
-          {/* Input */}
           <TouchableOpacity
             activeOpacity={0.7}
             style={styles.inputBox}
-            disabled={isUnknown} // disables like place-of-birth
             onPress={() => setShowPicker(true)}
           >
-            <Text
-              style={[
-                styles.text,
-                isUnknown && styles.disabledText, // 🔥 matches place-of-birth disabled color
-              ]}
-            >
-              {isUnknown ? "I don't know" : value || "Select time"}
+            <Text style={styles.text}>
+              {value ? value : "Select time"}
             </Text>
           </TouchableOpacity>
-
-          {/* Toggle */}
-          <View style={styles.toggleInline}>
-            <DelalunaToggle
-              label="I don’t know"
-              value={isUnknown}
-              onToggle={handleUnknownToggle}
-            />
-          </View>
         </View>
       </View>
 
@@ -101,12 +67,12 @@ export default function ConnectionsTimeOfBirthField({
 const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: scale(8),
+    borderRadius: scale(5),
     borderWidth: 1.5,
     borderColor: "rgba(142,68,173,0.6)",
-    paddingVertical: verticalScale(6),
+    paddingVertical: verticalScale(5),
     paddingHorizontal: scale(10),
-    marginBottom: verticalScale(16),
+    marginBottom: verticalScale(5),
   },
   row: {
     flexDirection: "row",
@@ -115,7 +81,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#FFFFFF",
-    fontSize: moderateScale(14),
+    fontSize: moderateScale(15),
     fontWeight: "700",
     flex: 0.9,
   },
@@ -123,23 +89,14 @@ const styles = StyleSheet.create({
     flex: 1.3,
     borderLeftWidth: 1,
     borderLeftColor: "rgba(255,255,255,0.2)",
-    paddingLeft: scale(12),
+    paddingLeft: scale(10),
   },
   inputBox: {
-    paddingVertical: verticalScale(4),
+    paddingVertical: verticalScale(5),
     justifyContent: "center",
   },
   text: {
     color: "#FFFFFF",
-    fontSize: moderateScale(14),
-  },
-  disabledText: {
-    color: "rgba(255, 255, 255, 0.35)",
-  },
-  toggleInline: {
-    alignSelf: "flex-start",
-    marginTop: verticalScale(5),   
-    marginBottom: verticalScale(5),
-    marginLeft: scale(4),
+    fontSize: moderateScale(15),
   },
 });

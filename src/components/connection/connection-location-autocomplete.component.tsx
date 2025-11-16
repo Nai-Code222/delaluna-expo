@@ -15,7 +15,6 @@ import {
 } from "react-native";
 import tzlookup from "@photostructure/tz-lookup";
 import { scale, verticalScale } from "@/utils/responsive";
-import DelalunaToggle from "../component-utils/delaluna-toggle.component";
 
 type PhotonFeature = {
   properties: {
@@ -38,37 +37,26 @@ export type SelectedPlace = {
 };
 
 interface LocationAutocompleteProps {
-  /** Controlled text value */
   value: string;
   onInputChange?: (text: string) => void;
   onResultsVisibilityChange?: (visible: boolean) => void;
   onSelect: (place: SelectedPlace) => void;
   onSubmitRequest?: () => void;
-  /** ✅ Optional default location for “I don’t know” */
-  defaultLocation?: SelectedPlace;
 }
 
-/** ⭐ forwardRef to allow parent to call dismissSuggestions() */
+
 const ConnectionLocationAutocomplete = forwardRef<
   { dismissSuggestions: () => void },
   LocationAutocompleteProps
 >(
   (
-    {
-      value,
-      onSelect,
-      onResultsVisibilityChange,
-      onInputChange,
-      onSubmitRequest,
-      defaultLocation,
-    },
+    { value, onSelect, onResultsVisibilityChange, onInputChange, onSubmitRequest },
     ref
   ) => {
     const [results, setResults] = useState<PhotonFeature[]>([]);
     const [showResults, setShowResults] = useState<boolean>(true);
-    const [isUnknown, setIsUnknown] = useState<boolean>(false);
 
-    /** 🔹 Expose dismissSuggestions() to parent */
+    /** Expose dismissSuggestions() to parent */
     useImperativeHandle(ref, () => ({
       dismissSuggestions: () => {
         setShowResults(false);
@@ -77,59 +65,39 @@ const ConnectionLocationAutocomplete = forwardRef<
       },
     }));
 
+    /** Autocomplete fetch */
     useEffect(() => {
       const q = (value || "").trim();
-      const idk =
-        q.toLowerCase() === "i don't know" || q.toLowerCase() === "i don’t know";
 
-      if (!showResults || q.length < 3 || idk || isUnknown) {
+      if (!showResults || q.length < 3) {
         setResults([]);
         onResultsVisibilityChange?.(false);
         return;
       }
 
       onResultsVisibilityChange?.(true);
+
       const handler = setTimeout(() => {
-        fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`)
+        fetch(
+          `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`
+        )
           .then((res) => res.json())
           .then((json) => setResults(json.features || []))
           .catch((e) => console.warn("Photon lookup failed", e));
       }, 300);
+
       return () => clearTimeout(handler);
-    }, [value, showResults, onResultsVisibilityChange, isUnknown]);
-
-    /** ✅ Handle toggle click */
-    const handleToggle = (val: boolean) => {
-      setIsUnknown(val);
-
-      if (val) {
-        if (defaultLocation) {
-          onInputChange?.(defaultLocation.label);
-          onSelect(defaultLocation);
-        } else {
-          onInputChange?.("I don't know");
-        }
-        setResults([]);
-        setShowResults(false);
-        onResultsVisibilityChange?.(false);
-      } else {
-        onInputChange?.("");
-      }
-    };
+    }, [value, showResults, onResultsVisibilityChange]);
 
     return (
       <View style={styles.container}>
         {/* Input field */}
-        <View style={[styles.inputRow]}>
+        <View style={styles.inputRow}>
           <TextInput
-            style={[
-              styles.input,
-              { paddingRight: 40, opacity: isUnknown ? 0.5 : 1 },
-            ]}
+            style={styles.input}
             placeholder="Type your birth city…"
             placeholderTextColor="#fff"
             value={value}
-            editable={!isUnknown}
             onChangeText={(text) => {
               onInputChange?.(text);
               setShowResults(true);
@@ -137,15 +105,16 @@ const ConnectionLocationAutocomplete = forwardRef<
             }}
             autoCorrect={false}
             onSubmitEditing={() => onSubmitRequest?.()}
-            returnKeyType={
-              Platform.select({ ios: "done", android: "send" }) as any
-            }
+            returnKeyType={Platform.select({
+              ios: "done",
+              android: "send",
+            }) as any}
             blurOnSubmit
             enablesReturnKeyAutomatically
           />
 
           {/* Clear button */}
-          {!!value?.length && !isUnknown && (
+          {!!value?.length && (
             <TouchableOpacity
               onPress={() => {
                 onInputChange?.("");
@@ -163,15 +132,6 @@ const ConnectionLocationAutocomplete = forwardRef<
           )}
         </View>
 
-        {/* ✅ I don’t know toggle */}
-        <View style={styles.toggleWrapper}>
-          <DelalunaToggle
-            label="I don’t know"
-            value={isUnknown}
-            onToggle={handleToggle}
-          />
-        </View>
-
         {/* Autocomplete results */}
         {showResults && results.length > 0 && (
           <FlatList
@@ -183,16 +143,20 @@ const ConnectionLocationAutocomplete = forwardRef<
               const label = [name, city, state, country]
                 .filter(Boolean)
                 .join(", ");
+
               return (
                 <TouchableOpacity
                   style={styles.item}
                   onPress={() => {
                     const [lon, lat] = item.geometry.coordinates;
+
                     let timezone = "UTC";
                     try {
                       timezone = tzlookup(lat, lon);
                     } catch {}
+
                     onSelect({ label, lat, lon, timezone });
+
                     setShowResults(false);
                     onResultsVisibilityChange?.(false);
                   }}
@@ -219,10 +183,10 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderRadius: scale(25),
-    paddingHorizontal: scale(15),
+    paddingHorizontal: scale(5),
     color: "#fff",
     height: verticalScale(45),
-    marginBottom: verticalScale(Platform.OS === "ios" ? 10 : 5),
+    marginBottom: verticalScale(5),
     alignSelf: "center",
   },
   clearBtn: {
@@ -244,12 +208,6 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.65)",
     lineHeight: 18,
     fontWeight: "700",
-  },
-  toggleWrapper: {
-    alignSelf: "flex-start",
-    marginTop: verticalScale(2),
-    marginBottom: verticalScale(8),
-    marginLeft: scale(4),
   },
   item: {
     padding: 12,
