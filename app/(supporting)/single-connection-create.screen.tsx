@@ -69,7 +69,7 @@ export default function SingleConnectionCreateScreen() {
   }, [theme]);
 
   useEffect(() => {
-    if (isMe && userRecord) {
+    if (!isMe && userRecord) {
       setFirstPerson({
         "First Name": toTitleCase(userRecord.firstName || ""),
         "Last Name": toTitleCase(userRecord.lastName || ""),
@@ -92,11 +92,11 @@ export default function SingleConnectionCreateScreen() {
 
   const firstFields: FieldConfig[] = isMe
     ? Object.keys(firstPerson).map((label) => ({
-        label,
-        type: "text" as FieldType,
-        value: firstPerson[label],
-        editable: false,
-      }))
+      label,
+      type: "text" as FieldType,
+      value: firstPerson[label],
+      editable: false,
+    }))
     : birthFields;
 
   const sections = [
@@ -138,7 +138,6 @@ export default function SingleConnectionCreateScreen() {
     return true;
   };
 
-  // ‼️ render
   return renderBackground(
     <Animated.View style={[styles.container, { opacity: fade }]}>
       <HeaderNav title="New Connection" leftLabel="Cancel" />
@@ -150,22 +149,23 @@ export default function SingleConnectionCreateScreen() {
         </View>
       ) : (
         <KeyboardAvoidingView
-              style={{ flex: 1 }}
-              behavior={Platform.OS === "ios" ? "padding" : undefined}
-            >
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <FlatList
             data={sections}
             keyExtractor={(item) => item.key}
             style={{ backgroundColor: "transparent" }}
             contentContainerStyle={{
               paddingTop: HEADER_HEIGHT + 5,
-              paddingBottom: verticalScale(25),
+              paddingBottom: verticalScale(15),
             }}
             keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => (
               <View style={styles.section}>
                 <View style={styles.userRow}>
                   <Text style={styles.text}>{item.title}</Text>
+
                   {item.toggle && (
                     <DelalunaToggle label="Me" value={isMe} onToggle={setIsMe} />
                   )}
@@ -173,11 +173,14 @@ export default function SingleConnectionCreateScreen() {
 
                 <View style={styles.divider} />
 
+                {/* FIRST INDIVIDUAL USING "ME" DATA */}
                 {item.key === "first" && isMe ? (
                   <View style={styles.meCard}>
                     <Text style={styles.meName}>
-                      {toTitleCase(userRecord?.firstName || "")} {toTitleCase(userRecord?.lastName || "")}
+                      {toTitleCase(userRecord?.firstName || "")}{" "}
+                      {toTitleCase(userRecord?.lastName || "")}
                     </Text>
+
                     <HomeSignsDisplay
                       sun={userRecord?.sunSign}
                       moon={userRecord?.moonSign}
@@ -185,6 +188,7 @@ export default function SingleConnectionCreateScreen() {
                     />
                   </View>
                 ) : (
+                  /* NORMAL FIELD RENDERING */
                   item.fields.map((field) => {
                     if (field.label === "Place of Birth") {
                       return (
@@ -238,45 +242,48 @@ export default function SingleConnectionCreateScreen() {
                   })
                 )}
 
-                {/* ⭐ RELATIONSHIP TYPE INSIDE LIST (no purple gap) */}
-                <View style={styles.relationshipRow}>
-                  {relationshipOptions.map((option) => {
-                    const iconSource =
-                      option === "consistent"
-                        ? require("../assets/icons/satisfied_icon_words.png")
-                        : option === "complicated"
-                          ? require("../assets/icons/neutral_icon_words.png")
-                          : require("../assets/icons/dissatisfied_icon_words.png");
+                {/* ⭐ ONLY SHOW RELATIONSHIP SELECTION IN SECOND SECTION */}
+                {item.key === "second" && (
+                  <View style={styles.relationshipRow}>
+                    {relationshipOptions.map((option) => {
+                      const iconSource =
+                        option === "consistent"
+                          ? require("../assets/icons/satisfied_icon_words.png")
+                          : option === "complicated"
+                            ? require("../assets/icons/neutral_icon_words.png")
+                            : require("../assets/icons/dissatisfied_icon_words.png");
 
-                    return (
-                      <TouchableOpacity
-                        key={option}
-                        style={[
-                          styles.relationshipButton,
-                          relationshipType === option &&
-                            styles.relationshipSelected,
-                        ]}
-                        onPress={() => setRelationshipType(option)}
-                        activeOpacity={0.8}
-                      >
-                        <Image
-                          source={iconSource}
+                      return (
+                        <TouchableOpacity
+                          key={option}
                           style={[
-                            styles.relationshipIcon,
-                            relationshipType === option &&
-                              styles.relationshipIconSelected,
+                            styles.relationshipButton,
+                            relationshipType === option && styles.relationshipSelected,
                           ]}
-                          resizeMode="contain"
-                        />
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
+                          onPress={() => setRelationshipType(option)}
+                          activeOpacity={0.8}
+                        >
+                          <Image
+                            source={iconSource}
+                            style={[
+                              styles.relationshipIcon,
+                              relationshipType === option &&
+                              styles.relationshipIconSelected,
+                            ]}
+                            resizeMode="contain"
+                          />
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
               </View>
             )}
+
             ListFooterComponent={
               <View style={[styles.footerSections, { backgroundColor: "transparent" }]}>
-                <GlassButton title={"Thassit"} onPress={() => {}} />
+
+                <GlassButton title={"Thassit"} onPress={() => { }} />
               </View>
             }
           />
@@ -293,13 +300,14 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   mainContent: {
-    paddingHorizontal: scale(14),
+    paddingHorizontal: scale(15),
   },
   section: {
     width: "100%",
     marginBottom: verticalScale(25),
     gap: verticalScale(10),
     backgroundColor: "transparent",
+    padding: 10
   },
   userRow: {
     flexDirection: "row",
@@ -363,9 +371,9 @@ const styles = StyleSheet.create({
   relationshipIconSelected: { opacity: 1, tintColor: "#FFFFFF" },
 
   footerSections: {
-    marginTop: verticalScale(20),
-    paddingBottom: verticalScale(20),
+    paddingBottom: verticalScale(25),
     backgroundColor: "transparent",
+    gap: 15
   },
 
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
