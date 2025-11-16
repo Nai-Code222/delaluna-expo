@@ -15,24 +15,24 @@ import {
 } from "react-native";
 
 import { ThemeContext } from "../theme-context";
-import useRenderBackground from "../hooks/useRenderBackground";
+import useRenderBackground from "@/src/hooks/useRenderBackground";
 import DelalunaToggle from "../../src/components/component-utils/delaluna-toggle.component";
 import DelalunaInputRow, {
   FieldConfig,
   FieldType,
 } from "../../src/components/component-utils/delaluna-input-form.component";
 import HeaderNav from "../../src/components/component-utils/header-nav";
-import { useUserProfile } from "../hooks/useUserProfile";
 import AuthContext from "../../src/backend/auth-context";
 import { scale, verticalScale } from "@/src/utils/responsive";
 import { HEADER_HEIGHT } from "@/src/utils/responsive-header";
-import toTitleCase from "../utils/toTitleCase.util";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "@/firebaseConfig";
 import HomeSignsDisplay from "../../src/components/home/home-signs-display.component";
 import ConnectionsPlaceOfBirthField from "../../src/components/connection/connections-place-of-birth-field";
 import ConnectionsTimeOfBirthField from "../../src/components/connection/connections-time-of-birth-field";
 import GlassButton from "../../src/components/buttons/glass-button";
+import { useUserProfile } from "@/src/hooks/useUserProfile";
+import toTitleCase from "@/src/utils/toTitleCase.util";
 
 const GREENWICH = {
   place: "Greenwich, UK",

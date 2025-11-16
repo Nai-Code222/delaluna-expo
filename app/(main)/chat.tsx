@@ -13,8 +13,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ThemeContext } from "../theme-context";
-import useRenderBackground from "../hooks/useRenderBackground";
-import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
+import useRenderBackground from "@/src/hooks/useRenderBackground";import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
 
 type Message = {
   id: string;

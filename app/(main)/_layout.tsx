@@ -5,7 +5,7 @@ import { Image, ImageBackground, StyleSheet, Platform, View, Animated, Easing } 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemeContext } from '@/app/theme-context'; // ← match file case/path
 import { LinearGradient } from 'expo-linear-gradient';
-import useRenderBackground from '../hooks/useRenderBackground';
+import useRenderBackground from "@/src/hooks/useRenderBackground";
 
 export default function HomeLayout() {
   const insets = useSafeAreaInsets();
