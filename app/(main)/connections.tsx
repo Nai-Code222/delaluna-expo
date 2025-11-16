@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   listContainer: {
     flexGrow: 1,
-    paddingHorizontal: scale(16),
+    paddingHorizontal: scale(15),
     paddingTop: verticalScale(20),
   },
   deleteActionContainer: { justifyContent: "center" },
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   deleteText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: moderateScale(13),
-    marginTop: verticalScale(3),
+    fontSize: moderateScale(15),
+    marginTop: verticalScale(5),
   },
 });
