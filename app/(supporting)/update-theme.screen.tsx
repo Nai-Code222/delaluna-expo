@@ -104,10 +104,10 @@ export default function ChangeThemeScreen() {
     <View style={[styles.container, { backgroundColor: "transparent" }]}>
       {/* Dynamic StatusBar based on theme */}
       <StatusBar
-  barStyle={theme.isDark ? "light-content" : "dark-content"}
-  translucent
-  backgroundColor="transparent"
-/>
+        barStyle={theme.isDark ? "light-content" : "dark-content"}
+        translucent
+        backgroundColor="transparent"
+      />
 
 
       {/* Absolute Header */}

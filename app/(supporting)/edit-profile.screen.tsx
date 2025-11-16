@@ -83,7 +83,7 @@ const normalizeTimeHHmm = (s?: string | null): string => {
   try {
     const d = parse(trimmed, 'hh:mm a', new Date());
     if (isValid(d)) return format(d, 'HH:mm');
-  } catch {}
+  } catch { }
   return '';
 };
 
@@ -109,7 +109,7 @@ const to12h = (hh: number, mm: number) =>
 export default function EditProfileScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<Params>();
-    const { theme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
   const insets = useSafeAreaInsets();
   const window = Dimensions.get('window');
 
@@ -167,7 +167,7 @@ export default function EditProfileScreen() {
 
   // keyboard + anchor measuring
   const [keyboardInset, setKeyboardInset] = useState(0);
-  const [anchor, setAnchor] = useState<{x:number;y:number;width:number;height:number}>({x:0,y:0,width:0,height:0});
+  const [anchor, setAnchor] = useState<{ x: number; y: number; width: number; height: number }>({ x: 0, y: 0, width: 0, height: 0 });
   const inputAnchorRef = useRef<View>(null);
   const inputFocusedRef = useRef(false);
 
@@ -178,7 +178,7 @@ export default function EditProfileScreen() {
   const screenRef = useRef<View>(null);
 
   // open panel tracker (date/time/pronoun)
-  const [openPanel, setOpenPanel] = useState<'none'|'pronoun'|'date'|'time'>('none');
+  const [openPanel, setOpenPanel] = useState<'none' | 'pronoun' | 'date' | 'time'>('none');
 
   // Canonical astro state
   const [birthLat, setBirthLat] = useState<number | undefined>(
@@ -195,7 +195,7 @@ export default function EditProfileScreen() {
   const FALLBACK_PLACE_LABEL = 'Greenwich, London, United Kingdom';
   const FALLBACK_LAT = 51.4779;
   const FALLBACK_LON = 0.0015;
-  const FALLBACK_TZ  = 'Europe/London';
+  const FALLBACK_TZ = 'Europe/London';
   const FALLBACK_HH = 12; // noon
   const FALLBACK_MM = 0;
 
@@ -265,7 +265,7 @@ export default function EditProfileScreen() {
       isPlaceOfBirthUnknown: placeUnknown,
     }).some((key) => {
       const k = key as keyof typeof original;
-      const currentVal: any = ( {
+      const currentVal: any = ({
         firstName,
         lastName,
         pronouns: pronoun,
@@ -274,7 +274,7 @@ export default function EditProfileScreen() {
         isBirthTimeUnknown,
         placeOfBirth,
         isPlaceOfBirthUnknown: placeUnknown,
-      } as any )[k];
+      } as any)[k];
       return currentVal !== (original as any)[k];
     });
 
@@ -289,7 +289,7 @@ export default function EditProfileScreen() {
     try {
       const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8`);
       const json = await res.json();
-      const items: {label:string; feature:PhotonFeature}[] =
+      const items: { label: string; feature: PhotonFeature }[] =
         (json?.features ?? [])
           .map((f: PhotonFeature) => ({ feature: f, label: formatLabel(f) }))
           .filter((x: any) => !!x.label);
@@ -311,7 +311,7 @@ export default function EditProfileScreen() {
     }
     const [lon, lat] = f.geometry.coordinates; // Photon is [lon, lat]
     let tz = FALLBACK_TZ;
-    try { tz = tzlookup(lat, lon); } catch {}
+    try { tz = tzlookup(lat, lon); } catch { }
 
     lastChosenLabelRef.current = label;
     setPlaceTextInput(label);
@@ -352,7 +352,7 @@ export default function EditProfileScreen() {
         (x: number, y: number, width: number, height: number) => {
           setAnchor({ x, y, width, height });
         },
-        () => {}
+        () => { }
       );
     });
   };
@@ -447,7 +447,7 @@ export default function EditProfileScreen() {
         birthtime: birthtime12h,       // "hh:mm a"
         birthDateTimeUTC: birthDateTimeUTCStr, // UI stamp string
         zodiacSign: sun.sign,
-        moonSign:   moon.sign,
+        moonSign: moon.sign,
         risingSign: rising.sign,
       });
     }
@@ -561,8 +561,10 @@ export default function EditProfileScreen() {
   // ------------------------------------
 
   return renderBackground(
-    <View ref={screenRef} style={{ flex: 1, paddingTop: Math.max(insets.top, 40) + 60,
-      paddingBottom: insets.bottom + 20,  }}>
+    <View ref={screenRef} style={{
+      flex: 1, paddingTop: Math.max(insets.top, 40) + 60,
+      paddingBottom: insets.bottom + 20,
+    }}>
       <StatusBar barStyle="light-content" backgroundColor="#1C2541" />
       <HeaderNav title="Edit Profile" leftLabel="Cancel" onLeftPress={handleCancel} />
 
@@ -788,7 +790,7 @@ export default function EditProfileScreen() {
                 <GlassButton title="Save Changes" onPress={handleSave} />
               </View>
               {saving && (
-                <View style={{ alignItems:'center', paddingVertical:8 }}>
+                <View style={{ alignItems: 'center', paddingVertical: 8 }}>
                   <ActivityIndicator />
                 </View>
               )}

@@ -17,10 +17,10 @@ import { router, useLocalSearchParams } from "expo-router";
 import AuthContext from "../../src/backend/auth-context";
 import HeaderNav from "../../src/components/component-utils/header-nav";
 import { ThemeContext } from "../theme-context";
-import { useUserProfile } from "@/hooks/useUserProfile";import { getDoc, doc } from "firebase/firestore";
+import { useUserProfile } from "@/hooks/useUserProfile"; import { getDoc, doc } from "firebase/firestore";
 import HomeSignsDisplay from "../../src/components/home/home-signs-display.component";
 import HomeTextBox from "../../src/components/home/home-text-box.component";
-import useRenderBackground from "@/hooks/useRenderBackground";import DateSwitcher from "../../src/components/component-utils/date-switcher.component";
+import useRenderBackground from "@/hooks/useRenderBackground"; import DateSwitcher from "../../src/components/component-utils/date-switcher.component";
 import { db } from "../../firebaseConfig";
 
 export default function HomeScreen() {
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
   },
-  datePicker:{
+  datePicker: {
     justifyContent: "center",
     alignItems: "center",
     width: "100%",

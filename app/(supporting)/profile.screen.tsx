@@ -233,11 +233,11 @@ export default function ProfileScreen() {
   return renderBackground(
     <ScrollView
       style={{ flex: 1, width: '100%' }}
-  contentContainerStyle={{
-    paddingTop: Math.max(insets.top, 40) + 60, // guarantees at least 100px top space
-    paddingBottom: insets.bottom + 30,
-  }}
-  showsVerticalScrollIndicator={false}
+      contentContainerStyle={{
+        paddingTop: Math.max(insets.top, 40) + 60, // guarantees at least 100px top space
+        paddingBottom: insets.bottom + 30,
+      }}
+      showsVerticalScrollIndicator={false}
     >
       <StatusBar style="light" />
       <HeaderNav
@@ -248,7 +248,7 @@ export default function ProfileScreen() {
         onRightPress={goToEditProfile}
       />
       <View style={styles.container}>
-        
+
         <View style={styles.flexFill}>
           <View
             style={styles.profileContentContainer}

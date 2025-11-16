@@ -18,7 +18,7 @@ export default function HomeLayout() {
   const paddingBottom = isIOS ? insets.bottom : 8;
   const renderBackground = useRenderBackground();
   const fade = useRef(new Animated.Value(1)).current;
-  
+
   useEffect(() => {
     fade.setValue(0);
     Animated.timing(fade, { toValue: 1, duration: 180, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();

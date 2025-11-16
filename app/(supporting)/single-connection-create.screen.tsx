@@ -95,11 +95,11 @@ export default function SingleConnectionCreateScreen() {
 
   const firstFields: FieldConfig[] = isMe
     ? Object.keys(firstPerson).map((label) => ({
-        label,
-        type: "text" as FieldType,
-        value: firstPerson[label],
-        editable: false,
-      }))
+      label,
+      type: "text" as FieldType,
+      value: firstPerson[label],
+      editable: false,
+    }))
     : birthFields;
 
   const sections = [
@@ -291,8 +291,8 @@ export default function SingleConnectionCreateScreen() {
                         key === "consistent"
                           ? require("@/assets/icons/satisfied_icon_words.png")
                           : key === "it's complicated"
-                          ? require("@/assets/icons/neutral_icon_words.png")
-                          : require("@/assets/icons/dissatisfied_icon_words.png");
+                            ? require("@/assets/icons/neutral_icon_words.png")
+                            : require("@/assets/icons/dissatisfied_icon_words.png");
 
                       return (
                         <TouchableOpacity
@@ -300,7 +300,7 @@ export default function SingleConnectionCreateScreen() {
                           style={[
                             styles.relationshipButton,
                             relationshipType === option &&
-                              styles.relationshipSelected,
+                            styles.relationshipSelected,
                           ]}
                           onPress={() => setRelationshipType(option)}
                           activeOpacity={0.8}
@@ -310,7 +310,7 @@ export default function SingleConnectionCreateScreen() {
                             style={[
                               styles.relationshipIcon,
                               relationshipType === option &&
-                                styles.relationshipIconSelected,
+                              styles.relationshipIconSelected,
                             ]}
                             resizeMode="contain"
                           />
@@ -323,7 +323,7 @@ export default function SingleConnectionCreateScreen() {
             )}
             ListFooterComponent={
               <View style={styles.footerSections}>
-                <GlassButton title={"Thassit"} onPress={() => {}} />
+                <GlassButton title={"Thassit"} onPress={() => { }} />
               </View>
             }
           />

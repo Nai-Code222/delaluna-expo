@@ -13,12 +13,12 @@ export default function Welcome() {
   const { width } = useWindowDimensions();
   const logoW = Math.min(width * 0.72, scale(360));
   const logoH = logoW * 0.95; // adjust to your logo aspect
-  
+
 
   return (
     <View style={styles.container}>
       <StatusBar>
-        
+
       </StatusBar>
       {/* background image */}
       <ImageBackground
@@ -81,17 +81,17 @@ const styles = StyleSheet.create({
   },
 
   bottomContainer: {
-  flex: 2,
-  alignItems: 'center',
-  justifyContent: 'flex-start',
-  paddingTop: verticalScale(60),
-  paddingBottom: verticalScale(25),
-  gap: verticalScale(15),
-  paddingHorizontal: scale(24),
+    flex: 2,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: verticalScale(60),
+    paddingBottom: verticalScale(25),
+    gap: verticalScale(15),
+    paddingHorizontal: scale(24),
 
-  // pull the whole block upward
-  marginTop: -verticalScale(90),   // ↑ increase magnitude to move closer
-},
+    // pull the whole block upward
+    marginTop: -verticalScale(90),   // ↑ increase magnitude to move closer
+  },
   // animation fills top container
   topAnimation: {
     ...StyleSheet.absoluteFillObject,
@@ -106,9 +106,9 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   divider: {
-  width: '80%',
-  height: StyleSheet.hairlineWidth,
-  backgroundColor: '#D4D6DD',
-  marginVertical: verticalScale(12), // was 20
-},
+    width: '80%',
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#D4D6DD',
+    marginVertical: verticalScale(12), // was 20
+  },
 });

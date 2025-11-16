@@ -58,7 +58,7 @@ const ConnectionLocationAutocomplete = forwardRef<
       onInputChange,
       onSubmitRequest,
       defaultLocation,
-      disabled = false, // ✅ default false
+      disabled = false,
     },
     ref
   ) => {
@@ -112,7 +112,7 @@ const ConnectionLocationAutocomplete = forwardRef<
         <TextInput
           style={styles.input}
           placeholder="Type your birth city..."
-          placeholderTextColor="rgba(255,255,255,0.5)"
+          placeholderTextColor="rgba(255,255,255,0.6)"
           editable={!disabled}
           value={value}
           onChangeText={(text) => {

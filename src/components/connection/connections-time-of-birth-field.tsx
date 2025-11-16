@@ -90,13 +90,13 @@ export default function ConnectionsTimeOfBirthField({
             onPress={() => setShowPicker(true)}
           >
             <Text
-  style={[
-    styles.text,
-    (!value && !isUnknown) && { color: "rgba(255,255,255,0.6)" },
-  ]}
->
-  {isUnknown ? "I don't know" : value || "Select time"}
-</Text>
+              style={[
+                styles.text,
+                (!value && !isUnknown) && { color: "rgba(255,255,255,0.6)" },
+              ]}
+            >
+              {isUnknown ? "I don't know" : value || "Select time"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

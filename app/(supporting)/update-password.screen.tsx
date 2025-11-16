@@ -42,7 +42,7 @@ export default function UpdatePasswordScreen() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-    const { theme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
 
   const handleCancel = () => {
     router.replace('/(supporting)/profile.screen');
@@ -58,7 +58,7 @@ export default function UpdatePasswordScreen() {
       Alert.alert('Validation', 'Please enter your current password (at least 6 characters).');
       return;
     }
-    
+
     // 2. Validate new password strength
     const pwdError = validatePassword(next);
     if (pwdError) {
@@ -171,10 +171,10 @@ export default function UpdatePasswordScreen() {
       />
       <View style={styles.spacer} />
 
-      <GlassButton 
-                title="Save Password"
-                onPress={handleChange}
-              />
+      <GlassButton
+        title="Save Password"
+        onPress={handleChange}
+      />
     </View>
   );
 }

@@ -1,5 +1,6 @@
 import { Link, Stack } from 'expo-router';
-import { StyleSheet, View, Text } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 
 
 export default function NotFoundScreen() {
@@ -9,9 +10,10 @@ export default function NotFoundScreen() {
       <View style={styles.container}>
         <Text style={styles.title}>This screen doesn't exist.</Text>
 
-        <Link href="/app/(auth)/welcome" style={styles.link}>
+        <TouchableOpacity>
           <Text style={styles.linkText}>Go to home screen!</Text>
-        </Link>
+        </TouchableOpacity>
+      
       </View>
     </>
   );

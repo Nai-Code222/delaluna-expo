@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   toggleRow: {
-      alignSelf: "flex-end",
-      marginTop: verticalScale(10),
-      marginRight: scale(5),
-    },
+    alignSelf: "flex-end",
+    marginTop: verticalScale(10),
+    marginRight: scale(5),
+  },
 });
