@@ -30,8 +30,8 @@ import { ThemeContext } from "../theme-context";
 import HeaderNav from '../components/component-utils/header-nav';
 import PronounDropdown from '../components/buttons/pronoun-dropdown';
 import GlassButton from '../components/buttons/glass-button';
-import { getBigThree } from '../services/astro.service';
-import { updateUserDoc } from '../services/user.service';
+import { getBigThree } from '../../src/services/astro.service';
+import { updateUserDoc } from '../../src/services/user.service';
 
 
 

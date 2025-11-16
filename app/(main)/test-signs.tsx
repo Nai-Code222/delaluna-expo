@@ -13,7 +13,7 @@ import {
   TextInput,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { getAstroSigns } from "@/app/services/astrology-api.service";
+import { getAstroSigns } from "@/src/services/astrology-api.service";
 import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
 
 // Enable smooth animations on Android

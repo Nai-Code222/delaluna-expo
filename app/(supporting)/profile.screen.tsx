@@ -17,7 +17,7 @@ import { useAuth } from '../backend/auth-context'
 import { UserRecord } from '../../src/model/user-record'
 import HeaderNav from '../components/component-utils/header-nav'
 import { ThemeContext } from '../theme-context'
-import { getUserDocRef } from '../services/user.service'
+import { getUserDocRef } from '../../src/services/user.service'
 
 
 // Base canvas + scaling clamps

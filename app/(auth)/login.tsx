@@ -33,7 +33,7 @@ import LoadingScreen from '../components/component-utils/loading-screen';
 import DelalunaPasswordInput from '../components/component-utils/password-input-field';
 
 import { ThemeContext } from '@/app/theme-context';
-import { updateUserDoc } from '../services/user.service';
+import { updateUserDoc } from '../../src/services/user.service';
 import { verticalScale } from '@/src/utils/responsive';
 
 export default function Login() {
