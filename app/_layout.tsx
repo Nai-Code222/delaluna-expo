@@ -7,7 +7,7 @@ import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AuthProvider } from "../src/backend/auth-context";
 import { ThemeProvider } from "./theme-context";
-import { DelalunaToastProvider } from "./components/component-utils/delaluna-toast.component";
+import { DelalunaToastProvider } from "../src/components/component-utils/delaluna-toast.component";
 
 export default function RootLayout() {
   return (

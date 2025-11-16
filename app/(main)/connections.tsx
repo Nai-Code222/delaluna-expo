@@ -17,13 +17,13 @@ import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { functions, db } from "@/firebaseConfig";
 import { ThemeContext } from "../theme-context";
 import useRenderBackground from "../hooks/useRenderBackground";
-import HeaderNav from "../components/component-utils/header-nav";
-import AddConnectionButton from "../components/buttons/add-connection-button.component";
+import HeaderNav from "../../src/components/component-utils/header-nav";
+import AddConnectionButton from "../../src/components/buttons/add-connection-button.component";
 import { HEADER_HEIGHT } from "@/src/utils/responsive-header";
 import AuthContext from "../../src/backend/auth-context";
 import splitConnectionId from "../utils/splitConnectionId.util";
 import { Swipeable } from "react-native-gesture-handler";
-import ConnectionListItem from "../components/connection/connection-list-item.component";
+import ConnectionListItem from "../../src/components/connection/connection-list-item.component";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { scale, verticalScale, moderateScale } from "@/src/utils/responsive";
 

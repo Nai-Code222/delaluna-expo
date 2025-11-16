@@ -22,8 +22,8 @@ import { UserCredential, sendEmailVerification, updateProfile } from "firebase/a
 import { StatusBar } from "expo-status-bar";
 import { verticalScale, scale, moderateScale } from "@/src/utils/responsive";
 import { useAuth } from "../../src/backend/auth-context";
-import LoadingScreen from "../components/component-utils/loading-screen";
-import ChatFlow, { StepConfig, FinalSignupPayload } from "../components/sign-up/chat-flow";
+import LoadingScreen from "../../src/components/component-utils/loading-screen";
+import ChatFlow, { StepConfig, FinalSignupPayload } from "../../src/components/sign-up/chat-flow";
 import { UserRecord } from "../../src/model/user-record";
 import signUp from "../../src/services/auth.service";
 import { createUserDoc } from "../../src/services/user.service";

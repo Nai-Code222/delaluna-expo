@@ -15,15 +15,15 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import AuthContext from "../../src/backend/auth-context";
-import HeaderNav from "../components/component-utils/header-nav";
+import HeaderNav from "../../src/components/component-utils/header-nav";
 import { ThemeContext } from "../theme-context";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { getDoc, doc } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
-import HomeSignsDisplay from "../components/home/home-signs-display.component";
-import HomeTextBox from "../components/home/home-text-box.component";
+import HomeSignsDisplay from "../../src/components/home/home-signs-display.component";
+import HomeTextBox from "../../src/components/home/home-text-box.component";
 import useRenderBackground from "../hooks/useRenderBackground";
-import DateSwitcher from "../components/component-utils/date-switcher.component";
+import DateSwitcher from "../../src/components/component-utils/date-switcher.component";
 
 export default function HomeScreen() {
   const { user, initializing } = useContext(AuthContext);

@@ -3,10 +3,10 @@ import { View, StyleSheet, ImageBackground, useWindowDimensions } from 'react-na
 import LottieView from 'lottie-react-native';
 import { router } from 'expo-router';
 import { scale, verticalScale } from '@/src/utils/responsive';
-import TitleText from '@/app/components/typography/title-text';
-import PrimaryButton from '@/app/components/buttons/primary-button-component';
-import SecondaryButton from '@/app/components/buttons/secondary-button-component';
-import ButtonText from '@/app/components/typography/button-text';
+import TitleText from '@/src/components/typography/title-text';
+import PrimaryButton from '@/src/components/buttons/primary-button-component';
+import SecondaryButton from '@/src/components/buttons/secondary-button-component';
+import ButtonText from '@/src/components/typography/button-text';
 import { StatusBar } from 'expo-status-bar';
 
 export default function Welcome() {

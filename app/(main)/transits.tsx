@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemeContext } from "../theme-context";
 import { scale, verticalScale } from "@/src/utils/responsive";
-import ExpandableDelalunaContainer from "../components/component-utils/expandable-delaluna-container.component";
+import ExpandableDelalunaContainer from "../../src/components/component-utils/expandable-delaluna-container.component";
 import useRenderBackground from "../hooks/useRenderBackground";
 
 export default function TransitsScreen() {

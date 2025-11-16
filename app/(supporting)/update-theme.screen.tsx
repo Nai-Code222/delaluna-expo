@@ -14,7 +14,7 @@ import { ThemeContext } from "../theme-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { auth } from "@/firebaseConfig";
-import HeaderNav from "@/app/components/component-utils/header-nav";
+import HeaderNav from "@/src/components/component-utils/header-nav";
 
 type Params = { userID: string };
 

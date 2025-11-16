@@ -26,11 +26,11 @@ import { DateTime } from 'luxon';
 
 import { auth } from '@/firebaseConfig';
 import { useAuth } from '../../src/backend/auth-context';
-import SecondaryButtonComponent from '../components/buttons/secondary-button-component';
-import LoadingScreen from '../components/component-utils/loading-screen';
+import SecondaryButtonComponent from '../../src/components/buttons/secondary-button-component';
+import LoadingScreen from '../../src/components/component-utils/loading-screen';
 
 // ⭐ UPDATED PASSWORD INPUT
-import DelalunaPasswordInput from '../components/component-utils/password-input-field';
+import DelalunaPasswordInput from '../../src/components/component-utils/password-input-field';
 
 import { ThemeContext } from '@/app/theme-context';
 import { updateUserDoc } from '../../src/services/user.service';
