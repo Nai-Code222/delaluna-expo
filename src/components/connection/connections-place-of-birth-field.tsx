@@ -1,4 +1,9 @@
-import React, { useState } from "react";
+import React, {
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { View, Text, StyleSheet } from "react-native";
 import ConnectionLocationAutocomplete from "./connection-location-autocomplete.component";
 import DelalunaToggle from "../component-utils/delaluna-toggle.component";
@@ -7,6 +12,7 @@ import { scale, verticalScale, moderateScale } from "@/utils/responsive";
 interface Props {
   value: string;
   onChange: (values: Record<string, any>) => void;
+  onRequestDismiss?: () => void;         // ⭐ NEW — parent tap-away dismissal
 }
 
 const DEFAULT_PLACE = {
@@ -17,78 +23,107 @@ const DEFAULT_PLACE = {
   timezone: "UTC",
 };
 
-export default function ConnectionsPlaceOfBirthField({ value, onChange }: Props) {
-  const [isUnknown, setIsUnknown] = useState(false);
+const ConnectionsPlaceOfBirthField = forwardRef(
+  ({ value, onChange, onRequestDismiss }: Props, ref) => {
+    const [isUnknown, setIsUnknown] = useState(
+      value?.toLowerCase()?.includes("i don't") ?? false
+    );
 
-  const handleSelect = (place: any) => {
-    setIsUnknown(false);
-    onChange({
-      "Place of Birth": place.label,
-      isPlaceOfBirthUnknown: false,
-      birthLat: place.lat,
-      birthLon: place.lon,
-      birthTimezone: place.timezone,
-    });
-  };
+    /** This ref controls the autocomplete’s dismissSuggestions()  */
+    const autocompleteRef = useRef<{ dismissSuggestions: () => void }>(null);
 
-  const handleInputChange = (text: string) => {
-    if (isUnknown) setIsUnknown(false);
+    /** Allow parent to call dismissSuggestions() */
+    useImperativeHandle(ref, () => ({
+      dismissSuggestions: () => {
+        autocompleteRef.current?.dismissSuggestions();
+      },
+    }));
 
-    onChange({
-      "Place of Birth": text,
-      isPlaceOfBirthUnknown: false,
-    });
-  };
+    /** SELECT from suggestions */
+    const handleSelect = (place: any) => {
+      setIsUnknown(false);
 
-  const handleToggle = (val: boolean) => {
-    setIsUnknown(val);
-
-    if (val) {
-      // show "I don't know" but send default greenwich behind the scenes
       onChange({
-        "Place of Birth": "I don't know",
-        isPlaceOfBirthUnknown: true,
-        birthLat: DEFAULT_PLACE.lat,
-        birthLon: DEFAULT_PLACE.lon,
-        birthTimezone: DEFAULT_PLACE.timezone,
+        "Place of Birth": place.label,
+        isPlaceOfBirthUnknown: false,
+        birthLat: place.lat,
+        birthLon: place.lon,
+        birthTimezone: place.timezone,
       });
-    } else {
+
+      // ⭐ Do NOT reopen suggestions after selecting
+      autocompleteRef.current?.dismissSuggestions();
+      onRequestDismiss?.();
+    };
+
+    /** TYPING in search */
+    const handleInputChange = (text: string) => {
+      if (isUnknown) setIsUnknown(false);
+
       onChange({
-        "Place of Birth": "",
+        "Place of Birth": text,
         isPlaceOfBirthUnknown: false,
       });
-    }
-  };
+    };
 
-  return (
-    <View>
-      {/* FIELD BOX */}
-      <View style={styles.wrapper}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Place of Birth</Text>
+    /** Toggle for "I don't know" */
+    const handleToggle = (val: boolean) => {
+      setIsUnknown(val);
 
-          <View style={styles.right}>
-            <ConnectionLocationAutocomplete
-              value={isUnknown ? "I don't know" : value}
-              disabled={isUnknown}
-              onSelect={handleSelect}
-              onInputChange={handleInputChange}
-            />
+      // Always dismiss results when toggling
+      autocompleteRef.current?.dismissSuggestions();
+      onRequestDismiss?.();
+
+      if (val) {
+        // UI shows "I don't know" — backend uses Greenwich default
+        onChange({
+          "Place of Birth": "I don't know",
+          isPlaceOfBirthUnknown: true,
+          birthLat: DEFAULT_PLACE.lat,
+          birthLon: DEFAULT_PLACE.lon,
+          birthTimezone: DEFAULT_PLACE.timezone,
+        });
+      } else {
+        onChange({
+          "Place of Birth": "",
+          isPlaceOfBirthUnknown: false,
+        });
+      }
+    };
+
+    return (
+      <View>
+        {/* FIELD BOX */}
+        <View style={styles.wrapper}>
+          <View style={styles.row}>
+            <Text style={styles.label}>Place of Birth</Text>
+
+            <View style={styles.right}>
+              <ConnectionLocationAutocomplete
+                ref={autocompleteRef}
+                value={isUnknown ? "I don't know" : value}
+                disabled={isUnknown}
+                onSelect={handleSelect}
+                onInputChange={handleInputChange}
+                onResultsVisibilityChange={() => {}} // optional no-op
+                onSubmitRequest={() => autocompleteRef.current?.dismissSuggestions()}
+              />
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* ⬇️ TOGGLE BELOW, NOT INSIDE */}
-      <View style={styles.toggleRow}>
-        <DelalunaToggle
-          label="I don't know"
-          value={isUnknown}
-          onToggle={handleToggle}
-        />
+        {/* I DON'T KNOW TOGGLE */}
+        <View style={styles.toggleRow}>
+          <DelalunaToggle
+            label="I don't know"
+            value={isUnknown}
+            onToggle={handleToggle}
+          />
+        </View>
       </View>
-    </View>
-  );
-}
+    );
+  }
+);
 
 /* Styles */
 const styles = StyleSheet.create({
@@ -100,19 +135,16 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(5),
     paddingHorizontal: scale(10),
   },
-
   row: {
     flexDirection: "row",
     alignItems: "center",
   },
-
   label: {
     flex: 0.9,
     color: "#FFF",
     fontSize: moderateScale(15),
     fontWeight: "700",
   },
-
   right: {
     flex: 1.3,
     borderLeftWidth: 1,
@@ -126,3 +158,5 @@ const styles = StyleSheet.create({
     marginRight: scale(5),
   },
 });
+
+export default ConnectionsPlaceOfBirthField;

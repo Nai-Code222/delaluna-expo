@@ -144,6 +144,16 @@ export default function SingleConnectionCreateScreen() {
     return cloned;
   };
 
+  // Refs to dismiss suggestions
+  const firstLocationRef = useRef<{ dismissSuggestions: () => void }>(null);
+  const secondLocationRef = useRef<{ dismissSuggestions: () => void }>(null);
+
+  const dismissAllSuggestions = () => {
+    firstLocationRef.current?.dismissSuggestions();
+    secondLocationRef.current?.dismissSuggestions();
+  };
+
+
   const validatePerson = (person: Record<string, any>, label: string) => {
     const required = [
       "First Name",
@@ -333,7 +343,7 @@ export default function SingleConnectionCreateScreen() {
   );
 }
 
-/* STYLES — cleaned layout + spacing fixed */
+/* STYLES */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

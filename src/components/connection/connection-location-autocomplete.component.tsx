@@ -3,6 +3,7 @@ import React, {
   useEffect,
   forwardRef,
   useImperativeHandle,
+  useRef,
 } from "react";
 import {
   View,
@@ -43,7 +44,7 @@ interface LocationAutocompleteProps {
   onSelect: (place: SelectedPlace) => void;
   onSubmitRequest?: () => void;
   defaultLocation?: SelectedPlace;
-  disabled?: boolean; // ✅ NEW
+  disabled?: boolean;
 }
 
 const ConnectionLocationAutocomplete = forwardRef<
@@ -65,7 +66,12 @@ const ConnectionLocationAutocomplete = forwardRef<
     const [results, setResults] = useState<PhotonFeature[]>([]);
     const [showResults, setShowResults] = useState<boolean>(false);
 
-    /** Expose dismiss */
+    // ⭐ prevents reopening suggestions after selecting a result
+    const justSelectedRef = useRef(false);
+
+    /* ------------------------------------------------------------------
+     * EXPOSE DISMISS METHOD TO PARENT
+     * ------------------------------------------------------------------*/
     useImperativeHandle(ref, () => ({
       dismissSuggestions: () => {
         setShowResults(false);
@@ -73,6 +79,9 @@ const ConnectionLocationAutocomplete = forwardRef<
       },
     }));
 
+    /* ------------------------------------------------------------------
+     * FETCH RESULTS (debounced)
+     * ------------------------------------------------------------------*/
     useEffect(() => {
       if (disabled) {
         setResults([]);
@@ -84,31 +93,48 @@ const ConnectionLocationAutocomplete = forwardRef<
 
       if (q.length < 3) {
         setResults([]);
+        setShowResults(false);
         onResultsVisibilityChange?.(false);
         return;
       }
 
-      onResultsVisibilityChange?.(true);
+      // ⭐ Prevent suggestions from reopening immediately after selecting a place
+      if (justSelectedRef.current) {
+        justSelectedRef.current = false; // reset once suppressed
+        return;
+      }
 
       const handler = setTimeout(() => {
         fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`)
           .then((res) => res.json())
-          .then((json) => setResults(json.features || []))
+          .then((json) => {
+            setResults(json.features || []);
+            setShowResults(true);
+            onResultsVisibilityChange?.(true);
+          })
           .catch(() => {});
-      }, 300);
+      }, 250);
 
       return () => clearTimeout(handler);
     }, [value, disabled]);
 
+    /* ------------------------------------------------------------------
+     * LOCAL DISMISS ON BLUR
+     * ------------------------------------------------------------------*/
+    const handleBlur = () => {
+      setShowResults(false);
+      onResultsVisibilityChange?.(false);
+    };
+
+    /* ------------------------------------------------------------------
+     * RENDER
+     * ------------------------------------------------------------------*/
     return (
       <View
-        style={[
-          styles.container,
-          disabled && { opacity: 0.4 }, // fade effect
-        ]}
-        pointerEvents={disabled ? "none" : "auto"} // block touches
+        style={[styles.container, disabled && { opacity: 0.4 }]}
+        pointerEvents={disabled ? "none" : "auto"}
       >
-        {/* INPUT */}
+        {/* INPUT FIELD */}
         <TextInput
           style={styles.input}
           placeholder="Type your birth city..."
@@ -117,11 +143,20 @@ const ConnectionLocationAutocomplete = forwardRef<
           value={value}
           onChangeText={(text) => {
             onInputChange?.(text);
-            setShowResults(true);
-            onResultsVisibilityChange?.(true);
           }}
+          onFocus={() => {
+            // Only show if results already fetched
+            if (value && value.length >= 3 && results.length > 0) {
+              setShowResults(true);
+              onResultsVisibilityChange?.(true);
+            }
+          }}
+          onBlur={handleBlur}
           autoCorrect={false}
-          returnKeyType={Platform.select({ ios: "done", android: "send" }) as any}
+          returnKeyType={Platform.select({
+            ios: "done",
+            android: "send",
+          }) as any}
           onSubmitEditing={() => onSubmitRequest?.()}
         />
 
@@ -140,18 +175,16 @@ const ConnectionLocationAutocomplete = forwardRef<
                   style={styles.item}
                   onPress={() => {
                     const [lon, lat] = item.geometry.coordinates;
-                    let timezone = "UTC";
 
+                    // ⭐ Block next auto-fetch so suggestions don't reopen
+                    justSelectedRef.current = true;
+
+                    let timezone = "UTC";
                     try {
                       timezone = tzlookup(lat, lon);
                     } catch {}
 
-                    onSelect({
-                      label,
-                      lat,
-                      lon,
-                      timezone,
-                    });
+                    onSelect({ label, lat, lon, timezone });
 
                     setShowResults(false);
                     onResultsVisibilityChange?.(false);
@@ -172,9 +205,7 @@ export default ConnectionLocationAutocomplete;
 
 /* Styles */
 const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-  },
+  container: { width: "100%" },
   input: {
     color: "#FFFFFF",
     fontSize: 15,
@@ -185,7 +216,5 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255,255,255,0.15)",
   },
-  itemText: {
-    color: "#FFFFFF",
-  },
+  itemText: { color: "#FFFFFF" },
 });
