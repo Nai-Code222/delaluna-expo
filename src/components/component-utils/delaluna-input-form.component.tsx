@@ -55,7 +55,7 @@ export default function DelalunaInputRow({
         const value = formValues[field.label];
         const isEditable = field.editable ?? true;
 
-        // 🔥 Time fields are handled by a dedicated component
+        // Time fields are handled by a dedicated component
         if (field.type === "time") return null;
 
         return (

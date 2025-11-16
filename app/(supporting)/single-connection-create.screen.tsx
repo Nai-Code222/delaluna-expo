@@ -58,6 +58,7 @@ export default function SingleConnectionCreateScreen() {
 
   const getSignsCallable = httpsCallable(functions, "getSigns");
 
+  /** Fade animation on theme change */
   useEffect(() => {
     fade.setValue(0);
     Animated.timing(fade, {
@@ -68,6 +69,7 @@ export default function SingleConnectionCreateScreen() {
     }).start();
   }, [theme]);
 
+  /** Populate Me card data */
   useEffect(() => {
     if (!isMe && userRecord) {
       setFirstPerson({
@@ -82,6 +84,7 @@ export default function SingleConnectionCreateScreen() {
     }
   }, [isMe, userRecord]);
 
+  /** FIELD DEFINITIONS */
   const birthFields: FieldConfig[] = [
     { label: "First Name", type: "text", placeholder: "Enter first name" },
     { label: "Last Name", type: "text", placeholder: "Enter last name" },
@@ -92,36 +95,49 @@ export default function SingleConnectionCreateScreen() {
 
   const firstFields: FieldConfig[] = isMe
     ? Object.keys(firstPerson).map((label) => ({
-      label,
-      type: "text" as FieldType,
-      value: firstPerson[label],
-      editable: false,
-    }))
+        label,
+        type: "text" as FieldType,
+        value: firstPerson[label],
+        editable: false,
+      }))
     : birthFields;
 
   const sections = [
-    { key: "first", title: "First Individual", toggle: true, fields: firstFields, onChange: setFirstPerson },
-    { key: "second", title: "Second Individual", toggle: false, fields: birthFields, onChange: setSecondPerson },
+    {
+      key: "first",
+      title: "First Individual",
+      toggle: true,
+      fields: firstFields,
+      onChange: setFirstPerson,
+    },
+    {
+      key: "second",
+      title: "Second Individual",
+      toggle: false,
+      fields: birthFields,
+      onChange: setSecondPerson,
+    },
   ];
 
-  const relationshipOptions = ["consistent", "complicated", "toxic"];
+  const relationshipOptions = ["consistent", "it's complicated", "toxic"];
 
   const isEmpty = (val: any) =>
     val == null || (typeof val === "string" && val.trim().length === 0);
 
+  /** Default fallback */
   const fillDefaultsIfNeeded = (person: Record<string, any>) => {
     const cloned = { ...person };
     const place = cloned["Place of Birth"];
     const time = cloned["Time of Birth"];
 
-    if (!place || place.toLowerCase().includes("i don't")) {
+    if (!place) {
       cloned["Place of Birth"] = GREENWICH.place;
       cloned.birthLat = GREENWICH.lat;
       cloned.birthLon = GREENWICH.lon;
       cloned.birthTimezone = GREENWICH.tzone;
     }
 
-    if (!time || time.toLowerCase().includes("i don't")) {
+    if (!time) {
       cloned["Time of Birth"] = GREENWICH.time;
     }
 
@@ -129,10 +145,19 @@ export default function SingleConnectionCreateScreen() {
   };
 
   const validatePerson = (person: Record<string, any>, label: string) => {
-    const required = ["First Name", "Last Name", "Birthday", "Place of Birth", "Time of Birth"];
+    const required = [
+      "First Name",
+      "Last Name",
+      "Birthday",
+      "Place of Birth",
+      "Time of Birth",
+    ];
     const missing = required.filter((f) => isEmpty(person[f]));
     if (missing.length > 0) {
-      Alert.alert("Missing Information", `${label}: please enter ${missing.join(", ")}.`);
+      Alert.alert(
+        "Missing Information",
+        `${label}: please enter ${missing.join(", ")}.`
+      );
       return false;
     }
     return true;
@@ -145,7 +170,9 @@ export default function SingleConnectionCreateScreen() {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FFFFFF" />
-          <Text style={styles.loadingText}>Calculating and saving connection...</Text>
+          <Text style={styles.loadingText}>
+            Calculating and saving connection...
+          </Text>
         </View>
       ) : (
         <KeyboardAvoidingView
@@ -158,22 +185,26 @@ export default function SingleConnectionCreateScreen() {
             style={{ backgroundColor: "transparent" }}
             contentContainerStyle={{
               paddingTop: HEADER_HEIGHT + 5,
-              paddingBottom: verticalScale(15),
+              paddingBottom: verticalScale(20),
             }}
             keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => (
               <View style={styles.section}>
                 <View style={styles.userRow}>
-                  <Text style={styles.text}>{item.title}</Text>
+                  <Text style={styles.titleText}>{item.title}</Text>
 
                   {item.toggle && (
-                    <DelalunaToggle label="Me" value={isMe} onToggle={setIsMe} />
+                    <DelalunaToggle
+                      label="Me"
+                      value={isMe}
+                      onToggle={setIsMe}
+                    />
                   )}
                 </View>
 
                 <View style={styles.divider} />
 
-                {/* FIRST INDIVIDUAL USING "ME" DATA */}
+                {/* ME CARD */}
                 {item.key === "first" && isMe ? (
                   <View style={styles.meCard}>
                     <Text style={styles.meName}>
@@ -188,7 +219,7 @@ export default function SingleConnectionCreateScreen() {
                     />
                   </View>
                 ) : (
-                  /* NORMAL FIELD RENDERING */
+                  /* FIELDS */
                   item.fields.map((field) => {
                     if (field.label === "Place of Birth") {
                       return (
@@ -200,7 +231,10 @@ export default function SingleConnectionCreateScreen() {
                               : secondPerson["Place of Birth"]
                           }
                           onChange={(values) =>
-                            item.onChange((prev: any) => ({ ...prev, ...values }))
+                            item.onChange((prev: any) => ({
+                              ...prev,
+                              ...values,
+                            }))
                           }
                         />
                       );
@@ -216,7 +250,10 @@ export default function SingleConnectionCreateScreen() {
                               : secondPerson["Time of Birth"]
                           }
                           onChange={(values) =>
-                            item.onChange((prev: any) => ({ ...prev, ...values }))
+                            item.onChange((prev: any) => ({
+                              ...prev,
+                              ...values,
+                            }))
                           }
                         />
                       );
@@ -235,30 +272,35 @@ export default function SingleConnectionCreateScreen() {
                           },
                         ]}
                         onChange={(values) =>
-                          item.onChange((prev: any) => ({ ...prev, ...values }))
+                          item.onChange((prev: any) => ({
+                            ...prev,
+                            ...values,
+                          }))
                         }
                       />
                     );
                   })
                 )}
 
-                {/* ⭐ ONLY SHOW RELATIONSHIP SELECTION IN SECOND SECTION */}
                 {item.key === "second" && (
                   <View style={styles.relationshipRow}>
                     {relationshipOptions.map((option) => {
+                      const key = option.toLowerCase();
+
                       const iconSource =
-                        option === "consistent"
+                        key === "consistent"
                           ? require("@/assets/icons/satisfied_icon_words.png")
-                          : option === "complicated"
-                            ? require("@/assets/icons/neutral_icon_words.png")
-                            : require("@/assets/icons/dissatisfied_icon_words.png");
+                          : key === "it's complicated"
+                          ? require("@/assets/icons/neutral_icon_words.png")
+                          : require("@/assets/icons/dissatisfied_icon_words.png");
 
                       return (
                         <TouchableOpacity
                           key={option}
                           style={[
                             styles.relationshipButton,
-                            relationshipType === option && styles.relationshipSelected,
+                            relationshipType === option &&
+                              styles.relationshipSelected,
                           ]}
                           onPress={() => setRelationshipType(option)}
                           activeOpacity={0.8}
@@ -268,7 +310,7 @@ export default function SingleConnectionCreateScreen() {
                             style={[
                               styles.relationshipIcon,
                               relationshipType === option &&
-                              styles.relationshipIconSelected,
+                                styles.relationshipIconSelected,
                             ]}
                             resizeMode="contain"
                           />
@@ -279,11 +321,9 @@ export default function SingleConnectionCreateScreen() {
                 )}
               </View>
             )}
-
             ListFooterComponent={
-              <View style={[styles.footerSections, { backgroundColor: "transparent" }]}>
-
-                <GlassButton title={"Thassit"} onPress={() => { }} />
+              <View style={styles.footerSections}>
+                <GlassButton title={"Thassit"} onPress={() => {}} />
               </View>
             }
           />
@@ -293,38 +333,41 @@ export default function SingleConnectionCreateScreen() {
   );
 }
 
+/* STYLES — cleaned layout + spacing fixed */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
     backgroundColor: "transparent",
   },
-  mainContent: {
-    paddingHorizontal: scale(15),
-  },
+
   section: {
     width: "100%",
-    marginBottom: verticalScale(25),
-    gap: verticalScale(10),
+    paddingHorizontal: 10,
+    paddingBottom: verticalScale(20),
+    marginBottom: verticalScale(10),
     backgroundColor: "transparent",
-    padding: 10
+    gap: verticalScale(12),
   },
+
   userRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 5,
   },
-  text: {
+
+  titleText: {
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "600",
   },
+
   divider: {
     height: 1,
     backgroundColor: "rgba(255,255,255,0.15)",
-    marginVertical: verticalScale(8),
+    marginVertical: verticalScale(6),
   },
+
   meCard: {
     padding: verticalScale(20),
     borderRadius: scale(12),
@@ -332,20 +375,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
+    gap: verticalScale(15),
   },
+
   meName: {
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "700",
-    marginBottom: verticalScale(10),
   },
 
-  /* ⭐ Relationship selection (inside sections) */
   relationshipRow: {
     flexDirection: "row",
-    marginTop: verticalScale(10),
-    height: 80,
-    backgroundColor: "transparent",
+    height: 85,
+    marginTop: verticalScale(5),
   },
 
   relationshipButton: {
@@ -356,26 +398,40 @@ const styles = StyleSheet.create({
     marginHorizontal: scale(5),
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: verticalScale(10),
   },
+
   relationshipSelected: {
     backgroundColor: "rgba(142,68,173,0.7)",
     borderColor: "#FFFFFF",
   },
+
   relationshipIcon: {
-    width: scale(70),
-    height: scale(70),
-    opacity: 0.85,
+    width: scale(65),
+    height: scale(65),
+    opacity: 0.8,
     tintColor: "rgba(255,255,255,0.85)",
   },
-  relationshipIconSelected: { opacity: 1, tintColor: "#FFFFFF" },
 
-  footerSections: {
-    paddingBottom: verticalScale(25),
-    backgroundColor: "transparent",
-    gap: 15
+  relationshipIconSelected: {
+    opacity: 1,
+    tintColor: "#FFFFFF",
   },
 
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  loadingText: { color: "#FFFFFF", marginTop: 12, fontSize: 16 },
+  footerSections: {
+    paddingBottom: verticalScale(35),
+    alignItems: "center",
+    gap: verticalScale(15),
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  loadingText: {
+    color: "#FFFFFF",
+    marginTop: 12,
+    fontSize: 16,
+  },
 });
