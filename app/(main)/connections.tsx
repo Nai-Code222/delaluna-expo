@@ -20,7 +20,7 @@ import useRenderBackground from "../hooks/useRenderBackground";
 import HeaderNav from "../components/component-utils/header-nav";
 import AddConnectionButton from "../components/buttons/add-connection-button.component";
 import { HEADER_HEIGHT } from "@/src/utils/responsive-header";
-import AuthContext from "../backend/auth-context";
+import AuthContext from "../../src/backend/auth-context";
 import splitConnectionId from "../utils/splitConnectionId.util";
 import { Swipeable } from "react-native-gesture-handler";
 import ConnectionListItem from "../components/connection/connection-list-item.component";

@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { auth } from '@/firebaseConfig'
 import LoadingScreen from '@/app/components/component-utils/loading-screen'
 import AlertModal from '@/app/components/alerts/alert-modal'
-import { useAuth } from '../backend/auth-context'
+import { useAuth } from '../../src/backend/auth-context'
 import { UserRecord } from '../../src/model/user-record'
 import HeaderNav from '../components/component-utils/header-nav'
 import { ThemeContext } from '../theme-context'

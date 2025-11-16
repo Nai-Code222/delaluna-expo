@@ -25,7 +25,7 @@ import { StatusBar } from 'expo-status-bar';
 import { DateTime } from 'luxon';
 
 import { auth } from '@/firebaseConfig';
-import { useAuth } from '../backend/auth-context';
+import { useAuth } from '../../src/backend/auth-context';
 import SecondaryButtonComponent from '../components/buttons/secondary-button-component';
 import LoadingScreen from '../components/component-utils/loading-screen';
 

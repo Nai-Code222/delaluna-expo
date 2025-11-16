@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import AuthContext from "../backend/auth-context";
+import AuthContext from "../../src/backend/auth-context";
 import HeaderNav from "../components/component-utils/header-nav";
 import { ThemeContext } from "../theme-context";
 import { useUserProfile } from "../hooks/useUserProfile";

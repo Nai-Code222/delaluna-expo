@@ -23,7 +23,7 @@ import DelalunaInputRow, {
 } from "../components/component-utils/delaluna-input-form.component";
 import HeaderNav from "../components/component-utils/header-nav";
 import { useUserProfile } from "../hooks/useUserProfile";
-import AuthContext from "../backend/auth-context";
+import AuthContext from "../../src/backend/auth-context";
 import { scale, verticalScale } from "@/src/utils/responsive";
 import { HEADER_HEIGHT } from "@/src/utils/responsive-header";
 import toTitleCase from "../utils/toTitleCase.util";

@@ -21,7 +21,7 @@ import { useRouter } from "expo-router";
 import { UserCredential, sendEmailVerification, updateProfile } from "firebase/auth";
 import { StatusBar } from "expo-status-bar";
 import { verticalScale, scale, moderateScale } from "@/src/utils/responsive";
-import { useAuth } from "../backend/auth-context";
+import { useAuth } from "../../src/backend/auth-context";
 import LoadingScreen from "../components/component-utils/loading-screen";
 import ChatFlow, { StepConfig, FinalSignupPayload } from "../components/sign-up/chat-flow";
 import { UserRecord } from "../../src/model/user-record";

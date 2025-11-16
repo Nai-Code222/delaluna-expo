@@ -3,7 +3,7 @@ import { View, StyleSheet, ImageBackground } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useAuth } from './backend/auth-context';
+import { useAuth } from '../src/backend/auth-context';
 import { Buffer } from "buffer";
 import { scale } from '@/src/utils/responsive';
 global.Buffer = Buffer;

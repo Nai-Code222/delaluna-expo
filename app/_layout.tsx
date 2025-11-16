@@ -5,7 +5,7 @@ import "react-native-reanimated"; // must be right after gesture-handler
 import React from "react";
 import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { AuthProvider } from "./backend/auth-context";
+import { AuthProvider } from "../src/backend/auth-context";
 import { ThemeProvider } from "./theme-context";
 import { DelalunaToastProvider } from "./components/component-utils/delaluna-toast.component";
 
