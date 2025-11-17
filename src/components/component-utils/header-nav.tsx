@@ -48,6 +48,7 @@ export default function HeaderNav({
   const bg = backgroundColor ?? theme.colors.headerBg;
   const tc = textColor ?? theme.colors.headerText;
   const navHeight = HEADER_HEIGHT - insets.top;
+  const iconScale = 30;
 
   return (
     <>
@@ -73,7 +74,7 @@ export default function HeaderNav({
           {/* LEFT SIDE */}
           <TouchableOpacity onPress={onLeftPress} style={styles.sideContainer}>
             {leftIconName ? (
-              <Ionicons name={leftIconName} size={moderateScale(22)} color={tc} />
+              <Ionicons name={leftIconName} size={moderateScale(iconScale)} color={tc} />
             ) : leftIconSource ? (
               <Image source={leftIconSource} style={[styles.icon, { tintColor: tc }]} />
             ) : leftLabel ? (
@@ -93,7 +94,7 @@ export default function HeaderNav({
           {/* RIGHT SIDE */}
           <TouchableOpacity onPress={onRightPress} style={styles.sideContainer}>
             {rightIconName ? (
-              <Ionicons name={rightIconName} size={moderateScale(22)} color={tc} />
+              <Ionicons name={rightIconName} size={moderateScale(iconScale)} color={tc} />
             ) : rightIconSource ? (
               <Image source={rightIconSource} style={[styles.icon, { tintColor: tc }]} />
             ) : rightLabel ? (
