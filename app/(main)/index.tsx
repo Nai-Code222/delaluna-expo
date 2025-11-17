@@ -34,7 +34,7 @@ export default function HomeScreen() {
   const initialUserRecord = userParam ? JSON.parse(userParam as string) : null;
   const HEADER_HEIGHT = Platform.OS === "ios" ? 115 : 85;
 
-  // 🌙 Firestore user profile (cached + realtime)
+  // Firestore user profile (cached + realtime)
   const { user: userRecord, loading: profileLoading, cachedAt } = useUserProfile(
     user?.uid,
     initialUserRecord
@@ -69,7 +69,7 @@ export default function HomeScreen() {
     }
   }, [user?.uid]);
 
-  // ✨ Fade animation on theme change
+  //  Fade animation on theme change
   const fade = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     fade.setValue(0);
