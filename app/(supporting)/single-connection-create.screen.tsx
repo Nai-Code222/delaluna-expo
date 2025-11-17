@@ -38,6 +38,10 @@ import { verticalScale, scale } from "@/utils/responsive";
 import { HEADER_HEIGHT } from "@/utils/responsive-header";
 import toTitleCase from "@/utils/toTitleCase.util";
 import { functions } from "../../firebaseConfig";
+import ConfirmDialog from "@/components/alerts/confirm-dialog";
+import { router } from "expo-router";
+import { getAstroSigns } from "../../src/services/astrology-api.service";
+
 
 const GREENWICH = {
   place: "Greenwich, UK",
@@ -91,6 +95,7 @@ export default function SingleConnectionCreateScreen() {
 
   /** Populate ME with signs */
   useEffect(() => {
+    // When switching TO "Me" (true), populate from userRecord
     if (isMe && userRecord) {
       setFirstPerson({
         "First Name": toTitleCase(userRecord.firstName || ""),
@@ -103,7 +108,19 @@ export default function SingleConnectionCreateScreen() {
         "Time of Birth": "",
       });
     }
+
+    // When switching OFF "Me", reset to empty editable fields
+    if (!isMe) {
+      setFirstPerson({
+        "First Name": "",
+        "Last Name": "",
+        Birthday: "",
+        "Place of Birth": "",
+        "Time of Birth": "",
+      });
+    }
   }, [isMe, userRecord]);
+
 
   /** Birth fields */
   const birthFields: FieldConfig[] = [
@@ -147,8 +164,37 @@ export default function SingleConnectionCreateScreen() {
 
   const relationshipOptions = ["consistent", "it's complicated", "toxic"];
 
-  const isEmpty = (val: any) =>
-    val == null || (typeof val === "string" && val.trim().length === 0);
+  const isEmpty = (val: any) => {
+    return val == null || (typeof val === "string" && val.trim().length === 0);
+  };
+
+  const personHasData = (person: PersonBirthData) => {
+    return Object.values(person).some(
+      (val) => val != null && String(val).trim() !== ""
+    );
+  };
+
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
+  const [pendingConfirm, setPendingConfirm] = useState<null | (() => void)>(null);
+
+  const handleCancel = () => {
+    const hasFirstData = personHasData(firstPerson);
+    const hasSecondData = personHasData(secondPerson);
+    console.log(hasFirstData);
+    console.log("First Person: ", firstPerson);
+    if (isMe && !hasSecondData) {
+
+      router.replace('/(main)/connections');
+
+    } else if (!isMe && !hasFirstData && !hasSecondData) {
+      router.replace('/(main)/connections');
+    } else {
+      // Otherwise show confirmation dialog
+      setPendingConfirm(() => () => router.replace('/(main)/connections'));
+      setShowDiscardDialog(true);
+    }
+  };
+
 
   /** Validate required fields */
   const validatePerson = (person: PersonBirthData, label: string) => {
@@ -171,6 +217,134 @@ export default function SingleConnectionCreateScreen() {
     return true;
   };
 
+  const handleSaveConnection = async () => {
+    dismissAllSuggestions();
+    setLoading(true);
+
+    try {
+      // -------------------------
+      // 1️⃣ VALIDATION
+      // -------------------------
+
+      // If NOT Me → validate First Person
+      if (!isMe) {
+        if (!validatePerson(firstPerson, "First Person")) {
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Always validate Second Person
+      if (!validatePerson(secondPerson, "Second Person")) {
+        setLoading(false);
+        return;
+      }
+
+      if (!relationshipType) {
+        Alert.alert("Missing Relationship Type", "Please select a relationship type.");
+        setLoading(false);
+        return;
+      }
+
+      // -------------------------
+      // 2️⃣ BIRTH PARAM EXTRACTOR
+      // -------------------------
+      const extractBirthParams = (person: PersonBirthData) => {
+  if (!person.Birthday) {
+    throw new Error("Birthday is missing");
+  }
+
+  if (!person["Time of Birth"]) {
+    throw new Error("Time of Birth is missing");
+  }
+
+  const pob = person["Place of Birth"];
+
+  // Narrow string or undefined
+  if (!pob || typeof pob === "string") {
+    throw new Error("Place of Birth must be a location object with lat/lon/tzone");
+  }
+
+  // 🔥 TypeScript now knows pob = PersonLocationObject
+  const { lat, lon, tzone } = pob as {
+    lat: number;
+    lon: number;
+    tzone: number;
+  };
+
+  const [month, day, year] = person.Birthday.split("/").map(Number);
+  const [hour, min] = person["Time of Birth"].split(":").map(Number);
+
+  return {
+    day,
+    month,
+    year,
+    hour,
+    min,
+    lat,
+    lon,
+    tzone,
+  };
+};
+
+
+      const firstBirthParams = isMe ? null : extractBirthParams(firstPerson);
+      const secondBirthParams = extractBirthParams(secondPerson);
+
+      // -------------------------
+      // 3️⃣ GET SIGNS (First only if not Me)
+      // -------------------------
+
+      let enrichedFirst: any = { ...firstPerson };
+      let enrichedSecond: any = { ...secondPerson };
+
+      if (!isMe) {
+        const firstSigns = await getAstroSigns(firstBirthParams!);
+        enrichedFirst = { ...firstPerson, ...firstSigns };
+      }
+
+      // Second person signs always needed
+      const secondSigns = await getAstroSigns(secondBirthParams);
+      enrichedSecond = { ...secondPerson, ...secondSigns };
+
+      // -------------------------
+      // 4️⃣ GET COMPATIBILITY CALLABLE
+      // -------------------------
+
+      const getConnection = httpsCallable(functions, "getConnection");
+
+      if (!user) {
+  Alert.alert("Not Logged In", "You must be logged in to save a connection.");
+  setLoading(false);
+  return;
+}
+
+const response = await getConnection({
+  userId: user.uid,
+  isMe,
+  relationshipType,
+  firstPerson: enrichedFirst,
+  secondPerson: enrichedSecond,
+});
+
+
+      const result = response.data;
+      console.log("Result: ", result);
+
+      // -------------------------
+      // 5️⃣ NAVIGATE TO CONNECTION
+      // -------------------------
+      //router.replace(`/(main)/connections/${result.connectionId}`);
+
+    } catch (err) {
+      console.error("❌ Error saving connection:", err);
+      Alert.alert("Error", "Something went wrong creating this connection.");
+    }
+
+    setLoading(false);
+  };
+
+
   /** Dismiss suggestion refs */
   const firstLocationRef = useRef<{ dismissSuggestions: () => void }>(null);
   const secondLocationRef = useRef<{ dismissSuggestions: () => void }>(null);
@@ -182,7 +356,7 @@ export default function SingleConnectionCreateScreen() {
 
   return renderBackground(
     <Animated.View style={[styles.container, { opacity: fade }]}>
-      <HeaderNav title="New Connection" leftLabel="Cancel" />
+      <HeaderNav title="New Connection" leftLabel="Cancel" onLeftPress={handleCancel} />
 
       {loading ? (
         <View style={styles.loadingContainer}>
@@ -347,6 +521,21 @@ export default function SingleConnectionCreateScreen() {
           />
         </KeyboardAvoidingView>
       )}
+      <ConfirmDialog
+        visible={showDiscardDialog}
+        title="Discard Changes?"
+        message="You have unsaved changes. Are you sure you want to leave?"
+        onCancel={() => {
+          setShowDiscardDialog(false);
+          setPendingConfirm(null);
+        }}
+        onConfirm={() => {
+          pendingConfirm?.();
+          setShowDiscardDialog(false);
+          setPendingConfirm(null);
+        }}
+      />
+
     </Animated.View>
   );
 }

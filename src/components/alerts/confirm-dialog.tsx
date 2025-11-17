@@ -1,28 +1,29 @@
-// components/AlertModal.tsx
+// src/components/alerts/confirm-dialog.tsx
 import React, { useEffect, useRef } from "react";
 import {
   Modal,
   View,
   Text,
-  TouchableOpacity,
-  Animated,
-  Easing,
   StyleSheet,
   Pressable,
+  Animated,
+  Easing,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 
-export default function AlertModal({
+export default function ConfirmDialog({
   visible,
+  title,
   message,
-  title = "Alert",
-  onClose,
+  onCancel,
+  onConfirm,
 }: {
   visible: boolean;
+  title: string;
   message: string;
-  title?: string;
-  onClose: () => void;
+  onCancel: () => void;
+  onConfirm: () => void;
 }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
@@ -68,12 +69,23 @@ export default function AlertModal({
               end={{ x: 1, y: 1 }}
               style={styles.gradient}
             >
+              {/* Title */}
               <Text style={styles.title}>{title}</Text>
+
+              {/* Message */}
               <Text style={styles.message}>{message}</Text>
 
+              {/* Buttons */}
               <View style={styles.buttonRow}>
-                <Pressable style={styles.okButton} onPress={onClose}>
-                  <Text style={styles.okText}>OK</Text>
+                <Pressable style={[styles.button, styles.stayButton]} onPress={onCancel}>
+                  <Text style={styles.stayText}>Stay</Text>
+                </Pressable>
+
+                <Pressable
+                  style={[styles.button, styles.discardButton]}
+                  onPress={onConfirm}
+                >
+                  <Text style={styles.discardText}>Discard</Text>
                 </Pressable>
               </View>
             </LinearGradient>
@@ -110,7 +122,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#fff",
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   message: {
     color: "#fff",
@@ -118,21 +130,32 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     textAlign: "center",
-    marginBottom: 26,
-    paddingHorizontal: 4,
+    marginBottom: 28,
   },
   buttonRow: {
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    gap: 12,
   },
-  okButton: {
-    backgroundColor: "rgba(255,255,255,0.92)",
-    paddingVertical: 10,
-    paddingHorizontal: 42,
+  button: {
+    flex: 1,
+    paddingVertical: 11,
     borderRadius: 50,
+    alignItems: "center",
   },
-  okText: {
+  stayButton: {
+    backgroundColor: "rgba(255,255,255,0.9)",
+  },
+  discardButton: {
+    backgroundColor: "rgba(255,0,72,0.9)",
+  },
+  stayText: {
     color: "#1C2541",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+  discardText: {
+    color: "#fff",
     fontWeight: "700",
     fontSize: 15,
   },
