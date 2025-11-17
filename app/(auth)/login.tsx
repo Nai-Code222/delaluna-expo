@@ -264,13 +264,13 @@ const styles = StyleSheet.create(
   {
     background: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     logoContainer: { flex: 1, width: '100%', height: '60%', alignItems: 'center', justifyContent: 'flex-end', },
-    card: { width: '100%', flexGrow: 1, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 25, paddingHorizontal: 10, paddingVertical: 15, justifyContent: 'space-between', },
+    card: { width: '100%', flexGrow: 1, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 25, paddingHorizontal: 10, paddingVertical: 10, justifyContent: 'space-between', },
     logo: { width: '70%', height: '65%' },
-    bodyContainer: { width: '100%', marginTop: 85, marginBottom: 20, alignItems: 'center', flex: 1, justifyContent: 'space-between', gap: 15, },
-    form: { width: '90%', height: 45, justifyContent: 'center', gap: 5, marginTop: 25, },
-    textField: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(142,68,173,0.6)', marginBottom: 16, paddingHorizontal: 16, height: 48, color: 'white', },
+    bodyContainer: { width: '100%', marginTop: 85, marginBottom: 20, alignItems: 'center', flex: 1, justifyContent: 'space-between', gap: 5, },
+    form: { width: '90%', height: 45, justifyContent: 'center', gap: 5, marginTop: 15, },
+    textField: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(142,68,173,0.6)', marginBottom: 15, paddingHorizontal: 15, height: 48, color: 'white', },
     forgotPassword: { color: 'white', fontSize: 13, fontFamily: 'Inter', fontWeight: '600', textAlign: 'right', margin: 10, },
-    forgotPasswordButton: { alignSelf: 'flex-end', }, loginButton: { width: '80%', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: 40, paddingVertical: 15, justifyContent: 'center', alignItems: 'center', marginTop: verticalScale(Platform.OS === 'ios' ? 35 : 40), },
+    forgotPasswordButton: { alignSelf: 'flex-end', }, loginButton: { width: '80%', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: 40, paddingVertical: 15, justifyContent: 'center', alignItems: 'center', marginTop: verticalScale(Platform.OS === 'ios' ? 45 : 40), },
     loginButtonText: { color: 'white', fontSize: 20, fontFamily: 'Poppins', fontWeight: '600', }
   }
 );
