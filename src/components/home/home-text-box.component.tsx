@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, ViewStyle } from "react-native";
-import SendInput from "../component-utils/send-input.component";
+import MessageInABottleComponent from "../component-utils/message-in-a-bottle.component";
 import DelalunaContainer from "../component-utils/delaluna-container.component";
 
 
@@ -18,7 +18,7 @@ export default function HomeTextBox({ title, text = "", style }: HomeTextBoxProp
     <View style={[styles.container, style]}>
       <Text style={styles.title}>{title}</Text>
       {isBottleSection ? (
-        <SendInput placeholder="Message to the universe" />
+        <MessageInABottleComponent placeholder="Message to the universe" />
       ) : (
         <DelalunaContainer style={styles.box}>
           <Text style={styles.text}>{text}</Text>
