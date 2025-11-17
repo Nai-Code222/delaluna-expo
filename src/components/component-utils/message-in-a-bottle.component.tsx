@@ -185,13 +185,19 @@ const styles = StyleSheet.create({
   },
   toast: {
     position: "absolute",
-    bottom: verticalScale(60),
-    alignSelf: "center",
-    backgroundColor: "rgba(0,0,0,0.8)",
+    left: 0,
+    right: 0,
+    bottom: verticalScale(30), // 👈 moves toast to bottom of screen
+    alignItems: "center",
+    zIndex: 9999,
+
+    backgroundColor: "rgba(0,0,0,0.85)",
     paddingVertical: verticalScale(10),
     paddingHorizontal: scale(20),
-    borderRadius: scale(25),
+    marginHorizontal: scale(20),
+    borderRadius: scale(20),
   },
+
   toastText: {
     color: "#fff",
     fontSize: scale(14),
