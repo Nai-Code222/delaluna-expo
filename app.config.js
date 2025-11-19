@@ -1,57 +1,89 @@
-import 'dotenv/config';
-import { withProjectBuildGradle } from 'expo/config-plugins';
+import "dotenv/config";
 
-// Injects a Compose compiler version that matches Kotlin 1.9.25 across all modules
-function withComposeCompilerVersion(config) {
-  return withProjectBuildGradle(config, (cfg) => {
-    const stamp = '/* compose-compiler-override injected */';
-    if (cfg.modResults.contents.includes(stamp)) return cfg;
-
-    cfg.modResults.contents += `
-
-${stamp}
-subprojects { p ->
-  // Set composeOptions.kotlinCompilerExtensionVersion wherever Compose is enabled
-  [ 'com.android.application', 'com.android.library' ].each { pid ->
-    p.plugins.withId(pid) {
-      def androidExt = p.extensions.findByName('android')
-      if (androidExt && androidExt.hasProperty('composeOptions')) {
-        androidExt.composeOptions { kotlinCompilerExtensionVersion = "1.5.15" }
-      }
-    }
-  }
-  // Also force the artifact to resolve to 1.5.15
-  configurations.all {
-    resolutionStrategy.eachDependency { d ->
-      if (d.requested.group == "androidx.compose.compiler" && d.requested.name == "compiler") {
-        d.useVersion("1.5.15")
-      }
-    }
-  }
-}
-`;
-    return cfg;
-  });
-}
-
-export default withComposeCompilerVersion({
+export default {
   expo: {
-    name: 'delaluna-expo',
-    slug: 'delaluna-expo',
-    version: '2.0.0',
-    orientation: 'portrait',
-    icon: './src/assets/images/delaluna_app_icon.png',
+    name: "Delaluna Answers",
+    slug: "delaluna-expo",
+    scheme: "delaluna",
+    version: "2.0.0",
+    orientation: "portrait",
+    owner: "naicode022",
+
+    icon: "./src/assets/images/delaluna_app_icon.png",
+
     splash: {
-      image: './src/assets/images/delaluna_app_icon.png',
-      resizeMode: 'contain',
-      backgroundColor: '#ffffff',
+      image: "./src/assets/images/delaluna_app_icon.png",
+      resizeMode: "contain",
+      backgroundColor: "#ffffff"
     },
-    scheme: 'myapp',
-    userInterfaceStyle: 'automatic',
-    newArchEnabled: true,
-    owner: 'naicode022',
-    updates: { url: 'https://u.expo.dev/24610560-82da-4ee8-99d3-e51db4e8401c' },
-    runtimeVersion: '2.0.0',
+
+    assetBundlePatterns: ["**/*"],
+
+    experiments: {
+      typedRoutes: true
+    },
+
+    updates: {
+      checkAutomatically: "ON_LOAD",
+      fallbackToCacheTimeout: 0,
+      enabled: true,
+      url: "https://u.expo.dev/24610560-82da-4ee8-99d3-e51db4e8401c"
+    },
+
+    runtimeVersion: {
+      policy: "sdkVersion"
+    },
+
+    ios: {
+      jsEngine: "hermes",
+      supportsTablet: false,
+      bundleIdentifier: "com.delaluna.answers",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false
+      },
+      useFrameworks: "static"
+    },
+
+    android: {
+      jsEngine: "hermes",
+      package: "com.delaluna.answers",
+      adaptiveIcon: {
+        foregroundImage: "./src/assets/images/delaluna_app_icon.png",
+        backgroundColor: "#ffffff"
+      },
+      softwareKeyboardLayoutMode: "resize"
+    },
+
+    web: {
+      bundler: "metro",
+      output: "static",
+      favicon: "./src/assets/images/delaluna_app_icon.png"
+    },
+
+    plugins: [
+      [
+        "expo-build-properties",
+        {
+          android: {
+            kotlinVersion: "1.9.25"
+          },
+          ios: {
+            useFrameworks: "static"
+          }
+        }
+      ],
+      "expo-dev-client",
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          image: "./src/assets/images/delaluna_app_icon.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: "#ffffff"
+        }
+      ]
+    ],
 
     extra: {
       FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
@@ -61,57 +93,9 @@ export default withComposeCompilerVersion({
       FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID,
       FIREBASE_APP_ID: process.env.FIREBASE_APP_ID,
       FIREBASE_MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID,
-      eas: { projectId: '24610560-82da-4ee8-99d3-e51db4e8401c' },
-    },
-
-    ios: {
-      jsEngine: 'jsc',
-      supportsTablet: true,
-      bundleIdentifier: 'com.app.delaluna-answers',
-      infoPlist: {
-        ITSAppUsesNonExemptEncryption: false,
-      },
-    },
-
-    android: {
-      jsEngine: 'jsc',
-      softwareKeyboardLayoutMode: 'resize',
-      adaptiveIcon: {
-        foregroundImage: './src/assets/images/delaluna_app_icon.png',
-        backgroundColor: '#ffffff',
-      },
-      package: 'com.app.delaluna_answers',
-    },
-
-    web: {
-      bundler: 'metro',
-      output: 'static',
-      favicon: './assets/images/delaluna_app_icon.png',
-    },
-
-    plugins: [
-      [
-        'expo-build-properties',
-        {
-          android: {
-            // kotlinVersion: '1.9.25', // leave as is if prebuild insists
-          },
-          ios: { useFrameworks: 'static' },
-        },
-      ],
-      'expo-dev-client',
-      'expo-router',
-      [
-        'expo-splash-screen',
-        {
-          image: './src/assets/images/delaluna_app_icon.png',
-          imageWidth: 200,
-          resizeMode: 'contain',
-          backgroundColor: '#ffffff',
-        },
-      ],
-    ],
-
-    experiments: { typedRoutes: true },
-  },
-});
+      eas: {
+        projectId: "24610560-82da-4ee8-99d3-e51db4e8401c"
+      }
+    }
+  }
+};

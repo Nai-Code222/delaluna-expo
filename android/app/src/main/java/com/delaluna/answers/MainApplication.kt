@@ -1,4 +1,4 @@
-package com.app.delaluna_answers
+package com.delaluna.answers
 
 import android.app.Application
 import android.content.res.Configuration

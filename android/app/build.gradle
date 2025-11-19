@@ -86,9 +86,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.app.delaluna_answers'
+    namespace 'com.delaluna.answers'
     defaultConfig {
-        applicationId 'com.app.delaluna_answers'
+        applicationId 'com.delaluna.answers'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

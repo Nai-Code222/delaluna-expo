@@ -1,4 +1,4 @@
-package com.app.delaluna_answers
+package com.delaluna.answers
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
