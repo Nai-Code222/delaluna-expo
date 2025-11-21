@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  ImageBackground,
+  Image,
   Platform,
   StatusBar,
   Animated,
@@ -33,6 +33,7 @@ export default function HomeScreen() {
   const { user: userParam } = useLocalSearchParams();
   const initialUserRecord = userParam ? JSON.parse(userParam as string) : null;
   const HEADER_HEIGHT = Platform.OS === "ios" ? 115 : 85;
+  
 
   // Firestore user profile (cached + realtime)
   const { user: userRecord, loading: profileLoading, cachedAt } = useUserProfile(
@@ -107,7 +108,7 @@ export default function HomeScreen() {
         onRightPress={goToProfile}
       />
 
-      {/* 👇 Wrap main content with top offset */}
+      {/* Wrap main content with top offset */}
       <View style={[styles.mainContent, { marginTop: HEADER_HEIGHT }]}>
         <View style={styles.homeTextBox}>
           <HomeSignsDisplay
@@ -129,7 +130,7 @@ export default function HomeScreen() {
               tintColor="#fff"
             />
           }
-        >
+        > 
           <View style={styles.content}>
             {sectionLabels.map((label, index) => (
               <HomeTextBox key={index} title={label} style={{ marginBottom: 15 }} />

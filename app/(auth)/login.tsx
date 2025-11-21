@@ -35,6 +35,7 @@ import { updateUserDoc } from '../../src/services/user.service';
 import { ThemeContext } from '../theme-context';
 import { verticalScale } from '@/utils/responsive';
 import { auth } from '../../firebaseConfig';
+import getTimezone from '@/utils/get-current-timezone.util';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -100,60 +101,65 @@ export default function Login() {
   };
 
   const handleLogin = async () => {
-    if (loading) return;
+  if (loading) return;
 
-    if (!email.trim() && !password.trim()) {
-      return Alert.alert('Invalid Login', 'Email and password are required.');
+  if (!email.trim() && !password.trim()) {
+    return Alert.alert('Invalid Login', 'Email and password are required.');
+  }
+  if (!email.trim()) {
+    return Alert.alert('Invalid Login', 'Please enter your email.');
+  }
+  if (!password.trim()) {
+    return Alert.alert('Invalid Login', 'Please enter your password.');
+  }
+
+  try {
+    setLoading(true);
+    setSkipAutoRedirect(true);
+
+    // ⭐ Capture timezone correctly
+    const timezone = getTimezone();
+
+    const cred = await signInWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password.trim()
+    );
+
+    const uid = cred.user.uid;
+    const nowUtc = DateTime.utc();
+
+    await updateUserDoc(uid, {
+      currentTimezone: timezone,
+      lastLoginDate: nowUtc.toFormat('MM/dd/yyyy hh:mm:ss a ZZZZ'),
+      lastLoginAt: serverTimestamp(),
+    });
+
+    const key = await resolveThemeBeforeNavigate(uid);
+    await Promise.resolve(setThemeKey(key));
+
+    router.replace('/(main)');
+  } catch (e: any) {
+    const invalidCredCodes = new Set([
+      'auth/invalid-credential',
+      'auth/invalid-login-credentials',
+      'auth/wrong-password',
+      'auth/invalid-password',
+      'auth/user-not-found',
+      'auth/invalid-email',
+    ]);
+
+    if (invalidCredCodes.has(e?.code)) {
+      Alert.alert('Login failed', 'Incorrect email or password.');
+    } else {
+      Alert.alert('Login failed', e?.message ?? 'Login failed.');
     }
-    if (!email.trim()) {
-      return Alert.alert('Invalid Login', 'Please enter your email.');
-    }
-    if (!password.trim()) {
-      return Alert.alert('Invalid Login', 'Please enter your password.');
-    }
+  } finally {
+    setLoading(false);
+    setSkipAutoRedirect(false);
+  }
+};
 
-    try {
-      setLoading(true);
-      setSkipAutoRedirect(true);
-
-      const cred = await signInWithEmailAndPassword(
-        auth,
-        email.trim(),
-        password.trim()
-      );
-
-      const uid = cred.user.uid;
-      const nowUtc = DateTime.utc();
-
-      await updateUserDoc(uid, {
-        lastLoginDate: nowUtc.toFormat('MM/dd/yyyy hh:mm:ss a ZZZZ'),
-        lastLoginAt: serverTimestamp(),
-      });
-
-      const key = await resolveThemeBeforeNavigate(uid);
-      await Promise.resolve(setThemeKey(key));
-
-      router.replace('/(main)');
-    } catch (e: any) {
-      const invalidCredCodes = new Set([
-        'auth/invalid-credential',
-        'auth/invalid-login-credentials',
-        'auth/wrong-password',
-        'auth/invalid-password',
-        'auth/user-not-found',
-        'auth/invalid-email',
-      ]);
-
-      if (invalidCredCodes.has(e?.code)) {
-        Alert.alert('Login failed', 'Incorrect email or password.');
-      } else {
-        Alert.alert('Login failed', e?.message ?? 'Login failed.');
-      }
-    } finally {
-      setLoading(false);
-      setSkipAutoRedirect(false);
-    }
-  };
 
   return (
     <>

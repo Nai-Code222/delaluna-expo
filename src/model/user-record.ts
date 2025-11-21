@@ -11,6 +11,7 @@ export interface UserRecord {
   lastName?: string;
   displayName?: string;
   pronouns?: string;
+  currentTimezone: string;
 
   // auth/membership
   email: string;
@@ -70,6 +71,7 @@ export const UserRecordDefault: Partial<UserRecord> = {
   email: "",
   isPaidMember: false,
   themeKey: "default",
+  currentTimezone: "",
 
   birthday: "",
   birthtime: "",

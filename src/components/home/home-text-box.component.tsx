@@ -2,22 +2,49 @@ import React from "react";
 import { View, Text, StyleSheet, ViewStyle } from "react-native";
 import MessageInABottleComponent from "../component-utils/message-in-a-bottle.component";
 import DelalunaContainer from "../component-utils/delaluna-container.component";
-
+import TarotCardImageFrame from "./tarot-card-image-view.component";
 
 interface HomeTextBoxProps {
   title: string;
   text?: string;
   style?: ViewStyle;
+  cardNumber?: number; 
+  reversed?: boolean;   // 🌙 prepare for reversed cards
 }
 
+export default function HomeTextBox({ 
+  title, 
+  text = "", 
+  style, 
+  cardNumber, 
+  reversed = false 
+}: HomeTextBoxProps) {
 
-export default function HomeTextBox({ title, text = "", style }: HomeTextBoxProps) {
   const isBottleSection = title.toLowerCase().includes("in a bottle");
+  const isTarotSection = title.toLowerCase().includes("todays cards");
 
-  return ( 
+  return (
     <View style={[styles.container, style]}>
       <Text style={styles.title}>{title}</Text>
-      {isBottleSection ? (
+
+      {isTarotSection ? (
+        <>
+          {/* TAROT IMAGE */}
+          {cardNumber ? (
+            <TarotCardImageFrame 
+              cardNumber={cardNumber} 
+              reversed={reversed}
+            />
+          ) : (
+            <Text style={{ color: "#fff" }}>Loading card...</Text>
+          )}
+
+          {/* TAROT MEANING BOX */}
+          <DelalunaContainer style={styles.box}>
+            <Text style={styles.text}>{text}</Text>
+          </DelalunaContainer>
+        </>
+      ) : isBottleSection ? (
         <MessageInABottleComponent placeholder="Message to the universe" />
       ) : (
         <DelalunaContainer style={styles.box}>
@@ -28,7 +55,6 @@ export default function HomeTextBox({ title, text = "", style }: HomeTextBoxProp
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     display: "flex",
@@ -36,7 +62,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "flex-start",
     gap: 8,
-    marginBottom: 16, // spacing between boxes
+    marginBottom: 16,
   },
   title: {
     fontSize: 16,

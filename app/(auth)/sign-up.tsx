@@ -28,6 +28,9 @@ import { createUserDoc } from "../../src/services/user.service";
 import { getAstroSigns } from "../../src/services/astrology-api.service";
 import { verticalScale, scale, moderateScale } from "@/utils/responsive";
 import { db } from "../../firebaseConfig";
+import { getDailyCard } from "@/services/dailyTarot.service";
+import getTimezone from "@/utils/get-current-timezone.util";
+
 
 const FALLBACK_PLACE_LABEL = "Greenwich, London, United Kingdom";
 const FALLBACK_LAT = 51.4779;
@@ -138,6 +141,8 @@ export default function SignUpChatScreen() {
         moonSign: moonSign || "",
         risingSign: risingSign || "",
         astroParams: params,
+        currentTimezone: getTimezone()
+
       };
 
       let docCreated = false;
@@ -167,6 +172,7 @@ export default function SignUpChatScreen() {
         if (currentProgress >= 1) {
           clearInterval(interval);
           sendEmailVerification(user);
+          getDailyCard(user.uid, getTimezone())
           router.replace({
             pathname: "/(main)",
             params: { user: JSON.stringify(userRecord) },
