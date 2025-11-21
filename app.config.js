@@ -18,16 +18,20 @@ export default {
     experiments: {
       typedRoutes: true
     },
-    
+
     extra: {
+      eas: {
+        projectId: "24610560-82da-4ee8-99d3-e51db4e8401c"
+      },
+
       FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
       FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN,
       FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
       FIREBASE_STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET,
       FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID,
-      FIREBASE_APP_ID: process.env.FIREBASE_APP_ID,
+      FIREBASE_APP_ID: process.env.FIREBASE_APP_ID
     },
-    
+
     updates: {
       checkAutomatically: "ON_LOAD",
       fallbackToCacheTimeout: 0,
@@ -84,6 +88,6 @@ export default {
           backgroundColor: "#ffffff"
         }
       ]
-    ],
+    ]
   }
 };

@@ -41,6 +41,7 @@
     "expo-image": "~2.0.7",
     "expo-linear-gradient": "~14.0.2",
     "expo-linking": "~7.0.5",
+    "expo-localization": "~16.0.1",
     "expo-router": "~4.0.21",
     "expo-splash-screen": "~0.29.24",
     "expo-status-bar": "~2.0.1",
@@ -69,8 +70,7 @@
     "react-native-screens": "~4.4.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
-    "text-encoding-polyfill": "^0.6.7",
-    "expo-localization": "~16.0.1"
+    "text-encoding-polyfill": "^0.6.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -78,6 +78,7 @@
     "@types/jest": "^29.5.12",
     "@types/luxon": "^3.7.1",
     "@types/react": "~18.3.12",
+    "@types/react-native": "^0.72.8",
     "@types/react-test-renderer": "^18.3.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "babel-preset-expo": "~12.0.0",
