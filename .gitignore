@@ -162,3 +162,4 @@ ios/delalunaexpo/Images.xcassets/SplashScreenLogo.imageset/image@3x.png
 ios/delalunaexpo/Supporting/Expo.plist
 ios/delalunaexpo.xcodeproj/project.pbxproj
 ios/delalunaexpo.xcodeproj/xcshareddata/xcschemes/delalunaexpo.xcscheme
+setup-dev-environment.sh
