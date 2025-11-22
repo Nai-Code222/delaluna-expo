@@ -11,7 +11,7 @@ interface HomeSignsDisplayProps {
 export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplayProps) {
   return (
     <View style={styles.container}>
-      {/* ☀️ Sun Sign */}
+      {/* Sun Sign */}
       <View style={styles.signItem}>
         <Image
           source={require("@/assets/icons/sun_icon.png")}
@@ -21,7 +21,7 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
         <Text style={styles.text}>{sun}</Text>
       </View>
 
-      {/* 🌙 Moon Sign */}
+      {/* Moon Sign */}
       <View style={styles.signItem}>
         <Image
           source={require("@/assets/icons/moon_icon.png")}
@@ -30,7 +30,7 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
         <Text style={styles.text}>{moon}</Text>
       </View>
 
-      {/* ⬆️ Rising Sign */}
+      {/* Rising Sign */}
       <View style={styles.signItem}>
         <Image
           source={require("@/assets/icons/arrow_upward_icon.png")}
@@ -45,7 +45,7 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "center",
     alignItems: "center",
     width: "100%",
     paddingVertical: verticalScale(10),
@@ -56,11 +56,11 @@ const styles = StyleSheet.create({
   signItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: scale(2),
+    gap: scale(5),
   },
   icon: {
-    width: scale(22),
-    height: scale(22),
+    width: scale(20),
+    height: scale(20),
     resizeMode: "contain",
   },
   text: {

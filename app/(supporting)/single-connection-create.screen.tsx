@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
     paddingBottom: verticalScale(20),
     marginBottom: verticalScale(10),
     backgroundColor: "transparent",
-    gap: verticalScale(12),
+    gap: verticalScale(15),
   },
   userRow: {
     flexDirection: "row",
@@ -576,13 +576,13 @@ const styles = StyleSheet.create({
     marginVertical: verticalScale(6),
   },
   meCard: {
-    padding: verticalScale(20),
-    borderRadius: scale(12),
+    borderRadius: scale(10),
     backgroundColor: "rgba(255,255,255,0.05)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
-    gap: verticalScale(15),
+    gap: verticalScale(10),
+    padding: 15,
   },
   meName: {
     color: "#FFFFFF",
