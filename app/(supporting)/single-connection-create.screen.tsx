@@ -355,9 +355,13 @@ const response = await getConnection({
   };
 
   return renderBackground(
+    <>
+    <HeaderNav
+        title="New Connection"
+        rightLabel="Cancel"
+        onRightPress={handleCancel}
+      />
     <Animated.View style={[styles.container, { opacity: fade }]}>
-      <HeaderNav title="New Connection" leftLabel="Cancel" onLeftPress={handleCancel} />
-
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FFFFFF" />
@@ -537,6 +541,8 @@ const response = await getConnection({
       />
 
     </Animated.View>
+    </>
+    
   );
 }
 
@@ -547,6 +553,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     backgroundColor: "transparent",
+    paddingTop: 50, 
   },
   section: {
     width: "100%",
