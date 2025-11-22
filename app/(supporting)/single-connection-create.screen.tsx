@@ -223,7 +223,7 @@ export default function SingleConnectionCreateScreen() {
 
     try {
       // -------------------------
-      // 1️⃣ VALIDATION
+      // VALIDATION
       // -------------------------
 
       // If NOT Me → validate First Person
@@ -247,7 +247,7 @@ export default function SingleConnectionCreateScreen() {
       }
 
       // -------------------------
-      // 2️⃣ BIRTH PARAM EXTRACTOR
+      // BIRTH PARAM EXTRACTOR
       // -------------------------
       const extractBirthParams = (person: PersonBirthData) => {
   if (!person.Birthday) {
@@ -265,7 +265,7 @@ export default function SingleConnectionCreateScreen() {
     throw new Error("Place of Birth must be a location object with lat/lon/tzone");
   }
 
-  // 🔥 TypeScript now knows pob = PersonLocationObject
+  // TypeScript now knows pob = PersonLocationObject
   const { lat, lon, tzone } = pob as {
     lat: number;
     lon: number;
@@ -393,7 +393,6 @@ const response = await getConnection({
 
                 <View style={styles.divider} />
 
-                {/* ME CARD */}
                 {item.key === "first" && isMe ? (
                   <View style={styles.meCard}>
                     <Text style={styles.meName}>
@@ -546,14 +545,12 @@ const response = await getConnection({
   );
 }
 
-/* ------------------  STYLES (UNCHANGED) ------------------ */
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
     backgroundColor: "transparent",
-    paddingTop: 50, 
+    paddingTop: 25, 
   },
   section: {
     width: "100%",

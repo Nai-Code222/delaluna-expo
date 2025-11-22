@@ -64,7 +64,7 @@ export default function HeaderNav({
         style={[
           styles.headerContainer,
           {
-            backgroundColor: bg,
+            backgroundColor: "transparent",
             height: HEADER_HEIGHT,
             paddingTop: insets.top,
           },
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowRadius: 4,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: 2,
     borderBottomColor: "rgba(255,255,255,0.1)",
   },
   navBar: {
