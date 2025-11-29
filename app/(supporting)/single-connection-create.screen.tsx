@@ -340,33 +340,10 @@ export default function SingleConnectionCreateScreen() {
 
       }
 
-      //  LOG  enrichedFirst: {"First Name": "Delaluna", "Last Name": "Answers", "Pronouns": "They/Them", "moonSign": "Cancer", "risingSign": "Pisces", "sunSign": "Sagittarius"}
-      console.log("enrichedFirst:", enrichedFirst);
-
       const secondBirthParams = extractBirthParams(secondPerson);
-
-
-      // -----------------------------
-      //  GET SIGNS (First only if NOT Me)
-      // -----------------------------
-      let enrichedSecond = { ...secondPerson };
-      console.log("enrichedSecond:", enrichedSecond);
-
-      // Signs → {"first": {"First Name": "Delaluna", "Last Name": "Answers", "Pronouns": "They/Them", "moonSign": "Cancer", "risingSign": "Pisces", "sunSign": "Sagittarius"}}
-      // "second": {"Birthday": "11/26/2025", "First Name": "h", "Last Name": "f", "Place of Birth": "Australia, Australia", "Pronouns": "She/Her", "Time of Birth": "7:23 PM", "birthLat": -24.7761086, "birthLon": 134.755, "birthTimezone": "Australia/Darwin", "isBirthTimeUnknown": false, "isPlaceOfBirthUnknown": false}}
-      console.log("Signs →", { first: enrichedFirst});
       const secondSigns = await getAstroSigns(secondBirthParams);
-      console.log("Signs →", { second: enrichedSecond });
-
-      // if (!isMe && firstBirthParams) {
-      //   const firstSigns = await getAstroSigns(firstBirthParams);
-      //   enrichedFirst = { ...firstPerson, ...firstSigns };
-      // }
-
-      // const secondSigns = await getAstroSigns(secondBirthParams);
-      // enrichedSecond = { ...secondPerson, ...secondSigns };
-
-      // console.log("Signs →", { first: enrichedFirst, second: enrichedSecond });
+      let enrichedSecond = { ...secondPerson, ...secondSigns };
+      console.log("Signs →", { first: enrichedFirst, second: enrichedSecond });
 
       // STOP HERE — next step is getConnection + navigation
 
