@@ -4,6 +4,9 @@ import type { ColorValue, ImageSourcePropType } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import { useAuth } from '../src/backend/auth-context';
+import { db } from '../firebaseConfig';
+
+
 
 
 // ===== Images =====
@@ -174,7 +177,6 @@ export const ThemeContext = createContext<ThemeContextType>({
 // ===== Provider =====
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const db = getFirestore();
 
   const [hydrated, setHydrated] = useState(false);
   const [themeKey, _setThemeKey] = useState<string>('default');
