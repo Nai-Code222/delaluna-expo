@@ -39,7 +39,7 @@ import { db, functions } from "../../firebaseConfig";
 const AnimatedConnectionItem = memo(
   ({ index, connection, onOpen, onDelete }: any) => {
     const itemFade = useRef(new Animated.Value(0)).current;
-    const itemSlide = useRef(new Animated.Value(10)).current;
+    const itemSlide = useRef(new Animated.Value(verticalScale(10))).current;
 
     useEffect(() => {
       Animated.parallel([
