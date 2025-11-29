@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { getAstroSigns } from "@/services/astrology-api.service";
-
+import { useRouter } from 'expo-router';
 
 // Enable smooth animations on Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -33,6 +33,7 @@ export default function TestSignsScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMe, setIsMe] = useState(true);
+  const router = useRouter();
 
   // 👤 Names
   const [personOneFirst, setPersonOneFirst] = useState("User");
@@ -75,39 +76,72 @@ export default function TestSignsScreen() {
     }
   };
 
-  const handleTestSigns = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getAstroSigns({
-        day: 9,
-        month: 9,
-        year: 1988,
-        hour: 16,
-        min: 21,
-        lat: 34.9984,
-        lon: -91.9837,
-        tzone: -5,
-      });
-      console.log("🔥 getSigns Test Result:", data);
-    } catch (e: any) {
-      setError(e.message || "Unknown error");
-    } finally {
-      setLoading(false);
-    }
+  function randomBirth() {
+  return {
+    day: Math.floor(Math.random() * 28) + 1,
+    month: Math.floor(Math.random() * 12) + 1,
+    year: Math.floor(Math.random() * 35) + 1970,
+    hour: Math.floor(Math.random() * 24),
+    min: Math.floor(Math.random() * 60),
   };
+}
+
+  const handleTestSigns = async () => {
+  
+  const birth = randomBirth();
+  let returnedSigns;
+
+  const sentBirth = {
+    ...birth,
+    lat: 34.9984,
+    lon: -91.9837,
+    tzone: -5,
+  };
+
+  setLoading(true);
+  setError(null);
+
+  try {
+    const data = await getAstroSigns(sentBirth);
+    returnedSigns = data;
+  } catch (e: any) {
+    setError(e.message || "Unknown error");
+  } finally {
+    setLoading(false);
+
+    router.replace({
+      pathname: "/(test-supporting)/get-signs-tests.screen",
+      params: {
+        sent: JSON.stringify(sentBirth),
+        returned: JSON.stringify(returnedSigns),
+      },
+    });
+  }
+};
 
   return (
     <ScrollView
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.title}>💫 Compatibility Setup</Text>
+      <Text style={styles.title}>💫 Test Actions</Text>
+
+      <TouchableOpacity
+            style={[styles.button, { marginTop: 20, backgroundColor: "#3A506B" }]}
+            onPress={handleTestSigns}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>✨ Run getSigns Test</Text>
+            )}
+      </TouchableOpacity>
 
       {/* STEP 1: Create Setup */}
       {!showSetup && !showResults && (
         <TouchableOpacity style={styles.button} onPress={handleStartSetup}>
-          <Text style={styles.buttonText}>💞 Create Compatibility Setup</Text>
+          <Text style={styles.buttonText}>💞 Run Connection Test</Text>
         </TouchableOpacity>
       )}
 
@@ -211,17 +245,7 @@ export default function TestSignsScreen() {
             <Text style={styles.resultValue}>{userRising} × {partnerRising}</Text>
           </View>
 
-          <TouchableOpacity
-            style={[styles.button, { marginTop: 20, backgroundColor: "#3A506B" }]}
-            onPress={handleTestSigns}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>✨ Run getSigns Test</Text>
-            )}
-          </TouchableOpacity>
+          
         </View>
       )}
 
@@ -271,7 +295,7 @@ const styles = StyleSheet.create({
     color: "#6FFFE9",
     fontSize: 22,
     fontWeight: "700",
-    marginBottom: 20,
+    marginTop: 45,
   },
   formBox: {
     width: "100%",
