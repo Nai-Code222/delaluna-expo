@@ -11,6 +11,7 @@ interface UserProfile {
   sun: string;
   moon: string;
   rising: string;
+  pronouns?: string;
 }
 
 interface PartnerProfile {
@@ -19,6 +20,7 @@ interface PartnerProfile {
   sun: string;
   moon: string;
   rising: string;
+  pronouns?: string;
 }
 
 interface ConnectionInput {
@@ -71,9 +73,11 @@ export const upsertConnection = functions.https.onCall(
         userSun: userProfile.sun,
         userMoon: userProfile.moon,
         userRising: userProfile.rising,
+        userPronouns: userProfile.pronouns || null,
         partnerSun: partnerProfile.sun,
         partnerMoon: partnerProfile.moon,
         partnerRising: partnerProfile.rising,
+        partnerPronouns: partnerProfile.pronouns || null,
         relationshipType: relationshipType || "complicated",
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
@@ -107,6 +111,7 @@ export const upsertConnection = functions.https.onCall(
           sun: partnerProfile.sun,
           moon: partnerProfile.moon,
           rising: partnerProfile.rising,
+          pronouns: partnerProfile.pronouns || null,
         },
       };
     } catch (error: any) {

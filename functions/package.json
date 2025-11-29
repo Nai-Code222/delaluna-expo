@@ -17,7 +17,7 @@
     "@hatijs/core": "^0.2.6",
     "express": "^5.1.0",
     "firebase-admin": "^13.6.0",
-    "firebase-functions": "^6.6.0",
+    "firebase-functions": "^7.0.0",
     "luxon": "^3.7.2",
     "qs": "^6.14.0"
   },

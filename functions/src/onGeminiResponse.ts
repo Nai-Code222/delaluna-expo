@@ -83,6 +83,14 @@ export const onGeminiResponse = onDocumentUpdated(
           report.Scores ||
           report?.TypeCompatibility_Report?.Scores ||
           {},
+        userPronouns:
+          report.userPronouns ||
+          report.UserPronouns ||
+          null,
+        partnerPronouns:
+          report.partnerPronouns ||
+          report.PartnerPronouns ||
+          null,
       };
 
       // ✅ Write formatted result to Firestore

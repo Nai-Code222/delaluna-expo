@@ -21,12 +21,16 @@ export interface CompatibilityResponse {
   title: string;
   summary: string;
   overallCompatibility: number;
+  userPronouns: string;
+  partnerPronouns: string;
   scores: CompatibilityScores;
   closing: string;
   createdAt: string;
 }
 
 export interface CompatibilityInput {
+  partnerPronouns: string;
+  userPronouns: string;
   userSun: string;
   userMoon: string;
   userRising: string;

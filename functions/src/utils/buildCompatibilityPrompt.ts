@@ -21,8 +21,8 @@ but always empowering.
 
 TASK:
 Generate a compatibility report between:
-- User: Sun ${input.userSun}, Moon ${input.userMoon}, Rising ${input.userRising}
-- Partner: Sun ${input.partnerSun}, Moon ${input.partnerMoon}, Rising ${input.partnerRising}
+- User: Sun ${input.userSun}, Moon ${input.userMoon}, Rising ${input.userRising}, Pronouns: ${input.userPronouns}
+- Partner: Sun ${input.partnerSun}, Moon ${input.partnerMoon}, Rising ${input.partnerRising}, Pronouns: ${input.partnerPronouns}
 - Relationship type: ${input.relationshipType}
 
 STYLE ADJUSTMENT BASED ON RELATIONSHIP TYPE:

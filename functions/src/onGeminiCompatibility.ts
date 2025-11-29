@@ -4,6 +4,8 @@ import { CompatibilityScores } from "./models/connection.model";
 import { calculateOverallCompatibility } from "./utils/calculateOverallCompatibility";
 import { db } from "./initAdmin";
 import * as logger from "firebase-functions/logger";
+import { calculateSignsInternal } from "./utils/calcSigns";
+
 
 /**
  * 🪩 onGeminiCompatibility
@@ -27,6 +29,61 @@ export const onGeminiCompatibility = onDocumentUpdated(
 
     try {
       logger.info(`🔮 Processing Gemini response for → ${docRef.path}`);
+
+      // ♓ Ensure signs exist on both people (fallback / repair)
+      const first = after.firstPerson || {};
+      const second = after.secondPerson || {};
+
+      const missingFirstSigns = !first.sun || !first.moon || !first.rising;
+      const missingSecondSigns = !second.sun || !second.moon || !second.rising;
+
+      if (missingFirstSigns || missingSecondSigns) {
+        try {
+          const firstCalc = await calculateSignsInternal({
+            day: first.day,
+            month: first.month,
+            year: first.year,
+            hour: first.hour,
+            min: first.min,
+            lat: first.lat,
+            lon: first.lon,
+            tzone: first.tzone,
+          });
+
+          const secondCalc = await calculateSignsInternal({
+            day: second.day,
+            month: second.month,
+            year: second.year,
+            hour: second.hour,
+            min: second.min,
+            lat: second.lat,
+            lon: second.lon,
+            tzone: second.tzone,
+          });
+
+          await docRef.set(
+            {
+              firstPerson: {
+                ...first,
+                sun: firstCalc.raw.sun.sign,
+                moon: firstCalc.raw.moon.sign,
+                rising: firstCalc.raw.ascendant.sign,
+              },
+              secondPerson: {
+                ...second,
+                sun: secondCalc.raw.sun.sign,
+                moon: secondCalc.raw.moon.sign,
+                rising: secondCalc.raw.ascendant.sign,
+              },
+            },
+            { merge: true }
+          );
+
+          logger.info("🔧 Repaired missing signs before compatibility processing.");
+        } catch (err) {
+          logger.error("❌ Failed to calculate signs inside onGeminiCompatibility:", err);
+        }
+      }
 
       // 🧽 Clean common Gemini formatting issues
       const cleanJsonString = (raw: string) =>

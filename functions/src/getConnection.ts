@@ -3,7 +3,7 @@ import { onCall } from "firebase-functions/v2/https";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import * as logger from "firebase-functions/logger";
 import { buildCompatibilityPrompt } from "./utils/buildCompatibilityPrompt";
-import { getSignsCore } from "./utils/getSignsCore"; // 👈 helper that reuses your Swiss ephemeris logic
+import { calculateSignsInternal } from "./utils/calcSigns";
 
 export const getConnection = onCall(async (req) => {
   const db = getFirestore();
@@ -34,7 +34,7 @@ export const getConnection = onCall(async (req) => {
       if (!day || !month || !year || lat === undefined || lon === undefined)
         throw new Error(`Incomplete birth data for ${p["First Name"]}`);
 
-      const signs = await getSignsCore({
+      const signs = await calculateSignsInternal({
         day: Number(day),
         month: Number(month),
         year: Number(year),
@@ -47,9 +47,9 @@ export const getConnection = onCall(async (req) => {
 
       return {
         ...p,
-        "Sun Sign": signs.sunSign,
-        "Moon Sign": signs.moonSign,
-        "Rising Sign": signs.risingSign,
+        "Sun Sign": signs.raw.sun.sign,
+        "Moon Sign": signs.raw.moon.sign,
+        "Rising Sign": signs.raw.ascendant.sign,
       };
     };
 
@@ -61,9 +61,11 @@ export const getConnection = onCall(async (req) => {
       userSun: userPerson["Sun Sign"],
       userMoon: userPerson["Moon Sign"],
       userRising: userPerson["Rising Sign"],
+      userPronouns: userPerson["Pronouns"],
       partnerSun: partnerPerson["Sun Sign"],
       partnerMoon: partnerPerson["Moon Sign"],
       partnerRising: partnerPerson["Rising Sign"],
+      partnerPronouns: partnerPerson["Pronouns"],
       relationshipType,
     });
 
