@@ -36,6 +36,8 @@ import { ThemeContext } from '../theme-context';
 import { verticalScale } from '@/utils/responsive';
 import { auth } from '../../firebaseConfig';
 import getTimezone from '@/utils/get-current-timezone.util';
+import { db } from '../../firebaseConfig';
+
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -46,7 +48,6 @@ export default function Login() {
   const { user, initializing } = useAuth();
   const router = useRouter();
   const { setThemeKey } = useContext(ThemeContext);
-  const db = getFirestore();
 
   // ⭐ This ref is used by the NEXT button from Email
   const passwordRef = useRef<TextInput>(null);
