@@ -6,6 +6,7 @@ export interface PersonBirthData {
   Birthday?: string;             // MM/DD/YYYY
   "Place of Birth"?: string;
   "Time of Birth"?: string;
+  "Pronouns"?: string
 
   // Optional backend-enriched sign data
   "Sun Sign"?: string;
@@ -26,6 +27,7 @@ export interface PersonBirthData {
 export interface PersonProfileData {
   "First Name": string;
   "Last Name": string;
+  "Pronouns": string
   "Sun Sign": string;
   "Moon Sign": string;
   "Rising Sign": string;

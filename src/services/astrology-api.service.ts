@@ -29,9 +29,9 @@ export async function getAstroSigns(params: {
     console.log("✅ Received:", summary);
 
     return {
-      sunSign: raw.sun.sign,
-      moonSign: raw.moon.sign,
-      risingSign: raw.ascendant.sign,
+      sunSign: raw.sun.sign.trim(" "),
+      moonSign: raw.moon.sign.trim(" "),
+      risingSign: raw.ascendant.sign.trim(" "),
     };
   } catch (error: any) {
     console.error("🔥 Error fetching signs (HTTP):", error);
