@@ -15,6 +15,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import HeaderNav from "@/components/component-utils/header-nav";
 import { auth } from "../../firebaseConfig";
+import { db } from '../../firebaseConfig';
+
 
 type Params = { userID: string };
 
@@ -22,7 +24,6 @@ export default function ChangeThemeScreen() {
   const { theme, setThemeKey, themes } = useContext(ThemeContext);
   const router = useRouter();
   const originalKey = useRef<string | null>(null);
-  const db = getFirestore();
   const params = useLocalSearchParams<Params>();
 
   /** 🧠 Save original theme only once on mount */

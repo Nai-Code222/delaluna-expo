@@ -1,5 +1,5 @@
-// /screens/edit-profile.screen.tsx
 import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
+
 import {
   Alert,
   KeyboardAvoidingView,
@@ -19,20 +19,21 @@ import {
   Pressable,
   Dimensions,
 } from 'react-native';
-import { DateTime } from 'luxon';
-import { format, parse, parseISO, isValid } from 'date-fns';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { ThemeContext } from "../theme-context";
+import { DateTime } from 'luxon';
+import { LinearGradient } from 'expo-linear-gradient';
+import { format, parse, parseISO, isValid } from 'date-fns';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import GlassButton from '../../src/components/buttons/glass-button';
 import HeaderNav from '../../src/components/component-utils/header-nav';
 import PronounDropdown from '../../src/components/buttons/pronoun-dropdown';
-import GlassButton from '../../src/components/buttons/glass-button';
+import { ThemeContext } from "../theme-context";
 import { getBigThree } from '../../src/services/astro.service';
 import { updateUserDoc } from '../../src/services/user.service';
-
-
 
 type Params = {
   firstName: string;
@@ -638,7 +639,13 @@ export default function EditProfileScreen() {
 
               {/* Pronouns */}
               <Text style={styles.label}>Pronouns</Text>
-              <View onTouchStart={() => { Keyboard.dismiss(); setOpenPanel('pronoun'); }}>
+              <View style={{
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderBottomColor: 'gray',
+                borderBottomWidth: 0.5,
+                marginBottom: 15
+              }}
+                onTouchStart={() => { Keyboard.dismiss(); setOpenPanel('pronoun'); }}>
                 <PronounDropdown
                   key={`pronoun-${openPanel}`}
                   value={pronoun}
@@ -769,6 +776,7 @@ export default function EditProfileScreen() {
               )}
 
               <View style={styles.toggleRow}>
+
                 <Switch
                   value={isBirthTimeUnknown}
                   onValueChange={(val) => {
@@ -859,8 +867,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 12,
   },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  toggleLabel: { color: '#fff', marginLeft: 8 },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, alignSelf: 'flex-end' },
+  toggleLabel: { color: '#fff', marginLeft: 5 },
   errorText: { color: 'red', marginBottom: 12 },
 
   suggestionSheet: {

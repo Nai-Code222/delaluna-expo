@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
+
 import {
   View,
   Text,
@@ -12,51 +13,45 @@ import {
   Platform,
   Image,
   Alert,
+  TextInput,
+  Keyboard,
 } from "react-native";
 
-import {
-  PersonBirthData,
-  PersonBirthUpdate,
-} from "@/model/connection.types";
+import { router } from "expo-router";
 
-import { ThemeContext } from "../theme-context";
-import DelalunaToggle from "@/components/component-utils/delaluna-toggle.component";
+import { httpsCallable } from "firebase/functions";
+
+import AuthContext from "@/backend/auth-context";
+import ConfirmDialog from "@/components/alerts/confirm-dialog";
+import ConnectionsPlaceOfBirthField from "@/components/connection/connections-place-of-birth-field";
+import ConnectionsTimeOfBirthField from "@/components/connection/connections-time-of-birth-field";
 import DelalunaInputRow, {
   FieldConfig,
   FieldType,
 } from "@/components/component-utils/delaluna-input-form.component";
-import HeaderNav from "@/components/component-utils/header-nav";
-import AuthContext from "@/backend/auth-context";
-import { httpsCallable } from "firebase/functions";
-import HomeSignsDisplay from "@/components/home/home-signs-display.component";
-import ConnectionsPlaceOfBirthField from "@/components/connection/connections-place-of-birth-field";
-import ConnectionsTimeOfBirthField from "@/components/connection/connections-time-of-birth-field";
+import DelalunaToggle from "@/components/component-utils/delaluna-toggle.component";
 import GlassButton from "@/components/buttons/glass-button";
-import useRenderBackground from "@/hooks/useRenderBackground";
-import { useUserProfile } from "@/hooks/useUserProfile";
-import { verticalScale, scale } from "@/utils/responsive";
-import { HEADER_HEIGHT } from "@/utils/responsive-header";
+import HeaderNav from "@/components/component-utils/header-nav";
+import HomeSignsDisplay from "@/components/home/home-signs-display.component";
 import toTitleCase from "@/utils/toTitleCase.util";
+import useRenderBackground from "@/hooks/useRenderBackground";
+import {
+  PersonBirthData,
+  PersonBirthUpdate,
+} from "@/model/connection.types";
+import { HEADER_HEIGHT } from "@/utils/responsive-header";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { verticalScale, scale, moderateScale } from "@/utils/responsive";
+
+import { ThemeContext } from "../theme-context";
 import { functions } from "../../firebaseConfig";
-import ConfirmDialog from "@/components/alerts/confirm-dialog";
-import { router } from "expo-router";
 import { getAstroSigns } from "../../src/services/astrology-api.service";
-
-
-const GREENWICH = {
-  place: "Greenwich, UK",
-  lat: 51.4769,
-  lon: 0.0005,
-  tzone: 0,
-  time: "12:00",
-};
 
 export default function SingleConnectionCreateScreen() {
   const { theme } = useContext(ThemeContext);
   const { user } = useContext(AuthContext);
   const { user: userRecord } = useUserProfile(user?.uid);
   const renderBackground = useRenderBackground();
-
   const [isMe, setIsMe] = useState(true);
   const [loading, setLoading] = useState(false);
 
@@ -78,6 +73,37 @@ export default function SingleConnectionCreateScreen() {
     "Time of Birth": "",
   });
 
+  /** Birth fields */
+  const birthFields: FieldConfig[] = [
+    { label: "First Name", type: "text", placeholder: "Enter first name" },
+    { label: "Last Name", type: "text", placeholder: "Enter last name" },
+    { label: "Pronouns", type: "pronouns", placeholder: "Select Pronouns" },
+    { label: "Birthday", type: "date", placeholder: "MM/DD/YYYY" },
+    { label: "Place of Birth", type: "location" },
+    { label: "Time of Birth", type: "time", placeholder: "Select time" },
+  ];
+
+  type PersonKey = "first" | "second";
+
+  const firstNameRef = useRef<TextInput>(null);
+  const firstLastNameRef = useRef<TextInput>(null);
+  const firstLocationRef = useRef<{
+    dismissSuggestions: () => void;
+    focus: () => void;
+  }>(null);
+
+  const secondNameRef = useRef<TextInput>(null);
+  const secondLastNameRef = useRef<TextInput>(null);
+  const secondLocationRef = useRef<{
+    dismissSuggestions: () => void;
+    focus: () => void;
+  }>(null);
+
+  const dismissAllSuggestions = () => {
+    firstLocationRef.current?.dismissSuggestions();
+    secondLocationRef.current?.dismissSuggestions();
+  };
+
   const [relationshipType, setRelationshipType] = useState<string | null>(null);
 
   const fade = useRef(new Animated.Value(0)).current;
@@ -93,44 +119,65 @@ export default function SingleConnectionCreateScreen() {
     }).start();
   }, [theme]);
 
+  const focusableOrder: Record<PersonKey, string[]> = {
+    first: ["First Name", "Last Name", "Pronouns"],
+    second: ["First Name", "Last Name", "Pronouns"],
+  };
+
+  const getRefs = (personKey: PersonKey) =>
+    personKey === "first"
+      ? {
+        firstName: firstNameRef,
+        lastName: firstLastNameRef,
+        placeOfBirth: firstLocationRef,
+      }
+      : {
+        firstName: secondNameRef,
+        lastName: secondLastNameRef,
+        placeOfBirth: secondLocationRef,
+      };
+
+  const focusField = (personKey: PersonKey, label: string) => {
+    if (label !== "Place of Birth") {
+      dismissAllSuggestions();
+    }
+
+    const refs = getRefs(personKey);
+
+    switch (label) {
+      case "First Name":
+        refs.firstName.current?.focus();
+        break;
+      case "Last Name":
+        refs.lastName.current?.focus();
+        break;
+      case "Pronouns":
+        Keyboard.dismiss();
+        break;
+      case "Place of Birth":
+        refs.placeOfBirth.current?.focus();
+        break;
+      default:
+        break;
+    }
+  };
+
+  const getNextFocusableLabel = (personKey: PersonKey, label: string) => {
+    const order = focusableOrder[personKey];
+    const idx = order.indexOf(label);
+    return idx === -1 ? null : order[idx + 1] || null;
+  };
+
+  const handleSubmitEditing = (personKey: PersonKey, label: string) => {
+    const nextLabel = getNextFocusableLabel(personKey, label);
+    if (nextLabel) {
+      focusField(personKey, nextLabel);
+    } else {
+      Keyboard.dismiss();
+    }
+  };
+
   /** Populate ME with signs */
-  useEffect(() => {
-    // When switching TO "Me" (true), populate from userRecord
-    if (isMe && userRecord) {
-      setFirstPerson({
-        "First Name": toTitleCase(userRecord.firstName || ""),
-        "Last Name": toTitleCase(userRecord.lastName || ""),
-        "Sun Sign": toTitleCase(userRecord.sunSign || ""),
-        "Moon Sign": toTitleCase(userRecord.moonSign || ""),
-        "Rising Sign": toTitleCase(userRecord.risingSign || ""),
-        Birthday: "",
-        "Place of Birth": "",
-        "Time of Birth": "",
-      });
-    }
-
-    // When switching OFF "Me", reset to empty editable fields
-    if (!isMe) {
-      setFirstPerson({
-        "First Name": "",
-        "Last Name": "",
-        Birthday: "",
-        "Place of Birth": "",
-        "Time of Birth": "",
-      });
-    }
-  }, [isMe, userRecord]);
-
-
-  /** Birth fields */
-  const birthFields: FieldConfig[] = [
-    { label: "First Name", type: "text", placeholder: "Enter first name" },
-    { label: "Last Name", type: "text", placeholder: "Enter last name" },
-    { label: "Birthday", type: "date", placeholder: "MM/DD/YYYY" },
-    { label: "Place of Birth", type: "location" },
-    { label: "Time of Birth", type: "time", placeholder: "Select time" },
-  ];
-
   /** Ensure ME fields never contain boolean */
   const sanitizeValue = (val: any): string | number | undefined =>
     typeof val === "boolean" ? "" : val;
@@ -189,7 +236,7 @@ export default function SingleConnectionCreateScreen() {
     } else if (!isMe && !hasFirstData && !hasSecondData) {
       router.replace('/(main)/connections');
     } else {
-      // Otherwise show confirmation dialog
+      // show confirmation dialog
       setPendingConfirm(() => () => router.replace('/(main)/connections'));
       setShowDiscardDialog(true);
     }
@@ -201,6 +248,7 @@ export default function SingleConnectionCreateScreen() {
     const required: (keyof PersonBirthData)[] = [
       "First Name",
       "Last Name",
+      "Pronouns",
       "Birthday",
       "Place of Birth",
       "Time of Birth",
@@ -222,11 +270,7 @@ export default function SingleConnectionCreateScreen() {
     setLoading(true);
 
     try {
-      // -------------------------
       // VALIDATION
-      // -------------------------
-
-      // If NOT Me → validate First Person
       if (!isMe) {
         if (!validatePerson(firstPerson, "First Person")) {
           setLoading(false);
@@ -234,7 +278,6 @@ export default function SingleConnectionCreateScreen() {
         }
       }
 
-      // Always validate Second Person
       if (!validatePerson(secondPerson, "Second Person")) {
         setLoading(false);
         return;
@@ -246,95 +289,86 @@ export default function SingleConnectionCreateScreen() {
         return;
       }
 
-      // -------------------------
-      // BIRTH PARAM EXTRACTOR
-      // -------------------------
+      // -----------------------------
+      //  BIRTH PARAM EXTRACTOR
+      // -----------------------------
       const extractBirthParams = (person: PersonBirthData) => {
-  if (!person.Birthday) {
-    throw new Error("Birthday is missing");
-  }
+        if (!person.Birthday) throw new Error("Birthday is missing");
+        if (!person["Time of Birth"]) throw new Error("Time of Birth is missing");
 
-  if (!person["Time of Birth"]) {
-    throw new Error("Time of Birth is missing");
-  }
+        const { birthLat, birthLon, birthTimezone } = person;
 
-  const pob = person["Place of Birth"];
+        // Strict validation so TS knows these exist
+        if (birthLat == null || birthLon == null || birthTimezone == null) {
+          throw new Error(
+            "Place of Birth must include latitude, longitude, and timezone."
+          );
+        }
 
-  // Narrow string or undefined
-  if (!pob || typeof pob === "string") {
-    throw new Error("Place of Birth must be a location object with lat/lon/tzone");
-  }
+        const [month, day, year] = person.Birthday.split("/").map(Number);
+        const [hour, min] = person["Time of Birth"].split(":").map(Number);
 
-  // TypeScript now knows pob = PersonLocationObject
-  const { lat, lon, tzone } = pob as {
-    lat: number;
-    lon: number;
-    tzone: number;
-  };
+        return {
+          day,
+          month,
+          year,
+          hour,
+          min,
+          lat: birthLat,
+          lon: birthLon,
+          tzone: Number(birthTimezone),
+        };
+      };
 
-  const [month, day, year] = person.Birthday.split("/").map(Number);
-  const [hour, min] = person["Time of Birth"].split(":").map(Number);
+      let enrichedFirst;
 
-  return {
-    day,
-    month,
-    year,
-    hour,
-    min,
-    lat,
-    lon,
-    tzone,
-  };
-};
-
-
-      const firstBirthParams = isMe ? null : extractBirthParams(firstPerson);
-      const secondBirthParams = extractBirthParams(secondPerson);
-
-      // -------------------------
-      // 3️⃣ GET SIGNS (First only if not Me)
-      // -------------------------
-
-      let enrichedFirst: any = { ...firstPerson };
-      let enrichedSecond: any = { ...secondPerson };
-
-      if (!isMe) {
-        const firstSigns = await getAstroSigns(firstBirthParams!);
+      if (isMe) {
+        // Use logged-in user's saved signs + identity
+        enrichedFirst = {
+          "First Name": userRecord?.firstName || "",
+          "Last Name": userRecord?.lastName || "",
+          Pronouns: userRecord?.pronouns || "",
+          sunSign: userRecord?.sunSign,
+          moonSign: userRecord?.moonSign,
+          risingSign: userRecord?.risingSign,
+        };
+      } else {
+        // Extract & calculate signs for a manually-entered first person
+        const firstBirthParams = extractBirthParams(firstPerson);
+        const firstSigns = await getAstroSigns(firstBirthParams);
         enrichedFirst = { ...firstPerson, ...firstSigns };
+
       }
 
-      // Second person signs always needed
+      //  LOG  enrichedFirst: {"First Name": "Delaluna", "Last Name": "Answers", "Pronouns": "They/Them", "moonSign": "Cancer", "risingSign": "Pisces", "sunSign": "Sagittarius"}
+      console.log("enrichedFirst:", enrichedFirst);
+
+      const secondBirthParams = extractBirthParams(secondPerson);
+
+
+      // -----------------------------
+      //  GET SIGNS (First only if NOT Me)
+      // -----------------------------
+      let enrichedSecond = { ...secondPerson };
+      console.log("enrichedSecond:", enrichedSecond);
+
+      // Signs → {"first": {"First Name": "Delaluna", "Last Name": "Answers", "Pronouns": "They/Them", "moonSign": "Cancer", "risingSign": "Pisces", "sunSign": "Sagittarius"}}
+      // "second": {"Birthday": "11/26/2025", "First Name": "h", "Last Name": "f", "Place of Birth": "Australia, Australia", "Pronouns": "She/Her", "Time of Birth": "7:23 PM", "birthLat": -24.7761086, "birthLon": 134.755, "birthTimezone": "Australia/Darwin", "isBirthTimeUnknown": false, "isPlaceOfBirthUnknown": false}}
+      console.log("Signs →", { first: enrichedFirst});
       const secondSigns = await getAstroSigns(secondBirthParams);
-      enrichedSecond = { ...secondPerson, ...secondSigns };
+      console.log("Signs →", { second: enrichedSecond });
 
-      // -------------------------
-      // 4️⃣ GET COMPATIBILITY CALLABLE
-      // -------------------------
+      // if (!isMe && firstBirthParams) {
+      //   const firstSigns = await getAstroSigns(firstBirthParams);
+      //   enrichedFirst = { ...firstPerson, ...firstSigns };
+      // }
 
-      const getConnection = httpsCallable(functions, "getConnection");
+      // const secondSigns = await getAstroSigns(secondBirthParams);
+      // enrichedSecond = { ...secondPerson, ...secondSigns };
 
-      if (!user) {
-  Alert.alert("Not Logged In", "You must be logged in to save a connection.");
-  setLoading(false);
-  return;
-}
+      // console.log("Signs →", { first: enrichedFirst, second: enrichedSecond });
 
-const response = await getConnection({
-  userId: user.uid,
-  isMe,
-  relationshipType,
-  firstPerson: enrichedFirst,
-  secondPerson: enrichedSecond,
-});
-
-
-      const result = response.data;
-      console.log("Result: ", result);
-
-      // -------------------------
-      // 5️⃣ NAVIGATE TO CONNECTION
-      // -------------------------
-      //router.replace(`/(main)/connections/${result.connectionId}`);
+      // STOP HERE — next step is getConnection + navigation
 
     } catch (err) {
       console.error("❌ Error saving connection:", err);
@@ -345,203 +379,241 @@ const response = await getConnection({
   };
 
 
-  /** Dismiss suggestion refs */
-  const firstLocationRef = useRef<{ dismissSuggestions: () => void }>(null);
-  const secondLocationRef = useRef<{ dismissSuggestions: () => void }>(null);
-
-  const dismissAllSuggestions = () => {
-    firstLocationRef.current?.dismissSuggestions();
-    secondLocationRef.current?.dismissSuggestions();
-  };
 
   return renderBackground(
     <>
-    <HeaderNav
+      <HeaderNav
         title="New Connection"
         rightLabel="Cancel"
         onRightPress={handleCancel}
       />
-    <Animated.View style={[styles.container, { opacity: fade }]}>
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FFFFFF" />
-          <Text style={styles.loadingText}>Calculating and saving connection...</Text>
-        </View>
-      ) : (
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <FlatList
-            data={sections}
-            keyExtractor={(item) => item.key}
-            style={{ backgroundColor: "transparent" }}
-            contentContainerStyle={{
-              paddingTop: HEADER_HEIGHT + 5,
-              paddingBottom: verticalScale(20),
-            }}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
-              <View style={styles.section}>
-                <View style={styles.userRow}>
-                  <Text style={styles.titleText}>{item.title}</Text>
+      <Animated.View style={[styles.container, { opacity: fade }]}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FFFFFF" />
+            <Text style={styles.loadingText}>Calculating and saving connection...</Text>
+          </View>
+        ) : (
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <FlatList
+              data={sections}
+              keyExtractor={(item) => item.key}
+              style={{ backgroundColor: "transparent" }}
+              contentContainerStyle={{
+                paddingTop: HEADER_HEIGHT + verticalScale(5),
+                paddingBottom: verticalScale(20),
+              }}
+              keyboardShouldPersistTaps="handled"
+              renderItem={({ item }) => (
+                <View style={styles.section}>
+                  <View style={styles.userRow}>
+                    <Text style={styles.titleText}>{item.title}</Text>
 
-                  {item.toggle && (
-                    <DelalunaToggle label="Me" value={isMe} onToggle={setIsMe} />
+                    {item.toggle && (
+                      <DelalunaToggle label="Me" value={isMe} onToggle={setIsMe} />
+                    )}
+
+                  </View>
+
+                  <View style={styles.divider} />
+
+
+
+                  {item.key === "first" && isMe ? (
+                    <View style={styles.meCard}>
+                      <Text style={styles.meName}>
+                        {toTitleCase(userRecord?.firstName || "")}{" "}
+                        {toTitleCase(userRecord?.lastName || "")}
+                      </Text>
+
+                      <HomeSignsDisplay
+                        sun={userRecord?.sunSign}
+                        moon={userRecord?.moonSign}
+                        rising={userRecord?.risingSign}
+                      />
+                    </View>
+                  ) :
+                    (
+                      /** Render fields */
+                      (() => {
+                        const personKey = item.key as PersonKey;
+
+                        return item.fields.map((field) => {
+                          const value = sanitizeValue(
+                            personKey === "first"
+                              ? firstPerson[field.label as keyof PersonBirthData]
+                              : secondPerson[field.label as keyof PersonBirthData]
+                          );
+
+                          const inputRef =
+                            field.label === "First Name"
+                              ? personKey === "first"
+                                ? firstNameRef
+                                : secondNameRef
+                              : field.label === "Last Name"
+                                ? personKey === "first"
+                                  ? firstLastNameRef
+                                  : secondLastNameRef
+                                : undefined;
+
+                          const nextExists =
+                            field.type === "text" &&
+                            !!getNextFocusableLabel(personKey, field.label);
+
+                          const returnKeyType =
+                            field.type === "text"
+                              ? nextExists
+                                ? "next"
+                                : "done"
+                              : undefined;
+
+                          const onSubmitEditing =
+                            field.type === "text"
+                              ? () => handleSubmitEditing(personKey, field.label)
+                              : undefined;
+
+                          if (field.label === "Place of Birth") {
+                            return (
+                              <ConnectionsPlaceOfBirthField
+                                key={field.label}
+                                value={
+                                  personKey === "first"
+                                    ? firstPerson["Place of Birth"] ?? ""
+                                    : secondPerson["Place of Birth"] ?? ""
+                                }
+                                onChange={(values: PersonBirthUpdate) =>
+                                  item.onChange((prev: PersonBirthData) => ({
+                                    ...prev,
+                                    ...values,
+                                  }))
+                                }
+                                ref={personKey === "first" ? firstLocationRef : secondLocationRef}
+                                onRequestDismiss={() => dismissAllSuggestions()}
+                                returnKeyType={returnKeyType}
+                                blurOnSubmit={!nextExists}
+                                onSubmitEditing={() =>
+                                  handleSubmitEditing(personKey, field.label)
+                                }
+                              />
+                            );
+                          }
+
+                          if (field.label === "Time of Birth") {
+                            return (
+                              <ConnectionsTimeOfBirthField
+                                key={field.label}
+                                value={
+                                  personKey === "first"
+                                    ? firstPerson["Time of Birth"]
+                                    : secondPerson["Time of Birth"]
+                                }
+                                onChange={(values: PersonBirthUpdate) =>
+                                  item.onChange((prev: PersonBirthData) => ({
+                                    ...prev,
+                                    ...values,
+                                  }))
+                                }
+                                onRequestDismiss={() => dismissAllSuggestions()}
+                              />
+                            );
+                          }
+
+                          return (
+                            <DelalunaInputRow
+                              key={field.label}
+                              fields={[
+                                {
+                                  ...field,
+                                  value,
+                                  inputRef,
+                                  returnKeyType,
+                                  blurOnSubmit: field.type === "text" ? false : undefined,
+                                  onSubmitEditing,
+                                },
+                              ]}
+                              onChange={(values: PersonBirthUpdate) =>
+                                item.onChange((prev: PersonBirthData) => ({
+                                  ...prev,
+                                  ...values,
+                                }))
+                              }
+                            />
+                          );
+                        });
+                      })()
+                    )}
+
+
+
+                  {item.key === "second" && (
+                    <View style={styles.relationshipRow}>
+                      {relationshipOptions.map((option) => {
+                        const key = option.toLowerCase();
+
+                        const iconSource =
+                          key === "consistent"
+                            ? require("@/assets/icons/satisfied_icon_words.png")
+                            : key === "it's complicated"
+                              ? require("@/assets/icons/neutral_icon_words.png")
+                              : require("@/assets/icons/dissatisfied_icon_words.png");
+
+                        return (
+                          <TouchableOpacity
+                            key={option}
+                            style={[
+                              styles.relationshipButton,
+                              relationshipType === option && styles.relationshipSelected,
+                            ]}
+                            onPress={() => {
+                              dismissAllSuggestions();
+                              setRelationshipType(option);
+                            }}
+                            activeOpacity={0.8}
+                          >
+                            <Image
+                              source={iconSource}
+                              style={[
+                                styles.relationshipIcon,
+                                relationshipType === option &&
+                                styles.relationshipIconSelected,
+                              ]}
+                              resizeMode="contain"
+                            />
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
                   )}
                 </View>
-
-                <View style={styles.divider} />
-
-                {item.key === "first" && isMe ? (
-                  <View style={styles.meCard}>
-                    <Text style={styles.meName}>
-                      {toTitleCase(userRecord?.firstName || "")}{" "}
-                      {toTitleCase(userRecord?.lastName || "")}
-                    </Text>
-
-                    <HomeSignsDisplay
-                      sun={userRecord?.sunSign}
-                      moon={userRecord?.moonSign}
-                      rising={userRecord?.risingSign}
-                    />
-                  </View>
-                ) : (
-                  /** Render fields */
-                  item.fields.map((field) => {
-                    if (field.label === "Place of Birth") {
-                      return (
-                        <ConnectionsPlaceOfBirthField
-                          key={field.label}
-                          value={
-                            item.key === "first"
-                              ? firstPerson["Place of Birth"] ?? ""
-                              : secondPerson["Place of Birth"] ?? ""
-                          }
-                          onChange={(values: PersonBirthUpdate) =>
-                            item.onChange((prev: PersonBirthData) => ({
-                              ...prev,
-                              ...values,
-                            }))
-                          }
-                          ref={item.key === "first" ? firstLocationRef : secondLocationRef}
-                          onRequestDismiss={() => dismissAllSuggestions()}
-                        />
-
-                      );
-                    }
-
-                    if (field.label === "Time of Birth") {
-                      return (
-                        <ConnectionsTimeOfBirthField
-                          key={field.label}
-                          value={
-                            item.key === "first"
-                              ? firstPerson["Time of Birth"]
-                              : secondPerson["Time of Birth"]
-                          }
-                          onChange={(values: PersonBirthUpdate) =>
-                            item.onChange((prev: PersonBirthData) => ({
-                              ...prev,
-                              ...values,
-                            }))
-                          }
-                          onRequestDismiss={() => dismissAllSuggestions()}
-                        />
-                      );
-                    }
-
-                    return (
-                      <DelalunaInputRow
-                        key={field.label}
-                        fields={[
-                          {
-                            ...field,
-                            value: sanitizeValue(
-                              item.key === "first"
-                                ? firstPerson[field.label as keyof PersonBirthData]
-                                : secondPerson[field.label as keyof PersonBirthData]
-                            ),
-                          },
-                        ]}
-                        onChange={(values: PersonBirthUpdate) =>
-                          item.onChange((prev: PersonBirthData) => ({
-                            ...prev,
-                            ...values,
-                          }))
-                        }
-                      />
-                    );
-                  })
-                )}
-
-                {item.key === "second" && (
-                  <View style={styles.relationshipRow}>
-                    {relationshipOptions.map((option) => {
-                      const key = option.toLowerCase();
-
-                      const iconSource =
-                        key === "consistent"
-                          ? require("@/assets/icons/satisfied_icon_words.png")
-                          : key === "it's complicated"
-                            ? require("@/assets/icons/neutral_icon_words.png")
-                            : require("@/assets/icons/dissatisfied_icon_words.png");
-
-                      return (
-                        <TouchableOpacity
-                          key={option}
-                          style={[
-                            styles.relationshipButton,
-                            relationshipType === option && styles.relationshipSelected,
-                          ]}
-                          onPress={() => {
-                            dismissAllSuggestions();
-                            setRelationshipType(option);
-                          }}
-                          activeOpacity={0.8}
-                        >
-                          <Image
-                            source={iconSource}
-                            style={[
-                              styles.relationshipIcon,
-                              relationshipType === option &&
-                              styles.relationshipIconSelected,
-                            ]}
-                            resizeMode="contain"
-                          />
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                )}
-              </View>
-            )}
-            ListFooterComponent={
-              <View style={styles.footerSections}>
-                <GlassButton title="Thassit" onPress={() => { }} />
-              </View>
-            }
-          />
-        </KeyboardAvoidingView>
-      )}
-      <ConfirmDialog
-        visible={showDiscardDialog}
-        title="Discard Changes?"
-        message="You have unsaved changes. Are you sure you want to leave?"
-        onCancel={() => {
-          setShowDiscardDialog(false);
-          setPendingConfirm(null);
-        }}
-        onConfirm={() => {
-          pendingConfirm?.();
-          setShowDiscardDialog(false);
-          setPendingConfirm(null);
-        }}
-      />
-
-    </Animated.View>
+              )}
+              ListFooterComponent={
+                <View style={styles.footerSections}>
+                  <GlassButton title="Thassit" onPress={handleSaveConnection} />
+                </View>
+              }
+            />
+          </KeyboardAvoidingView>
+        )}
+        <ConfirmDialog
+          visible={showDiscardDialog}
+          title="Discard Changes?"
+          message="You have unsaved changes. Are you sure you want to leave?"
+          onCancel={() => {
+            setShowDiscardDialog(false);
+            setPendingConfirm(null);
+          }}
+          onConfirm={() => {
+            pendingConfirm?.();
+            setShowDiscardDialog(false);
+            setPendingConfirm(null);
+          }}
+        />
+      </Animated.View>
     </>
-    
+
   );
 }
 
@@ -550,11 +622,11 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     backgroundColor: "transparent",
-    paddingTop: 25, 
+    paddingTop: verticalScale(25),
   },
   section: {
     width: "100%",
-    paddingHorizontal: 10,
+    paddingHorizontal: scale(10),
     paddingBottom: verticalScale(20),
     marginBottom: verticalScale(10),
     backgroundColor: "transparent",
@@ -567,7 +639,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     color: "#FFFFFF",
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: "600",
   },
   divider: {
@@ -582,16 +654,16 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
     gap: verticalScale(10),
-    padding: 15,
+    padding: scale(15),
   },
   meName: {
     color: "#FFFFFF",
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: "700",
   },
   relationshipRow: {
     flexDirection: "row",
-    height: 85,
+    height: verticalScale(85),
     marginTop: verticalScale(5),
   },
   relationshipButton: {
@@ -630,6 +702,6 @@ const styles = StyleSheet.create({
   loadingText: {
     color: "#FFFFFF",
     marginTop: 12,
-    fontSize: 16,
+    fontSize: moderateScale(16),
   },
 });

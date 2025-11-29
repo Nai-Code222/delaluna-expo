@@ -18,6 +18,8 @@ import { getUserDocRef } from '../../src/services/user.service'
 import AlertModal from '@/components/alerts/alert-modal'
 import LoadingScreen from '@/components/component-utils/loading-screen'
 import { auth } from '../../firebaseConfig'
+import { db } from '../../firebaseConfig';
+
 
 
 // Base canvas + scaling clamps
@@ -45,8 +47,6 @@ export default function ProfileScreen() {
   const [selectedIdx, setSelectedIdx] = useState(
     initialIndex >= 0 ? initialIndex : 0
   );
-
-  const db = getFirestore();
 
   const getUserRecord = async () => {
     if (!user?.uid) return;
