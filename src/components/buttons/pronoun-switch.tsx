@@ -98,7 +98,7 @@ const styles = StyleSheet.create<{
     borderRadius: 30,
     padding: 3,
     marginVertical: 12,
-    width: '70%',
+    width: '100%',
     alignSelf: 'center',
     minHeight: 64,
   },

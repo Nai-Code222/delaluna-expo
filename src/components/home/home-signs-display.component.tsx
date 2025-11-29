@@ -1,6 +1,8 @@
-import { verticalScale, scale, moderateScale } from "@/utils/responsive";
 import React from "react";
+
 import { View, Text, Image, StyleSheet } from "react-native";
+
+import { verticalScale, scale, moderateScale } from "@/utils/responsive";
 
 interface HomeSignsDisplayProps {
   sun: string;

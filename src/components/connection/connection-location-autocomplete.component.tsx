@@ -13,6 +13,7 @@ import {
   Text,
   StyleSheet,
   Platform,
+  TextInputProps,
 } from "react-native";
 import tzlookup from "@photostructure/tz-lookup";
 import { scale, verticalScale } from "@/utils/responsive";
@@ -45,10 +46,14 @@ interface LocationAutocompleteProps {
   onSubmitRequest?: () => void;
   defaultLocation?: SelectedPlace;
   disabled?: boolean;
+  onFocus?: () => void;
+  returnKeyType?: TextInputProps["returnKeyType"];
+  blurOnSubmit?: boolean;
+  onSubmitEditing?: () => void;
 }
 
 const ConnectionLocationAutocomplete = forwardRef<
-  { dismissSuggestions: () => void },
+  { dismissSuggestions: () => void; focus: () => void },
   LocationAutocompleteProps
 >(
   (
@@ -60,11 +65,16 @@ const ConnectionLocationAutocomplete = forwardRef<
       onSubmitRequest,
       defaultLocation,
       disabled = false,
+      onFocus,
+      returnKeyType,
+      blurOnSubmit,
+      onSubmitEditing,
     },
     ref
   ) => {
     const [results, setResults] = useState<PhotonFeature[]>([]);
     const [showResults, setShowResults] = useState<boolean>(false);
+    const textInputRef = useRef<TextInput>(null);
 
     // ⭐ prevents reopening suggestions after selecting a result
     const justSelectedRef = useRef(false);
@@ -76,6 +86,9 @@ const ConnectionLocationAutocomplete = forwardRef<
       dismissSuggestions: () => {
         setShowResults(false);
         onResultsVisibilityChange?.(false);
+      },
+      focus: () => {
+        textInputRef.current?.focus();
       },
     }));
 
@@ -136,6 +149,7 @@ const ConnectionLocationAutocomplete = forwardRef<
       >
         {/* INPUT FIELD */}
         <TextInput
+          ref={textInputRef}
           style={styles.input}
           placeholder="Type your birth city..."
           placeholderTextColor="rgba(255,255,255,0.6)"
@@ -145,6 +159,7 @@ const ConnectionLocationAutocomplete = forwardRef<
             onInputChange?.(text);
           }}
           onFocus={() => {
+            onFocus?.();
             // Only show if results already fetched
             if (value && value.length >= 3 && results.length > 0) {
               setShowResults(true);
@@ -153,11 +168,18 @@ const ConnectionLocationAutocomplete = forwardRef<
           }}
           onBlur={handleBlur}
           autoCorrect={false}
-          returnKeyType={Platform.select({
-            ios: "done",
-            android: "send",
-          }) as any}
-          onSubmitEditing={() => onSubmitRequest?.()}
+          returnKeyType={
+            returnKeyType ??
+            (Platform.select({
+              ios: "done",
+              android: "send",
+            }) as any)
+          }
+          blurOnSubmit={blurOnSubmit}
+          onSubmitEditing={() => {
+            onSubmitRequest?.();
+            onSubmitEditing?.();
+          }}
         />
 
         {/* RESULTS LIST */}
@@ -176,7 +198,7 @@ const ConnectionLocationAutocomplete = forwardRef<
                   onPress={() => {
                     const [lon, lat] = item.geometry.coordinates;
 
-                    // ⭐ Block next auto-fetch so suggestions don't reopen
+                    // Block next auto-fetch so suggestions don't reopen
                     justSelectedRef.current = true;
 
                     let timezone = "UTC";

@@ -8,32 +8,49 @@ import { View, Text, StyleSheet } from "react-native";
 import ConnectionLocationAutocomplete from "./connection-location-autocomplete.component";
 import DelalunaToggle from "../component-utils/delaluna-toggle.component";
 import { scale, verticalScale, moderateScale } from "@/utils/responsive";
+import type { TextInputProps } from "react-native";
 
 interface Props {
   value: string;
   onChange: (values: Record<string, any>) => void;
   onRequestDismiss?: () => void; // request parent to dismiss all open fields
+  returnKeyType?: TextInputProps["returnKeyType"];
+  blurOnSubmit?: boolean;
+  onSubmitEditing?: () => void;
 }
 
 const DEFAULT_PLACE = {
   label: "I don't know",
-  backendLabel: "Greenwich, UK",
+  backendLabel: "Greenwich, London, UK",
   lat: 51.4769,
   lon: 0.0005,
   timezone: "UTC",
 };
 
 const ConnectionsPlaceOfBirthField = forwardRef(
-  ({ value, onChange, onRequestDismiss }: Props, ref) => {
+  (
+    {
+      value,
+      onChange,
+      onRequestDismiss,
+      returnKeyType,
+      blurOnSubmit,
+      onSubmitEditing,
+    }: Props,
+    ref
+  ) => {
     const [isUnknown, setIsUnknown] = useState(
       value?.toLowerCase()?.includes("i don't") ?? false
     );
 
-    const autocompleteRef = useRef<{ dismissSuggestions: () => void }>(null);
+    const autocompleteRef = useRef<{ dismissSuggestions: () => void; focus: () => void }>(null);
 
     useImperativeHandle(ref, () => ({
       dismissSuggestions: () => {
         autocompleteRef.current?.dismissSuggestions();
+      },
+      focus: () => {
+        autocompleteRef.current?.focus();
       },
     }));
 
@@ -60,6 +77,9 @@ const ConnectionsPlaceOfBirthField = forwardRef(
       onChange({
         "Place of Birth": text,
         isPlaceOfBirthUnknown: false,
+  birthLat: undefined,             
+  birthLon: undefined,
+  birthTimezone: undefined,
       });
     };
 
@@ -109,6 +129,9 @@ const ConnectionsPlaceOfBirthField = forwardRef(
                   onSubmitRequest={() =>
                     autocompleteRef.current?.dismissSuggestions()
                   }
+                  returnKeyType={returnKeyType}
+                  blurOnSubmit={blurOnSubmit}
+                  onSubmitEditing={onSubmitEditing}
                 />
               )}
             </View>

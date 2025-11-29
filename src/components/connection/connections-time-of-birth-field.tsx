@@ -19,7 +19,7 @@ interface ConnectionsTimeOfBirthFieldProps {
 }
 
 const ConnectionsTimeOfBirthField = forwardRef<
-  { dismissSuggestions?: () => void },
+  { dismissSuggestions?: () => void; open: () => void },
   ConnectionsTimeOfBirthFieldProps
 >(({ value, onChange, onRequestDismiss }, ref) => {
   const [showPicker, setShowPicker] = useState(false);
@@ -29,6 +29,11 @@ const ConnectionsTimeOfBirthField = forwardRef<
 
   useImperativeHandle(ref, () => ({
     dismissSuggestions: () => {},
+    open: () => {
+      if (!isUnknown) {
+        setShowPicker(true);
+      }
+    },
   }));
 
   const isEmptyValue = !value || value.trim() === "";
@@ -82,7 +87,9 @@ const ConnectionsTimeOfBirthField = forwardRef<
           <TouchableOpacity
             activeOpacity={0.7}
             style={styles.inputBox}
-            onPress={() => !isUnknown && setShowPicker(true)}
+            onPress={() => {
+              !isUnknown && setShowPicker(true);
+            }}
           >
             <Text
               style={[
@@ -161,4 +168,3 @@ const styles = StyleSheet.create({
 });
 
 export default ConnectionsTimeOfBirthField;
-

@@ -48,9 +48,6 @@ interface LocationAutocompleteProps {
   onSubmitRequest?: () => void;
 }
 
-
-// ...imports unchanged...
-
 export default function LocationAutocomplete({
   value,
   onSelect,

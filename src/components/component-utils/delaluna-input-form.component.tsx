@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+
 import {
   View,
   Text,
@@ -6,12 +7,17 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  TextInputProps,
 } from "react-native";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { scale, verticalScale, moderateScale } from "@/utils/responsive";
-import ConnectionLocationAutocomplete from "../connection/connection-location-autocomplete.component";
 
-export type FieldType = "text" | "date" | "location" | "time";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+
+import { scale, verticalScale, moderateScale } from "@/utils/responsive";
+
+import ConnectionLocationAutocomplete from "../connection/connection-location-autocomplete.component";
+import PronounDropdown from "../buttons/pronoun-dropdown";
+
+export type FieldType = "text" | "date" | "location" | "time" | "pronouns";
 
 export interface FieldConfig {
   label: string;
@@ -19,6 +25,11 @@ export interface FieldConfig {
   placeholder?: string;
   value?: string | number;
   editable?: boolean;
+  inputRef?: React.RefObject<TextInput>;
+  returnKeyType?: TextInputProps["returnKeyType"];
+  blurOnSubmit?: boolean;
+  onSubmitEditing?: () => void;
+  autoFocus?: boolean;
 }
 
 export interface DelalunaInputRowProps {
@@ -49,6 +60,21 @@ export default function DelalunaInputRow({
     setActivePicker(null);
   };
 
+  const [pronouns, setPronouns] = useState("");
+
+  useEffect(() => {
+    const nextValues = Object.fromEntries(
+      fields.map((f) => [f.label, String(f.value ?? "")])
+    );
+
+    setFormValues(nextValues);
+
+    const pronounField = fields.find((f) => f.type === "pronouns");
+    if (pronounField) {
+      setPronouns(String(pronounField.value ?? ""));
+    }
+  }, [fields]);
+
   return (
     <View style={styles.container}>
       {fields.map((field) => {
@@ -67,7 +93,9 @@ export default function DelalunaInputRow({
               {field.type === "date" ? (
                 <>
                   <TouchableOpacity
-                    onPress={() => isEditable && setActivePicker(field.label)}
+                    onPress={() => {
+                      if (isEditable) setActivePicker(field.label);
+                    }}
                     style={styles.inputBox}
                     activeOpacity={0.7}
                   >
@@ -107,15 +135,31 @@ export default function DelalunaInputRow({
                     }}
                   />
                 </View>
+              ) : field.type === "pronouns" ? (
+                <View style={[styles.dropdownInputBox]}>
+                  {/*Pronoun Field */}
+                  <PronounDropdown
+                    value={pronouns}
+                    onChange={(val) => {
+                      setPronouns(val);
+                      handleChange(field.label, val);
+                    }}
+                  />
+                </View>
               ) : (
                 /* TEXT FIELD */
                 <TextInput
                   editable={isEditable}
+                  ref={field.inputRef}
                   value={value}
                   placeholder={field.placeholder}
                   placeholderTextColor="rgba(255,255,255,0.6)"
                   onChangeText={(t) => handleChange(field.label, t)}
                   style={[styles.inputBox, !isEditable && { opacity: 0.6 }]}
+                  returnKeyType={field.returnKeyType}
+                  blurOnSubmit={field.blurOnSubmit}
+                  onSubmitEditing={field.onSubmitEditing}
+                  autoFocus={field.autoFocus}
                 />
               )}
             </View>
@@ -162,4 +206,12 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: moderateScale(14),
   },
+  dropdownInputBox: {
+    flex: 1.4,
+    borderLeftWidth: 1,
+    borderLeftColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    paddingLeft: scale(10),
+    width: "100%",
+  }
 });
