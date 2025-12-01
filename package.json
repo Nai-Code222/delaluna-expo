@@ -17,7 +17,7 @@
   "dependencies": {
     "@expo/vector-icons": "~14.0.4",
     "@photostructure/tz-lookup": "^11.2.1",
-    "@react-native-async-storage/async-storage": "^1.23.1",
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-picker/picker": "^2.11.4",
     "@react-navigation/bottom-tabs": "^7.2.0",

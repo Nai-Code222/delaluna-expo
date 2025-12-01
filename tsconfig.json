@@ -3,6 +3,10 @@
   "compilerOptions": {
     "jsx": "react",
     "strict": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
 
     "paths": {
       "@/*": ["./src/*"],
