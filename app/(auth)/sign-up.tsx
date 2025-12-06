@@ -25,7 +25,7 @@ import ChatFlow, { StepConfig, FinalSignupPayload } from "../../src/components/s
 import { UserRecord } from "../../src/model/user-record";
 import signUp from "../../src/services/auth.service";
 import { createUserDoc } from "../../src/services/user.service";
-import { getAstroSigns } from "../../src/services/astrology-api.service";
+import { getUserSignsAndChart } from "../../src/services/astrology-api.service";
 import { verticalScale, scale, moderateScale } from "@/utils/responsive";
 import { db } from "../../firebaseConfig";
 import { getDailyCard } from "@/services/dailyTarot.service";
@@ -113,8 +113,14 @@ export default function SignUpChatScreen() {
       const mn = rawBirthtimeDate.getMinutes();
       const offset = -rawBirthtimeDate.getTimezoneOffset() / 60;
 
-      const params = { day: dd, month: mm, year: yyyy, hour: hh24, min: mn, lat: birthLat, lon: birthLon, tzone: offset };
-      const { sunSign, moonSign, risingSign } = await getAstroSigns(params);
+      const signsParams = { day: dd, month: mm, year: yyyy, hour: hh24, min: mn, lat: birthLat, lon: birthLon, tzone: offset };
+      const birthChartParams = { birthDate: birthday, birthTime: birthtime, lat: birthLat, lon: birthLon, timezone: offset };
+      const { signs, birthChart } = await getUserSignsAndChart({
+        ...signsParams,
+        birthDate: birthday,
+        birthTime: birthtime,
+        timezone: offset,
+      });
 
       const userRecord: UserRecord = {
         id: uid,
@@ -127,6 +133,7 @@ export default function SignUpChatScreen() {
         placeOfBirth,
         email,
         isPaidMember: false,
+        isEmailVerified: false, 
         signUpDate,
         lastLoginDate,
         isBirthTimeUnknown,
@@ -137,12 +144,11 @@ export default function SignUpChatScreen() {
         birthTimezone,
         birthDateTimeUTC,
         tZoneOffset: offset,
-        sunSign: sunSign || "",
-        moonSign: moonSign || "",
-        risingSign: risingSign || "",
-        astroParams: params,
+        sunSign: signs.sunSign,
+        moonSign: signs.moonSign,
+        risingSign: signs.risingSign,
+        astroParams: signsParams,
         currentTimezone: getTimezone()
-
       };
 
       let docCreated = false;
@@ -150,6 +156,7 @@ export default function SignUpChatScreen() {
         try {
           await createUserDoc(uid, userRecord);
           docCreated = true;
+          
           break;
         } catch (err) {
           console.warn(`Firestore write failed (attempt ${attempt})`, err);

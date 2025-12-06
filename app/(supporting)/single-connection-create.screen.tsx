@@ -44,8 +44,8 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { verticalScale, scale, moderateScale } from "@/utils/responsive";
 
 import { ThemeContext } from "../theme-context";
-import { functions } from "../../firebaseConfig";
 import { getAstroSigns } from "../../src/services/astrology-api.service";
+import { createConnection } from "../../src/services/connection.service";
 
 export default function SingleConnectionCreateScreen() {
   const { theme } = useContext(ThemeContext);
@@ -298,15 +298,61 @@ export default function SingleConnectionCreateScreen() {
 
         const { birthLat, birthLon, birthTimezone } = person;
 
-        // Strict validation so TS knows these exist
         if (birthLat == null || birthLon == null || birthTimezone == null) {
-          throw new Error(
-            "Place of Birth must include latitude, longitude, and timezone."
-          );
+          throw new Error("Place of Birth must include latitude, longitude, and timezone.");
         }
 
+        // -------------------------------
+        // Parse birthday
+        // -------------------------------
         const [month, day, year] = person.Birthday.split("/").map(Number);
-        const [hour, min] = person["Time of Birth"].split(":").map(Number);
+
+        // -------------------------------
+        // FIX: Parse 12-hour times ("10:53 AM")
+        // -------------------------------
+        let raw = person["Time of Birth"].trim();
+        let hour = 0;
+        let min = 0;
+
+        const match = raw.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (match) {
+          let h = Number(match[1]);
+          min = Number(match[2]);
+          const period = match[3].toUpperCase();
+
+          if (period === "PM" && h !== 12) h += 12;
+          if (period === "AM" && h === 12) h = 0;
+
+          hour = h;
+        } else {
+          // Fallback for strict HH:mm input
+          const parts = raw.split(":");
+          hour = Number(parts[0]);
+          min = Number(parts[1]);
+        }
+
+        if (Number.isNaN(hour)) hour = 12;
+        if (Number.isNaN(min)) min = 0;
+
+        // -------------------------------
+        // FIX: Convert IANA timezone → numeric offset
+        // -------------------------------
+        let tzone = 0;
+        try {
+          const dt = new Date();
+          const tzPart = new Intl.DateTimeFormat("en-US", {
+            timeZone: birthTimezone,
+            timeZoneName: "short",
+          })
+            .formatToParts(dt)
+            .find((p) => p.type === "timeZoneName")?.value;
+
+          const offsetMatch = tzPart?.match(/GMT([+-]\d{1,2})/);
+          tzone = offsetMatch ? Number(offsetMatch[1]) : 0;
+        } catch (err) {
+          console.warn("⚠️ Could not convert timezone:", birthTimezone, err);
+          tzone = 0;
+        }
 
         return {
           day,
@@ -316,37 +362,54 @@ export default function SingleConnectionCreateScreen() {
           min,
           lat: birthLat,
           lon: birthLon,
-          tzone: Number(birthTimezone),
+          tzone,
         };
       };
+
 
       let enrichedFirst;
 
       if (isMe) {
-        // Use logged-in user's saved signs + identity
+        // Use logged-in user's saved signs + identity, map to backend-required keys
         enrichedFirst = {
           "First Name": userRecord?.firstName || "",
           "Last Name": userRecord?.lastName || "",
           Pronouns: userRecord?.pronouns || "",
-          sunSign: userRecord?.sunSign,
-          moonSign: userRecord?.moonSign,
-          risingSign: userRecord?.risingSign,
+          "Sun Sign": userRecord?.sunSign,
+          "Moon Sign": userRecord?.moonSign,
+          "Rising Sign": userRecord?.risingSign,
         };
+        console.log("🚨 isMe enrichedFirst: ", enrichedFirst);
       } else {
-        // Extract & calculate signs for a manually-entered first person
+        // Extract & calculate signs for a manually-entered first person, map to backend-required keys
+        console.log("🚨 firstPerson: ", firstPerson);
         const firstBirthParams = extractBirthParams(firstPerson);
+        console.log("🚨 firstBirthParams: ", firstBirthParams);
         const firstSigns = await getAstroSigns(firstBirthParams);
-        enrichedFirst = { ...firstPerson, ...firstSigns };
-
+        enrichedFirst = {
+          ...firstPerson,
+          "Sun Sign": firstSigns.sunSign,
+          "Moon Sign": firstSigns.moonSign,
+          "Rising Sign": firstSigns.risingSign,
+          "userName": firstPerson["First Name"] + " " + firstPerson["Last Name"]
+        };
+        console.log("🚨 enrichedFirst: ", enrichedFirst);
       }
 
       const secondBirthParams = extractBirthParams(secondPerson);
       const secondSigns = await getAstroSigns(secondBirthParams);
-      let enrichedSecond = { ...secondPerson, ...secondSigns };
-      console.log("Signs →", { first: enrichedFirst, second: enrichedSecond });
+      let enrichedSecond = {
+        ...secondPerson,
+        "Sun Sign": secondSigns.sunSign,
+        "Moon Sign": secondSigns.moonSign,
+        "Rising Sign": secondSigns.risingSign,
+      };
+      
 
-      // STOP HERE — next step is getConnection + navigation
-
+      const userID: string = user!.uid;
+      const connectionReport = await createConnection({userId: userID, isMe: isMe, relationshipType: relationshipType, firstPerson: enrichedFirst, secondPerson: enrichedSecond});
+      console.log("Connection Report: ", {connectionReport});
+  
     } catch (err) {
       console.error("❌ Error saving connection:", err);
       Alert.alert("Error", "Something went wrong creating this connection.");
@@ -354,8 +417,6 @@ export default function SingleConnectionCreateScreen() {
 
     setLoading(false);
   };
-
-
 
   return renderBackground(
     <>
