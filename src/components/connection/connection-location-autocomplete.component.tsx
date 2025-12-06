@@ -118,14 +118,37 @@ const ConnectionLocationAutocomplete = forwardRef<
       }
 
       const handler = setTimeout(() => {
-        fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`)
-          .then((res) => res.json())
+        fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q.toLowerCase())}&limit=8`)
+          .then(async (res) => {
+            const text = await res.text();
+            try {
+              return JSON.parse(text);
+            } catch (err) {
+              console.warn("❌ Photon returned non-JSON:", text.slice(0, 200));
+              return { features: [] };
+            }
+          })
           .then((json) => {
-            setResults(json.features || []);
+            if (!json || !Array.isArray(json.features)) {
+              console.warn("⚠️ Photon returned invalid structure:", json);
+              setResults([]);
+              setShowResults(false);
+              onResultsVisibilityChange?.(false);
+              return;
+            }
+
+            console.log("🌍 Photon results:", json.features.length);
+
+            setResults(json.features as PhotonFeature[]);
             setShowResults(true);
             onResultsVisibilityChange?.(true);
           })
-          .catch(() => {});
+          .catch((err) => {
+            console.warn("❌ Photon error:", err);
+            setResults([]);
+            setShowResults(false);
+            onResultsVisibilityChange?.(false);
+          });
       }, 250);
 
       return () => clearTimeout(handler);
