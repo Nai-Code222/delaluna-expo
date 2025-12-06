@@ -42,42 +42,45 @@ export default function GetConnectionResultsTestScreen() {
   // -------------------------
   // MOCK PROMPT (you will replace later with your real generation)
   // -------------------------
-  const promptUsed = `
-Compare these two individuals:
+  let promptUsed = `Prompt to Compare these two individuals:
+  Person 1:
+  Name: ${isMe ? "User" : `${personOneFirst} ${personOneLast}`}
+  Sun: ${userSun}
+  Moon: ${userMoon}
+  Rising: ${userRising}
 
-Person 1:
-Name: ${isMe ? "User" : `${personOneFirst} ${personOneLast}`}
-Sun: ${userSun}
-Moon: ${userMoon}
-Rising: ${userRising}
+  Person 2:
+  Name: ${personTwoFirst} ${personTwoLast}
+  Sun: ${partnerSun}
+  Moon: ${partnerMoon}
+  Rising: ${partnerRising}
 
-Person 2:
-Name: ${personTwoFirst} ${personTwoLast}
-Sun: ${partnerSun}
-Moon: ${partnerMoon}
-Rising: ${partnerRising}
-
-Return:
-- A Delaluna-style summary
-- Closing compatibility percentages
+  Return:
+  - A Delaluna-style summary
+  - Closing compatibility percentages
   `;
 
   // -------------------------
-  // MOCK SUMMARY
+  // REAL RETURNED DATA
   // -------------------------
   const returnedSummary =
-    "✨ Bestie… this connection is giving cosmic spark. There’s a magnetic pull mixed with emotional depth, and just enough contrast to keep things exciting. The vibes? Warm with a hint of chaos — in the fun way.";
+    typeof payload.summary === "string"
+      ? payload.summary
+      : JSON.stringify(payload.summary ?? "No summary returned.");
 
-  // -------------------------
-  // MOCK PERCENTAGES
-  // -------------------------
-  const percentages = {
-    Interest: 78,
-    Communication: 62,
-    Attraction: 73,
-    Loyalty: 84,
-    Resonation: 69,
-  };
+  const percentages = payload.scores
+    ? Object.fromEntries(
+        Object.entries(payload.scores).map(([k, v]) => [
+          k.charAt(0).toUpperCase() + k.slice(1),
+          v,
+        ])
+      )
+    : {};
+
+  const closing =
+    typeof payload.closing === "string"
+      ? payload.closing
+      : JSON.stringify(payload.closing ?? "No closing message returned.");
 
   // -------------------------
   // Expand/Collapse State
@@ -86,6 +89,7 @@ Return:
   const [showSent, setShowSent] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showPercent, setShowPercent] = useState(false);
+  const [showClosing, setClosing] = useState(false);
 
   const animateToggle = (toggleFunc: any, current: boolean) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -103,7 +107,7 @@ Return:
         style={styles.box}
         onPress={() => animateToggle(setShowPrompt, showPrompt)}
       >
-        <Text style={styles.boxTitle}>📝 Prompt Used</Text>
+        <Text style={styles.boxTitle}>Connection Prompt Used</Text>
 
         {showPrompt && (
           <Text style={styles.boxContent}>{promptUsed.trim()}</Text>
@@ -117,7 +121,7 @@ Return:
         style={styles.box}
         onPress={() => animateToggle(setShowSent, showSent)}
       >
-        <Text style={styles.boxTitle}>📦 Sent Info</Text>
+        <Text style={styles.boxTitle}>Connection Sent Info</Text>
 
         {showSent && (
           <View style={{ marginTop: 10 }}>
@@ -155,7 +159,7 @@ Return:
         style={styles.box}
         onPress={() => animateToggle(setShowSummary, showSummary)}
       >
-        <Text style={styles.boxTitle}>✨ Returned Summary</Text>
+        <Text style={styles.boxTitle}>✨ Connection Summary</Text>
 
         {showSummary && (
           <Text style={styles.summaryText}>{returnedSummary}</Text>
@@ -169,16 +173,35 @@ Return:
         style={styles.box}
         onPress={() => animateToggle(setShowPercent, showPercent)}
       >
-        <Text style={styles.boxTitle}>📊 Closing Percentages</Text>
+        <Text style={styles.boxTitle}>Connection Percentages</Text>
 
         {showPercent && (
           <View style={{ marginTop: 12 }}>
-            {Object.entries(percentages).map(([label, value]) => (
-              <View key={label} style={styles.percentRow}>
-                <Text style={styles.percentLabel}>{label}</Text>
-                <Text style={styles.percentValue}>{value}%</Text>
-              </View>
-            ))}
+            {Object.entries(percentages).map(([label, value]) => {
+              const num = Number(value) || 0;
+              return (
+                <View key={label} style={styles.percentRow}>
+                  <Text style={styles.percentLabel}>{label}</Text>
+                  <Text style={styles.percentValue}>{num}%</Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
+      </TouchableOpacity>
+
+      {/* -------------------- */}
+      {/* Closing */}
+      {/* -------------------- */}
+      <TouchableOpacity
+        style={styles.box}
+        onPress={() => animateToggle(setClosing, showClosing)}
+      >
+        <Text style={styles.boxTitle}>Connection Closing</Text>
+
+        {showClosing && (
+          <View style={{ marginTop: 12 }}>
+            <Text style={styles.summaryText}>{closing}</Text>
           </View>
         )}
       </TouchableOpacity>

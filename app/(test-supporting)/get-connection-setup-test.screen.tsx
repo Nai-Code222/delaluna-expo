@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
+import { createConnection } from "@/services/connection.service";
 
 // Enable smooth animations on Android
 if (
@@ -37,6 +38,9 @@ const ZODIAC_SIGNS = [
   "Pisces",
 ];
 
+const PRONOUN_OPTIONS = ["She/Her", "He/Him", "They/Them", "Non-Binary"];
+const RELATIONSHIP_TYPES = ["consistent", "complicated", "toxic"];
+
 export default function TestConnectionSetUpScreen() {
   const router = useRouter();
 
@@ -49,6 +53,13 @@ export default function TestConnectionSetUpScreen() {
   const [personOneLast, setPersonOneLast] = useState("");
   const [personTwoFirst, setPersonTwoFirst] = useState("");
   const [personTwoLast, setPersonTwoLast] = useState("");
+
+  // Pronouns
+  const [personOnePronouns, setPersonOnePronouns] = useState("She/Her");
+  const [personTwoPronouns, setPersonTwoPronouns] = useState("She/Her");
+
+  // Relationship type
+  const [relationshipType, setRelationshipType] = useState("complicated");
 
   // 🌞 Person 1 signs
   const [userSun, setUserSun] = useState("Virgo");
@@ -83,24 +94,24 @@ export default function TestConnectionSetUpScreen() {
 
   // 🎲 RANDOMIZE NAMES + SIGNS
   const handleRandomize = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    handleStartSetup();
 
     if (isMe) {
       // Person 1 is "User"
-      setPersonOneFirst("User");
-      setPersonOneLast("");
+      setPersonOneFirst("Current");
+      setPersonOneLast("User");
 
       // Person 2 becomes Indiv 2
       setPersonTwoFirst("Indiv");
-      setPersonTwoLast("2");
+      setPersonTwoLast("Two");
     } else {
       // Person 1 becomes Indiv 1
       setPersonOneFirst("Indiv");
-      setPersonOneLast("1");
+      setPersonOneLast("One");
 
       // Person 2 becomes Indiv 2
       setPersonTwoFirst("Indiv");
-      setPersonTwoLast("2");
+      setPersonTwoLast("Two");
     }
 
     // Randomize signs for both
@@ -113,27 +124,32 @@ export default function TestConnectionSetUpScreen() {
     setPartnerRising(randomSign());
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     const payload = {
       isMe,
-      personOneFirst,
-      personOneLast,
-      personTwoFirst,
-      personTwoLast,
-      userSun,
-      userMoon,
-      userRising,
-      partnerSun,
-      partnerMoon,
-      partnerRising,
+      relationshipType,
+      firstPerson: {
+        firstName: personOneFirst,
+        lastName: personOneLast,
+        pronouns: personOnePronouns,
+        sun: userSun,
+        moon: userMoon,
+        rising: userRising,
+      },
+      secondPerson: {
+        firstName: personTwoFirst,
+        lastName: personTwoLast,
+        pronouns: personTwoPronouns,
+        sun: partnerSun,
+        moon: partnerMoon,
+        rising: partnerRising,
+      },
     };
 
-    router.replace({
-      pathname: "/(test-supporting)/get-connection-results-test.screen",
-      params: {
-        data: JSON.stringify(payload),
-      },
-    });
+    const connectionReport = await createConnection({userId: "USERID", isMe: payload.isMe, relationshipType: relationshipType, firstPerson: payload.firstPerson, secondPerson: payload.secondPerson});
+    console.log("Connection Report: ", {connectionReport});
+
+    
   };
 
   return (
@@ -175,6 +191,16 @@ export default function TestConnectionSetUpScreen() {
                   value={personOneLast}
                   onChangeText={setPersonOneLast}
                 />
+                <Picker
+                  selectedValue={personOnePronouns}
+                  onValueChange={setPersonOnePronouns}
+                  style={styles.input}
+                  dropdownIconColor="#6FFFE9"
+                >
+                  {PRONOUN_OPTIONS.map((p) => (
+                    <Picker.Item key={p} label={p} value={p} color="#fff" />
+                  ))}
+                </Picker>
               </>
             )}
 
@@ -206,6 +232,17 @@ export default function TestConnectionSetUpScreen() {
               onChangeText={setPersonTwoLast}
             />
 
+            <Picker
+              selectedValue={personTwoPronouns}
+              onValueChange={setPersonTwoPronouns}
+              style={styles.input}
+              dropdownIconColor="#6FFFE9"
+            >
+              {PRONOUN_OPTIONS.map((p) => (
+                <Picker.Item key={p} label={p} value={p} color="#fff" />
+              ))}
+            </Picker>
+
             <SignPicker label="Sun" value={partnerSun} onChange={setPartnerSun} />
             <SignPicker
               label="Moon"
@@ -217,6 +254,20 @@ export default function TestConnectionSetUpScreen() {
               value={partnerRising}
               onChange={setPartnerRising}
             />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Relationship Type</Text>
+            <Picker
+              selectedValue={relationshipType}
+              onValueChange={setRelationshipType}
+              style={styles.input}
+              dropdownIconColor="#6FFFE9"
+            >
+              {RELATIONSHIP_TYPES.map((r) => (
+                <Picker.Item key={r} label={r} value={r} color="#fff" />
+              ))}
+            </Picker>
           </View>
 
           {/* RANDOMIZE BUTTON */}

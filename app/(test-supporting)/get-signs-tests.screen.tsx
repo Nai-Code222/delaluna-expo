@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState, useRef, useEffect } from "react";
-import { getAstroSigns } from "@/services/astrology-api.service";
+import { getUserSignsAndChart } from "@/services/astrology-api.service";
 
 export default function GetSignsTestScreen() {
   const router = useRouter();
@@ -27,6 +27,8 @@ export default function GetSignsTestScreen() {
   const [returnedSigns, setReturnedSigns] = useState(initialReturned);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [birthChart, setBirthChart] = useState("");
+  const [chartExpanded, setChartExpanded] = useState(false);
 
   // Fade animation
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -63,11 +65,19 @@ export default function GetSignsTestScreen() {
     setError(null);
 
     try {
-      const data = await getAstroSigns(newSentBirth);
+      const fullBirthParams = {
+        ...newSentBirth,
+        birthDate: `${newSentBirth.year}-${String(newSentBirth.month).padStart(2, "0")}-${String(newSentBirth.day).padStart(2, "0")}`,
+        birthTime: `${String(newSentBirth.hour).padStart(2, "0")}:${String(newSentBirth.min).padStart(2, "0")}`,
+        timezone: newSentBirth.tzone,
+      };
+
+      const data = await getUserSignsAndChart(fullBirthParams);
 
       // Update values
       setSentBirth(newSentBirth);
       setReturnedSigns(data);
+      setBirthChart(data.birthChart || "");
 
       // Fade in effect
       animateFade();
@@ -80,7 +90,7 @@ export default function GetSignsTestScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>✨ getAstroSigns Test</Text>
+      <Text style={styles.title}>✨ get User Astro Info Test</Text>
 
       {/* Animate BOTH sections together */}
       <Animated.View style={{ opacity: fadeAnim, width: "100%" }}>
@@ -141,6 +151,29 @@ export default function GetSignsTestScreen() {
             <Text style={styles.resultLabel}>⬆️ Rising</Text>
             <Text style={styles.resultValue}>{returnedSigns.risingSign}</Text>
           </View>
+        </View>
+
+        {/* ⭐ SECTION 3: Birth Chart (Expandable) */}
+        <View style={[styles.resultBox, { marginTop: 20 }]}>
+          <TouchableOpacity onPress={() => setChartExpanded(!chartExpanded)}>
+            <Text style={styles.resultHeader}>
+              🜁 Birth Chart {chartExpanded ? "▲" : "▼"}
+            </Text>
+          </TouchableOpacity>
+
+          {chartExpanded && (
+            <View style={{ marginTop: 10 }}>
+              {birthChart ? (
+                <View style={styles.chartCard}>
+                  <Text style={styles.chartText}>{birthChart}</Text>
+                </View>
+              ) : (
+                <View style={styles.chartCard}>
+                  <Text style={styles.chartPending}>Birth chart still generating...</Text>
+                </View>
+              )}
+            </View>
+          )}
         </View>
       </Animated.View>
 
@@ -223,5 +256,28 @@ const styles = StyleSheet.create({
     color: "#ff4d4f",
     marginTop: 12,
     textAlign: "center",
+  },
+  chartCard: {
+    backgroundColor: "#111827",
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#3A506B",
+    shadowColor: "#000",
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    marginTop: 6,
+  },
+  chartText: {
+    color: "#C5AFFF",
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  chartPending: {
+    color: "#888",
+    fontSize: 15,
+    lineHeight: 22,
+    fontStyle: "italic",
   },
 });

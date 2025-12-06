@@ -9,7 +9,7 @@ import {
   Platform,
   UIManager,
 } from "react-native";
-import { getAstroSigns } from "@/services/astrology-api.service";
+import { getUserSignsAndChart } from "@/services/astrology-api.service";
 import { useRouter } from "expo-router";
 
 // Enable smooth animations on Android
@@ -39,7 +39,6 @@ export default function TestSignsScreen() {
   const handleTestConnection = async () => {
     router.replace({
         pathname: "/(test-supporting)/get-connection-setup-test.screen",
-        
       });
   };
 
@@ -54,11 +53,19 @@ export default function TestSignsScreen() {
       tzone: -5,
     };
 
+    // Format parameters needed for getUserSignsAndChart
+    const fullBirthParams = {
+      ...sentBirth,
+      birthDate: `${birth.year}-${String(birth.month).padStart(2, "0")}-${String(birth.day).padStart(2, "0")}`,
+      birthTime: `${String(birth.hour).padStart(2, "0")}:${String(birth.min).padStart(2, "0")}`,
+      timezone: sentBirth.tzone,
+    };
+
     setLoading(true);
     setError(null);
 
     try {
-      const data = await getAstroSigns(sentBirth);
+      const data = await getUserSignsAndChart(fullBirthParams);
       returnedSigns = data;
     } catch (e: any) {
       setError(e.message || "Unknown error");
@@ -69,7 +76,7 @@ export default function TestSignsScreen() {
       router.replace({
         pathname: "/(test-supporting)/get-signs-tests.screen",
         params: {
-          sent: JSON.stringify(sentBirth),
+          sent: JSON.stringify(fullBirthParams),
           returned: JSON.stringify(returnedSigns),
         },
       });
