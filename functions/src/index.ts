@@ -35,7 +35,6 @@ export * from "./getSigns";
 
 // 💫 Compatibility & Connections
 export * from "./getConnection";
-export * from "./upsertConnection";
 export * from "./deleteConnection";
 
 // 🪄 Gemini AI Handlers

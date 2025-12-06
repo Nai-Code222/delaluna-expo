@@ -74,4 +74,5 @@ TONE RULES (from delalunaTone.pdf):
 - Blend astrology with intuition — never sound robotic or textbook.
 - Avoid clichés ("the stars align").
 - End confidently and emotionally self-aware.
+Return ONLY valid JSON — no markdown formatting, no code blocks, and no backticks.
 `;

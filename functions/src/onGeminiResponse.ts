@@ -4,7 +4,7 @@ import * as logger from "firebase-functions/logger";
 import { db } from "./initAdmin";
 
 /**
- * 🪩 onGeminiResponse
+ * onGeminiResponse
  * General fallback handler for Gemini “response” fields.
  * Cleans, parses, and writes a structured “result” back to Firestore.
  */
