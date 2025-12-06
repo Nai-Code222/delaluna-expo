@@ -1,5 +1,5 @@
 /**
- * 🪩 Delaluna Connection Models
+ * Delaluna Connection Models
  * Shared TypeScript interfaces for Compatibility, Connections, and Firestore.
  */
 

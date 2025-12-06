@@ -16,6 +16,7 @@ export interface UserRecord {
   // auth/membership
   email: string;
   isPaidMember: boolean;
+  isEmailVerified: boolean;
 
   // human-readable strings for UI
   signUpDate?: string;        // "MM/DD/YYYY hh:mm:ss AM UTC-5"
