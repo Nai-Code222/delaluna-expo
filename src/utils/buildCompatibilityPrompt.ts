@@ -3,7 +3,7 @@
 import { CompatibilityInput } from "../../src/model/user-compatibility.model";
 
 /**
- * 🪩 buildCompatibilityPrompt
+ * buildCompatibilityPrompt
  * Constructs the text prompt sent to Gemini AI for relationship compatibility.
  * Uses the CompatibilityInput type for type safety.
  */
