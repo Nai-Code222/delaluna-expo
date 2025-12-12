@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    // Helper: check if user is logged in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper: check if current user owns the document
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ✅ UPDATED: allow both Gemini extension + trusted Admin SDK (no request.auth)
+    function isGeminiService() {
+      return (
+        // Primary: the Gemini extension service account email
+        request.auth.token.email == "ext-firestore-genai-chatbot@delaluna-answers.iam.gserviceaccount.com" ||
+        // Fallback: allow Admin SDK writes (extensions use this sometimes)
+        (request.auth == null && request.time != null)
+      );
+    }
+
+    match /users/{userId} {
+
+      // User can read or write their own profile
+      allow read: if isOwner(userId);
+      allow create, update, delete: if isOwner(userId);
+
+      // ✅ Connections subcollection — where Gemini writes
+      match /connections/{docId} {
+        allow read, write: if isOwner(userId);
+        allow create, update, delete: if isGeminiService();
+      }
+
+      // (Optional legacy path)
+      match /compatibility/{docId} {
+        allow read, write: if isOwner(userId);
+        allow create, update, delete: if isGeminiService();
+      }
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
