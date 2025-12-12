@@ -4,17 +4,21 @@
  * Then re-exports all callable and trigger-based functions.
  */
 
-import * as admin from "firebase-admin";
+// --------------------------------------------------
+// MUST run initAdmin FIRST — side-effect import
+// --------------------------------------------------
+import "./initAdmin";
+
+import { logger } from "firebase-functions/v2";
 import { setGlobalOptions } from "firebase-functions";
-import * as logger from "firebase-functions/logger";
+import * as functions from "firebase-functions";
 
 /* -------------------------------------------------
-   🔥 Initialize Firebase Admin SDK
+   🚀 Functions Version
 ---------------------------------------------------*/
-if (!admin.apps.length) {
-  admin.initializeApp();
-  logger.info("🔥 Firebase Admin initialized (index.ts)");
-}
+const FUNCTION_VERSION = "2025.01.06";
+const LOG_CONTEXT = { component: "index" };
+logger.info(`🚀 Functions version loaded: ${FUNCTION_VERSION}`, LOG_CONTEXT);
 
 /* -------------------------------------------------
    ⚙️ Global Runtime Configuration
@@ -24,6 +28,18 @@ setGlobalOptions({
   maxInstances: 10,
   timeoutSeconds: 60,
   memory: "256MiB",
+  minInstances: 0,
+});
+
+/* -------------------------------------------------
+   ❤️ Health Check Endpoint
+---------------------------------------------------*/
+export const health = functions.https.onRequest((req, res) => {
+  res.status(200).json({
+    status: "ok",
+    version: FUNCTION_VERSION,
+    timestamp: Date.now(),
+  });
 });
 
 /* -------------------------------------------------
@@ -32,6 +48,7 @@ setGlobalOptions({
 
 // 🌞 Core Astrology
 export * from "./getSigns";
+export * from "./finishUserSignup";
 
 // 💫 Compatibility & Connections
 export * from "./getConnection";
@@ -43,10 +60,3 @@ export * from "./onGeminiResponse";
 
 // 🌐 Optional HTTP endpoints for Postman testing
 export { getSigns, getSignsHttp } from "./getSigns";
-
-/* -------------------------------------------------
-   🧭 Notes:
-   - Admin is initialized *once* globally.
-   - All functions inherit region/timeouts from setGlobalOptions().
-   - Each function file is fully modular, so deploys remain incremental.
----------------------------------------------------*/
