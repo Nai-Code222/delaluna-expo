@@ -18,6 +18,7 @@ export default {
     experiments: {
       typedRoutes: true
     },
+    
 
     extra: {
       // local vs prod toggle
@@ -33,7 +34,6 @@ export default {
       FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID,
       FIREBASE_APP_ID: process.env.FIREBASE_APP_ID
     },
-
     updates: {
       checkAutomatically: "ON_LOAD",
       fallbackToCacheTimeout: 0,

@@ -1,5 +1,18 @@
 {
   "projects": {
-    "default": "delaluna-answers"
+    "default": "delaluna-answers",
+    "dev": "delaluna-answers"
+  },
+  "targets": {},
+  "etags": {
+    "delaluna-answers": {
+      "extensionInstances": {
+        "delaluna-compatibility": "657ae118d363eb6d79ea769d3188430ebc564d15048f1968887b437372253adb",
+        "firestore-genai-chatbot": "038fdd463386b4980c8a04155da5f8e7d67693c68e217a6f32c08725463b893b",
+        "firestore-multimodal-birth-chart-gen": "ee3ca97e47a25fc1774b0e897046689486c795c00e09f378f5bf96da2601ea4f",
+        "firestore-multimodal-genai": "b821112e27607c6a09537239ddf02909efb1c979346cf52f69b2c6c157d56310",
+        "horoscope-multimodal": "63106f406edc985141dbd356cbfce19d483df7bacd2874583dc8964327e8fc15"
+      }
+    }
   }
 }
