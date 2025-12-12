@@ -28,7 +28,7 @@ export default function Welcome() {
       />
 
       {/* TOP: animation fills, logo centered on top */}
-      <View style={styles.topContainer}>
+      <View pointerEvents="none" style={styles.topContainer}>
         <LottieView
           source={require('@/assets/animations/galaxy.json')}
           autoPlay
@@ -37,13 +37,13 @@ export default function Welcome() {
         />
 
         {/* centered logo (over the animation) */}
-        <View style={styles.logoWrap}>
-          <LottieView
+        <View pointerEvents="none" style={styles.logoWrap}>
+          <LottieView 
             source={require('@/assets/animations/logo.json')}
             autoPlay
             loop={false}
             style={{ width: '100%', aspectRatio: 1 / 0.95 /* W/H */, height: undefined }}
-
+            
           />
         </View>
       </View>
@@ -84,8 +84,8 @@ const styles = StyleSheet.create({
     flex: 2,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingTop: verticalScale(60),
-    paddingBottom: verticalScale(25),
+    paddingTop: verticalScale(75),
+    paddingBottom: verticalScale(30),
     gap: verticalScale(15),
     paddingHorizontal: scale(24),
 
@@ -109,6 +109,6 @@ const styles = StyleSheet.create({
     width: '80%',
     height: StyleSheet.hairlineWidth,
     backgroundColor: '#D4D6DD',
-    marginVertical: verticalScale(12), // was 20
+    marginVertical: verticalScale(15), // was 20
   },
 });
