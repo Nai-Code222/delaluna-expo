@@ -7,11 +7,10 @@
   "etags": {
     "delaluna-answers": {
       "extensionInstances": {
-        "delaluna-compatibility": "657ae118d363eb6d79ea769d3188430ebc564d15048f1968887b437372253adb",
-        "firestore-genai-chatbot": "038fdd463386b4980c8a04155da5f8e7d67693c68e217a6f32c08725463b893b",
-        "firestore-multimodal-birth-chart-gen": "ee3ca97e47a25fc1774b0e897046689486c795c00e09f378f5bf96da2601ea4f",
-        "firestore-multimodal-genai": "b821112e27607c6a09537239ddf02909efb1c979346cf52f69b2c6c157d56310",
-        "horoscope-multimodal": "63106f406edc985141dbd356cbfce19d483df7bacd2874583dc8964327e8fc15"
+        "firestore-genai-chatbot": "94310524fcf4c760fd76bae7fec5d1b66b60d93076815552132a9192132c97fe",
+        "firestore-genai-chatbot-1rrn": "095458ff19b0f0334d9949f94273dcd311af1f1552507a8866a6432f64a01415",
+        "firestore-multimodal-genai": "e37a47e20724457e67a866a09dcafa76864d77d6de580fc3705d608f711fb1cf",
+        "horoscope-chatbot-b6wc": "9a7bafd838e6e0b4d5928d970c042c1ff193130cbffab0de47639fca42b59186"
       }
     }
   }

@@ -23,6 +23,7 @@ export default {
     extra: {
       // local vs prod toggle
       USE_EMULATOR: "true",
+      USE_EMAIL_VERIFICATION: "false",
       eas: {
         projectId: "24610560-82da-4ee8-99d3-e51db4e8401c"
       },
@@ -88,6 +89,13 @@ export default {
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          icon: "./src/assets/images/delaluna_app_icon.png",
+          color: "#ffffff"
         }
       ]
     ]

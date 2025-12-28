@@ -40,7 +40,12 @@
     },
     "singleProjectMode": true
   },
-  "extensions": {},
+  "extensions": {
+    "firestore-genai-chatbot": "googlecloud/firestore-genai-chatbot@0.0.17",
+    "firestore-genai-chatbot-1rrn": "googlecloud/firestore-genai-chatbot@0.0.17",
+    "horoscope-chatbot-b6wc": "googlecloud/firestore-genai-chatbot@0.0.17",
+    "firestore-multimodal-genai": "googlecloud/firestore-multimodal-genai@1.0.3"
+  },
   "firestore": {
     "database": "(default)",
     "location": "nam5",

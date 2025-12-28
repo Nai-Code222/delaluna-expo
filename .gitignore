@@ -179,3 +179,7 @@ database-debug.log
 delaluna_users_only_seed.zip
 firestore-debug.log
 seed/firebase-export-metadata.json
+functions/seed/firestore_export/firestore_export.overall_export_metadata
+functions/seed/firestore_export/all_namespaces/all_kinds/all_namespaces_all_kinds.export_metadata
+.gitignore
+seed/firestore_export/firestore_export.overall_export_metadata
