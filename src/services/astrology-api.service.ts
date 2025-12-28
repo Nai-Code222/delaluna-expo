@@ -5,6 +5,10 @@ import { auth } from "../../firebaseConfig";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+/* ===========================================================
+   TYPES
+   =========================================================== */
+
 interface AstroSignParams {
   day: number;
   month: number;
@@ -16,7 +20,20 @@ interface AstroSignParams {
   tzone: number;
 }
 
-/** 🔧 Utility: Clear all cached astro sign results */
+interface AstroSignResult {
+  sunSign: string;
+  moonSign: string;
+  risingSign: string;
+}
+
+function birthChartCacheKey(uid: string) {
+  return `birthChart_${uid}`;
+}
+
+/* ===========================================================
+   🔮 Clear Astro Signs Cache
+   =========================================================== */
+
 export async function clearAstroSignsCache() {
   const keys = await AsyncStorage.getAllKeys();
   const signKeys = keys.filter((key) => key.startsWith("astroSigns_"));
@@ -26,88 +43,70 @@ export async function clearAstroSignsCache() {
   }
 }
 
-/** 🔧 Utility: Cache key for birth chart */
-function birthChartCacheKey(uid: string) {
-  return `birthChart_${uid}`;
-}
-
-interface AstroSignResult {
-  sunSign: string;
-  moonSign: string;
-  risingSign: string;
-}
+/* ===========================================================
+   🔮 getAstroSigns (calls backend getSigns callable)
+   =========================================================== */
 
 export async function getAstroSigns(params: AstroSignParams): Promise<AstroSignResult> {
   const cacheKey = `astroSigns_${params.day}_${params.month}_${params.year}_${params.hour}_${params.min}_${params.lat}_${params.lon}_${params.tzone}`;
 
-  try {
-    // 1. QUICK CACHE RETURN
-    const cached = await AsyncStorage.getItem(cacheKey);
-    if (cached) {
-      console.log("⚡ Returning cached astro signs");
-      return JSON.parse(cached) as AstroSignResult;
-    }
-
-    console.log("🔮 Calling getSigns callable function:", params);
-
-    const functions = getFunctions();
-    const callable = httpsCallable(functions, "getSigns");
-
-    let attempt = 0;
-    const maxAttempts = 3;
-
-    while (attempt < maxAttempts) {
-      try {
-        const res: any = await callable(params);
-
-        if (!res?.data) {
-          throw new Error("No data returned from callable function");
-        }
-
-        const result: AstroSignResult = {
-          sunSign: res.data.sunSign?.trim?.(" ") ?? "",
-          moonSign: res.data.moonSign?.trim?.(" ") ?? "",
-          risingSign: res.data.risingSign?.trim?.(" ") ?? "",
-        };
-
-        // SAVE TO CACHE
-        await AsyncStorage.setItem(cacheKey, JSON.stringify(result));
-
-        return result;
-      } catch (err: any) {
-        attempt++;
-        console.warn(`❗ getSigns attempt ${attempt} failed`, err);
-
-        if (attempt >= maxAttempts) {
-          throw new Error(err.message || "Failed after retries");
-        }
-
-        // BACKOFF BEFORE RETRY
-        await new Promise((resolve) => setTimeout(resolve, 300 * attempt));
-      }
-    }
-
-    throw new Error("Unexpected reach: retry loop failed");
-  } catch (error: any) {
-    console.error("🔥 Error fetching signs (callable):", error);
-    throw new Error(error.message || "Failed to calculate astrological signs");
+  // CACHE FIRST
+  const cached = await AsyncStorage.getItem(cacheKey);
+  if (cached) {
+    console.log("⚡ Returning cached astro signs");
+    return JSON.parse(cached);
   }
 
+  console.log("🔮 Calling getSigns callable function:", params);
+
+  const functions = getFunctions();
+  const callable = httpsCallable(functions, "getSigns");
+
+  let attempt = 0;
+  const maxAttempts = 3;
+
+  while (attempt < maxAttempts) {
+    try {
+      const res: any = await callable(params);
+
+      if (!res?.data) throw new Error("No data returned from callable function");
+
+      const result: AstroSignResult = {
+        sunSign: res.data.sunSign?.trim() ?? "",
+        moonSign: res.data.moonSign?.trim() ?? "",
+        risingSign: res.data.risingSign?.trim() ?? "",
+      };
+
+      await AsyncStorage.setItem(cacheKey, JSON.stringify(result));
+      return result;
+    } catch (err: any) {
+      attempt++;
+      console.warn(`❗ getSigns attempt ${attempt} failed`, err);
+
+      if (attempt >= maxAttempts) {
+        throw new Error(err.message || "Failed after retries");
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 300 * attempt));
+    }
+  }
+
+  throw new Error("Unexpected reach: retry loop failed");
 }
 
-/**
- * 🔮 getConnectionSigns
- * For NON‑USER individuals — returns ONLY signs (sun, moon, rising)
- */
-export async function getConnectionSigns(params: AstroSignParams): Promise<AstroSignResult> {
+/* ===========================================================
+   🔮 getConnectionSigns (used for compatibility partner)
+   =========================================================== */
+
+export async function getConnectionSigns(params: AstroSignParams) {
   return await getAstroSigns(params);
 }
 
-/**
- * 🌙 getUserSignsAndChart
- * Used ONLY during signup for the logged‑in user.
- * Calls getSigns (callable) AND also requests/merges the birth chart.
- */
+/* ===========================================================
+   🌙 getUserSignsAndChart (signup use only)
+   Calls getSigns + fires birth chart request
+   =========================================================== */
+
 export async function getUserSignsAndChart(params: {
   day: number;
   month: number;
@@ -117,14 +116,10 @@ export async function getUserSignsAndChart(params: {
   lat: number;
   lon: number;
   tzone: number;
-  birthDate: string;   // yyyy-MM-dd
-  birthTime: string;   // HH:mm
+  birthDate: string;
+  birthTime: string;
   timezone: number;
-}): Promise<{
-  signs: AstroSignResult;
-  birthChart: string;
-}> {
-  // 1. Calculate signs (sun/moon/rising)
+}): Promise<{ signs: AstroSignResult; birthChart: string }> {
   const signs = await getAstroSigns({
     day: params.day,
     month: params.month,
@@ -136,37 +131,39 @@ export async function getUserSignsAndChart(params: {
     tzone: params.tzone,
   });
 
-  // 2. Request birth chart from extension (NON-BLOCKING — fire and forget)
+  // Fire & forget
   requestBirthChart({
     birthDate: params.birthDate,
     birthTime: params.birthTime,
     lat: params.lat,
     lon: params.lon,
     timezone: params.timezone,
-  })
-    .then((chart) => {
-      console.log("🌙 Birth chart completed in background");
-    })
-    .catch((err) => {
-      console.warn("⚠️ Birth chart background generation failed:", err);
-    });
+  }).catch((err) => {
+    console.warn("⚠️ Birth chart background generation failed:", err);
+  });
 
-  // Signs needed immediately → return them now
   return { signs, birthChart: "" };
 }
+
+/* ===========================================================
+   🌙 requestBirthChart
+   Writes Firestore doc → Extension generates → client listens
+   =========================================================== */
 
 export async function requestBirthChart(params: {
   birthDate: string;
   birthTime: string;
   lat: number;
   lon: number;
-  timezone: number;
-  
+  timezone: string | number;
 }): Promise<string> {
   const db = getFirestore();
-  const uid = auth.currentUser!.uid;
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error("User must be logged in.");
 
-  // 1. CHECK CACHE
+  const docRef = doc(db, `users/${uid}/birthChart/default`);
+
+  // 1️⃣ Cache check
   const cacheKey = birthChartCacheKey(uid);
   const cached = await AsyncStorage.getItem(cacheKey);
   if (cached) {
@@ -174,58 +171,49 @@ export async function requestBirthChart(params: {
     return cached;
   }
 
-  if (!uid) {
-    throw new Error("User must be logged in.");
-  }
-
-  const docRef = doc(db, `users/${uid}/birth-chart/chart`);
-
-  // Write the fields that the extension expects
-  await setDoc(docRef, {
-    birthDate: params.birthDate,
-    birthTime: params.birthTime,
-    lat: params.lat,
-    lon: params.lon,
-    timezone: params.timezone,
-    requestedAt: Date.now(),
-  });
+  // 2️⃣ Write request
+  await setDoc(
+    docRef,
+    {
+      birthDate: params.birthDate,
+      birthTime: params.birthTime,
+      lat: params.lat,
+      lon: params.lon,
+      timezone: params.timezone,
+      status: "pending",
+      requestedAt: Date.now(),
+    },
+    { merge: true }
+  );
 
   console.log("✨ Birth chart request saved. Waiting for extension...");
 
-  // Wait for extension to write the output field
+  // 3️⃣ Listen for extension output
   return new Promise((resolve, reject) => {
     const unsubscribe = onSnapshot(
       docRef,
       (snap) => {
-        const data = snap.data();
-        if (!data) return;
+        if (!snap.exists()) return;
+        const data: any = snap.data();
 
-        if (data.output) {
+        // Error
+        if (data.status === "error") {
           unsubscribe();
-
-          const finalChart = data.output;
-
-          // Save to cache
-          AsyncStorage.setItem(cacheKey, finalChart).catch((err) =>
-            console.warn("⚠️ Failed to cache birth chart:", err)
-          );
-
-          // 🔥 Permanently save to the user's main profile doc so reinstall loads instantly
-          const userProfileRef = doc(db, `users/${uid}`);
-          setDoc(
-            userProfileRef,
-            { birthChart: finalChart },
-            { merge: true }
-          ).catch((err) =>
-            console.warn("⚠️ Failed to write chart to user profile:", err)
-          );
-
-          resolve(finalChart);
+          return reject(new Error(data.error ?? "Birth chart failed"));
         }
 
-        if (data.error) {
+        // Success
+        if (data.status === "complete" && data.output) {
           unsubscribe();
-          reject(new Error(data.error));
+
+          const base64Image = data.output;
+
+          alert("✨ Your birth chart is ready!");
+
+          AsyncStorage.setItem(cacheKey, base64Image);
+          setDoc(doc(db, `users/${uid}`), { birthChart: base64Image }, { merge: true });
+
+          resolve(base64Image);
         }
       },
       (err) => {
@@ -234,4 +222,22 @@ export async function requestBirthChart(params: {
       }
     );
   });
+}
+
+/* ===========================================================
+   🌙 generateBirthChart callable wrapper
+   =========================================================== */
+
+export async function callGenerateBirthChart(uid: string, prompt: string) {
+  const functions = getFunctions();
+  const callable = httpsCallable(functions, "generateBirthChart");
+
+  try {
+    const res: any = await callable({ uid, prompt });
+    console.log("✨ Birth chart generation started:", res.data);
+    return res.data;
+  } catch (err: any) {
+    console.error("❌ Error calling generateBirthChart:", err);
+    throw err;
+  }
 }

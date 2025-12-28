@@ -1,4 +1,4 @@
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -7,12 +7,18 @@ import {
 } from 'firebase/auth';
 import { UserRecord } from '../model/user-record';
 import { auth, db } from '../../firebaseConfig';
+import { FinalSignupPayload } from '@/types/signup.types';
 
 /**
  * Create a new Firebase Auth user
  */
-export default function signUp(email: string, password: string) {
-  return createUserWithEmailAndPassword(auth, email, password);
+export async function signUp(email: string, password: string) {
+  try {
+    return await createUserWithEmailAndPassword(auth, email, password);
+  } catch (error: any) {
+    console.error('❌ Error in signUp:', error);
+    throw new Error(error.message || 'Auth error');
+  }
 }
 
 /**
@@ -22,6 +28,8 @@ export default function signUp(email: string, password: string) {
  */
 function sanitizeFirestoreData(obj: any, path: string = ''): any {
   if (obj === null || obj === undefined) return obj;
+
+  if (obj instanceof Date) return obj;
 
   // Numbers
   if (typeof obj === 'number') {
@@ -33,7 +41,12 @@ function sanitizeFirestoreData(obj: any, path: string = ''): any {
   }
 
   // Non-objects (string, boolean, etc.)
-  if (typeof obj !== 'object') return obj;
+  if (typeof obj !== 'object') {
+    if (typeof obj === 'string' && obj.trim() === '') {
+      return null;
+    }
+    return obj;
+  }
 
   // Arrays
   if (Array.isArray(obj)) {
@@ -59,13 +72,44 @@ function sanitizeFirestoreData(obj: any, path: string = ''): any {
 }
 
 /**
+ *  Create blank new userDoc
+ * 
+*/
+export async function createNewUserDoc(userId: string): Promise<void> {
+  try{
+    const userDocRef = doc(db, 'users', userId);
+    console.log('Creating new user document for:', userId);
+    const docSnap = await getDoc(userDocRef);
+
+    
+    if (!docSnap.exists()){
+      setDoc(userDocRef, {
+        createdAt: serverTimestamp(),
+        lastUpdatedAt: serverTimestamp(),
+      });
+      console.log('✅ New user document created successfully:', userId);
+    }
+
+    
+    
+  }
+  catch (error) {
+    console.error('❌ Error creating new user document:', error);
+    throw new Error('Error creating new user document');
+  }
+
+}
+
+
+/**
  * Create new user document in Firestore
  */
-export async function createUserDoc(userId: string, userData: UserRecord): Promise<void> {
+export async function createUserDoc(userId: string, userData: FinalSignupPayload): Promise<void> {
   try {
     const userDocRef = doc(db, 'users', userId);
     const sanitizedData = sanitizeFirestoreData({
       ...userData,
+      email: userData.email?.toLowerCase(),
       createdAt: serverTimestamp(),
       lastUpdatedAt: serverTimestamp(),
     });
@@ -81,8 +125,13 @@ export async function createUserDoc(userId: string, userData: UserRecord): Promi
 /**
  * Sign in existing user
  */
-export function signIn(email: string, password: string) {
-  return signInWithEmailAndPassword(auth, email, password);
+export async function signIn(email: string, password: string) {
+  try {
+    return await signInWithEmailAndPassword(auth, email, password);
+  } catch (error: any) {
+    console.error('❌ Error in signIn:', error);
+    throw new Error(error.message || 'Auth error');
+  }
 }
 
 /**
@@ -114,6 +163,7 @@ export async function updateUserDoc(userId: string, userData: Partial<UserRecord
     const userDocRef = getUserDocRef(userId);
     const sanitizedData = sanitizeFirestoreData({
       ...userData,
+      email: userData.email ? userData.email.toLowerCase() : undefined,
       lastUpdatedAt: serverTimestamp(),
     });
 
@@ -122,5 +172,47 @@ export async function updateUserDoc(userId: string, userData: Partial<UserRecord
   } catch (error) {
     console.error('❌ Error updating user document:', error);
     throw new Error('Error updating user document');
+  }
+}
+
+/**
+ * Update only birth-related fields and trigger backend recomputation pipeline.
+ * Intended for use from Edit Profile when astro‑dependent fields change.
+ */
+export async function updateUserBirthData(
+  userId: string,
+  payload: {
+    birthday: string;                 // "MM/dd/yyyy"
+    birthtime: string;                // ALWAYS "hh:mm AM" (fallback applied)
+    birthTimezone: string;            // ALWAYS IANA zone (fallback applied)
+    birthLat: number;
+    birthLon: number;
+    placeOfBirth: string | null;
+    isBirthTimeUnknown: boolean;
+    isPlaceOfBirthUnknown: boolean;
+  }
+): Promise<void> {
+  try {
+    const userDocRef = getUserDocRef(userId);
+
+    const sanitizedData = sanitizeFirestoreData({
+      birthday: payload.birthday,
+      birthtime: payload.birthtime || "12:00 PM",
+      birthTimezone: payload.birthTimezone || "UTC",
+      birthLat: payload.birthLat,
+      birthLon: payload.birthLon,
+      placeOfBirth: payload.placeOfBirth ?? null,
+      isBirthTimeUnknown: payload.isBirthTimeUnknown ?? false,
+      isPlaceOfBirthUnknown: payload.isPlaceOfBirthUnknown ?? false,
+
+      signupStatus: "processing",
+      lastUpdatedAt: serverTimestamp(),
+    });
+
+    await setDoc(userDocRef, sanitizedData, { merge: true });
+    console.log('✅ User birth data updated successfully:', userId);
+  } catch (error) {
+    console.error('❌ Error updating user birth data:', error);
+    throw new Error('Error updating user birth data');
   }
 }
