@@ -45,7 +45,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [skipAutoRedirect, setSkipAutoRedirect] = useState(false);
 
-  const { user, initializing } = useAuth();
+  const { authUser, initializing } = useAuth();
   const router = useRouter();
   const { setThemeKey } = useContext(ThemeContext);
 
@@ -72,10 +72,10 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    if (!skipAutoRedirect && !initializing && user) {
+    if (!skipAutoRedirect && !initializing && authUser) {
       router.replace('/');
     }
-  }, [initializing, user, skipAutoRedirect]);
+  }, [initializing, authUser, skipAutoRedirect]);
 
   if (initializing)
     return <LoadingScreen message="Initializing..." progress={0} />;

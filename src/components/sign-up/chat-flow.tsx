@@ -17,16 +17,17 @@ import {
   Image,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { fetchSignInMethodsForEmail } from 'firebase/auth';
 import { format as formatDate } from 'date-fns';
 import { DateTime } from 'luxon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import PasswordInputField from '../component-utils/password-input-field';
+import PasswordInputField, { DelalunaPasswordInputRef } from '../component-utils/password-input-field';
+import type { AnswerRecord, ChatFlowOutputPayload } from '@/types/signup.types';
 import LocationAutocomplete from './location-autocomplete';
 import PolicyModal from './policy-modals';
 import { verticalScale, scale, moderateScale } from '@/utils/responsive';
 import { auth } from '../../../firebaseConfig';
 import { privacyPolicy, termsAndConditions } from '@/assets/legal/legal-texts';
+import { checkEmailExists } from '@/services/auth.service';
 
 const INPUT_H = verticalScale(50);
 const FIELD_BORDER = 'rgba(142, 68, 173, 0.6)';
@@ -51,57 +52,6 @@ const isIDK = (s?: string | null) => {
 };
 
 // -------------------- types --------------------
-export interface AnswerRecord {
-  firstName: string;
-  lastName: string;
-  pronouns: string;
-  birthday: Date | null;         // internal for picker
-  birthtime: Date | null;        // internal for picker
-  birthtimeUnknown: boolean;
-  placeOfBirth: string | null;
-  placeOfBirthUnknown: boolean;
-  birthLat?: number;
-  birthLon?: number;
-  birthTimezone?: string;        // IANA
-  email: string;
-  password: string;
-  themeKey?: string;
-}
-
-export type FinalSignupPayload = {
-  firstName: string;
-  lastName: string;
-  pronouns: string;
-  email: string;
-  password: string;
-  themeKey?: string;
-
-  // normalized/required fields:
-  birthday: string;              // "MM/DD/YYYY"
-
-  birthtime: string;             // "hh:mm  AM"
-  birthTimezone: string;         // "Europe/Rome"
-  birthLat: number;
-  birthLon: number;
-  placeOfBirth: string;
-  isBirthTimeUnknown: boolean;
-  isPlaceOfBirthUnknown: boolean;
-
-  // derived
-  birthDateTimeUTC: string;      // "MM/DD/YYYY - hh:mm:ss  AM UTC-6"
-  lastLoginDate: string;         // "MM/DD/YYYY hh:mm:ss  AM UTC-5"
-  signUpDate: string;            // same format as above
-
-  // Add big three
-  sunSign?: string;
-  moonSign?: string;
-  risingSign?: string;
-
-  // raw values for convenience (not stored in DB)
-  rawBirthdayDate: Date;
-  rawBirthtimeDate: Date;
-};
-
 export type StepConfig = {
   key: keyof AnswerRecord | 'final';
   renderQuestion: (answers: AnswerRecord) => string;
@@ -113,7 +63,7 @@ export type StepConfig = {
 
 type ChatFlowProps = {
   steps: StepConfig[];
-  onComplete: (finalized: FinalSignupPayload) => void;
+  onComplete: (finalized: ChatFlowOutputPayload) => void | Promise<void>;
   step: number;
   setStep: React.Dispatch<React.SetStateAction<number>>;
   keyboardOffset?: number;
@@ -138,23 +88,9 @@ const fmtBirthtime = (d: Date) => {
   return `${twelve}:${mm}${NBSP_NARROW}${ampm}`;
 };
 
-const utcOffsetToken = (dt: DateTime) => {
-  const off = dt.offset; // minutes
-  const sign = off >= 0 ? '+' : '-';
-  const abs = Math.abs(off);
-  const oh = Math.floor(abs / 60);
-  const om = abs % 60;
-  return om === 0 ? `UTC${sign}${oh}` : `UTC${sign}${oh}:${pad2(om)}`;
-};
-
-const fmtStampWithOffset = (dt: DateTime) => {
-  const clock = dt.toFormat(`MM/dd/yyyy hh:mm:ss'${NBSP_NARROW}'a`);
-  return `${clock} ${utcOffsetToken(dt)}`;
-};
-
-const buildFinalPayload = (a: AnswerRecord): FinalSignupPayload => {
-  const tz = a.birthTimezone || DEFAULT_PLACE.timezone;
-  const place = a.placeOfBirth || DEFAULT_PLACE.label;
+const buildFinalPayload = (a: AnswerRecord): ChatFlowOutputPayload => {
+  const tz = a.birthTimezone ?? DEFAULT_PLACE.timezone;
+  const place = a.placeOfBirth ?? DEFAULT_PLACE.label;
   const lat = a.birthLat ?? DEFAULT_PLACE.lat;
   const lon = a.birthLon ?? DEFAULT_PLACE.lon;
 
@@ -162,32 +98,32 @@ const buildFinalPayload = (a: AnswerRecord): FinalSignupPayload => {
   const birthtimeDate = a.birthtime ?? defaultNoon;
 
   const birthdayStr = fmtBirthday(birthdayDate);
-  const birthtimeStr = fmtBirthtime(birthtimeDate);
+  const birthtimeStr = a.birthtimeUnknown ? fmtBirthtime(defaultNoon) : fmtBirthtime(birthtimeDate);
 
-  const now = DateTime.now();
-  const lastLoginDate = fmtStampWithOffset(now);
-  const signUpDate = fmtStampWithOffset(now);
+  const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? null;
 
   return {
     firstName: a.firstName,
     lastName: a.lastName,
     pronouns: a.pronouns,
+
     email: a.email,
     password: a.password,
+
     themeKey: a.themeKey,
+
     birthday: birthdayStr,
     birthtime: birthtimeStr,
     birthTimezone: tz,
+
     birthLat: lat,
     birthLon: lon,
     placeOfBirth: place,
+
     isBirthTimeUnknown: !!a.birthtimeUnknown,
     isPlaceOfBirthUnknown: !!a.placeOfBirthUnknown,
-    birthDateTimeUTC: "",
-    lastLoginDate,
-    signUpDate,
-    rawBirthdayDate: birthdayDate,
-    rawBirthtimeDate: birthtimeDate,
+
+    currentTimezone: deviceTimezone,
   };
 };
 
@@ -243,7 +179,7 @@ export default function ChatFlow({
   // refs for auto-focus
   const textRef = useRef<TextInput>(null);
   const emailRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<DelalunaPasswordInputRef>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   const [textInput, setTextInput] = useState<string>('');
@@ -258,6 +194,7 @@ export default function ChatFlow({
     useState<'Privacy Policy' | 'Terms & Conditions'>('Privacy Policy');
   const [locationError, setLocationError] = useState<string | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<SelectedPlace | null>(null);
+  const [hasSelectedSuggestion, setHasSelectedSuggestion] = useState(false);
   const [loadingBigThree, setLoadingBigThree] = useState(false);
   const [bigThreeError, setBigThreeError] = useState<string | null>(null);
 
@@ -292,6 +229,7 @@ export default function ChatFlow({
       setTextInput(answers.email || '');
       setSelectedPlace(null);
     } else if (current.inputType === 'location') {
+      // For UI display only: if unknown, show "I don't know", do not change answers
       if (answers.placeOfBirthUnknown) {
         setTextInput("I don't know");
         setSelectedPlace(null);
@@ -308,6 +246,14 @@ export default function ChatFlow({
           setSelectedPlace(null);
         }
       }
+    } else if (current.inputType === 'time') {
+      // For UI display only: if unknown, show "I don't know", do not change answers
+      if (answers.birthtimeUnknown) {
+        setTextInput("I don't know");
+      } else {
+        setTextInput('');
+      }
+      setSelectedPlace(null);
     } else {
       setTextInput('');
       setSelectedPlace(null);
@@ -319,25 +265,15 @@ export default function ChatFlow({
       current.inputType === 'email' ||
       current.inputType === 'secure';
     const t = setTimeout(() => {
-      if (current.inputType === 'email') emailRef.current?.focus();
-      else if (current.inputType === 'text') textRef.current?.focus();
-      else if (current.inputType === 'secure') passwordRef.current?.focus();
+      if (current.inputType === 'text') {
+        textRef.current?.focus();
+      } else if (current.inputType === 'secure') {
+        passwordRef.current?.focus();
+      }
+      // Notice: no email auto-focus here anymore
     }, 100);
     return () => clearTimeout(t);
-  }, [
-    step,
-    current.key,
-    current.inputType,
-    answers.firstName,
-    answers.lastName,
-    answers.pronouns,
-    answers.email,
-    answers.placeOfBirth,
-    answers.placeOfBirthUnknown,
-    answers.birthLat,
-    answers.birthLon,
-    answers.birthTimezone,
-  ]);
+  }, [step]);
 
   // Always scroll to bottom when the keyboard opens (and also when it hides)
   useEffect(() => {
@@ -400,16 +336,29 @@ export default function ChatFlow({
         break;
       }
       case 'secure': {
-        const pwd = (textInput || '').trim();
-        if (!pwd) { setError('Please enter a password.'); return; }
-        if (pwd.length < 8) { setError('Password must be at least 8 characters.'); return; }
-        if (!/[A-Z]/.test(pwd)) { setError('Password must contain at least one uppercase letter.'); return; }
+        const pwd = passwordRef.current?.getValue().trim() ?? '';
+
+        if (!pwd) {
+          setError('Please enter a password.');
+          return;
+        }
+
+        if (pwd.length < 8) {
+          setError('Password must be at least 8 characters.');
+          return;
+        }
+
+        if (!/[A-Z]/.test(pwd)) {
+          setError('Password must contain at least one uppercase letter.');
+          return;
+        }
 
         if (isAnswerKey(current.key)) {
           updateAnswer(current.key, pwd as AnswerRecord[typeof current.key]);
         }
+
         setError(null);
-        setTextInput('');
+        passwordRef.current?.setValue(''); // optional cleanup
         break;
       }
       case 'choices': {
@@ -454,7 +403,7 @@ export default function ChatFlow({
     if (step === steps.length - 1) {
       setAnswers(a => {
         const finalized = buildFinalPayload({ ...a, themeKey: 'default' });
-        onComplete(finalized);
+        void onComplete(finalized);
         return a;
       });
     } else {
@@ -515,7 +464,10 @@ export default function ChatFlow({
                     }}
                     onBlur={() => {
                       const trimmed = (textInput || '').trim();
-                      if (!trimmed) setError((current.placeholder || 'This field') + ' is required');
+                      // Only show error if user actually typed something invalid, not when auto‑advancing
+                      if (textInput !== '' && !trimmed) {
+                        setError((current.placeholder || 'This field') + ' is required');
+                      }
                     }}
                     keyboardType={Platform.OS === 'ios' ? 'ascii-capable' : 'default'}
                     autoCapitalize="sentences"
@@ -537,26 +489,19 @@ export default function ChatFlow({
             const handleSend = () => saveAndNext(textInput);
             return (
               <View style={[styles.inputContainer]}>
-                <View style={[styles.inputRow, { width: '90%' }]}>
+                <View style={[styles.inputRow, { width: '90%', borderRadius: scale(24) }]}>
                   <PasswordInputField
                     ref={passwordRef}
-                    style={[styles.textInput, styles.passwordStyle, { height: 90 }]}
-                    inputStyle={{}}
-                    value={textInput}
-                    onChangeText={setTextInput}
-                    placeholder="Password..."
+                    placeholder={current.placeholder}
                     placeholderTextColor="#fff"
+                    returnKeyType={nextReturnKey}
                     textContentType="newPassword"
                     autoCapitalize="none"
                     autoCorrect={false}
                     onSubmitEditing={handleSend}
-                    returnKeyType={nextReturnKey}
-                    blurOnSubmit
                   />
-
                   <SendButton disabled={false} onPress={handleSend} />
                 </View>
-
                 {!!error && (
                   <View style={styles.errorContainer}>
                     <Text style={styles.errorText}>{error}</Text>
@@ -629,9 +574,13 @@ export default function ChatFlow({
 
           case 'location': {
             const isUnknownLoc = answers.placeOfBirthUnknown;
-            const canProceedLocation = isUnknownLoc || !!selectedPlace;
+            // const canProceedLocation = isUnknownLoc || !!selectedPlace;
 
             const handleSend = () => {
+              if (!isUnknownLoc && !hasSelectedSuggestion) {
+                setLocationError('Please pick a location from suggestions');
+                return;
+              }
               if (isUnknownLoc) {
                 Keyboard.dismiss();
                 saveAndNext("I don't know");
@@ -658,6 +607,7 @@ export default function ChatFlow({
               setSelectedPlace(null);
               setTextInput("I don't know");
               setLocationError(null);
+              setHasSelectedSuggestion(false);
 
               updateAnswer('placeOfBirth', DEFAULT_PLACE.label);
               updateAnswer('placeOfBirthUnknown', true);
@@ -674,10 +624,15 @@ export default function ChatFlow({
                   <LocationAutocomplete
                     value={textInput}
                     onInputChange={(text) => {
-                      setTextInput(text);
-                      setLocationError(null);
+                      // strip leading & trailing whitespace
+                      let cleaned = text.replace(LEADING_WS_RE, '');
+                      cleaned = cleaned.replace(/\s+$/u, '');
 
-                      if (text === '') {
+                      setTextInput(cleaned);
+                      setLocationError(null);
+                      setHasSelectedSuggestion(false);
+
+                      if (cleaned === '') {
                         updateAnswer('placeOfBirthUnknown', false);
                         updateAnswer('placeOfBirth', '');
                         updateAnswer('birthLat', undefined);
@@ -687,7 +642,7 @@ export default function ChatFlow({
                         return;
                       }
 
-                      if (isIDK(text)) {
+                      if (isIDK(cleaned)) {
                         updateAnswer('placeOfBirthUnknown', true);
                         setSelectedPlace(null);
                         return;
@@ -710,12 +665,13 @@ export default function ChatFlow({
                       updateAnswer('birthLon', place.lon);
                       updateAnswer('birthTimezone', place.timezone);
 
+                      setHasSelectedSuggestion(true);
                       Keyboard.dismiss();
                     }}
                     onSubmitRequest={handleSend}
                   />
 
-                  <SendButton disabled={!canProceedLocation} onPress={handleSend} />
+                  <SendButton disabled={!hasSelectedSuggestion && !isUnknownLoc} onPress={handleSend} />
                 </View>
 
                 <TouchableOpacity style={[styles.choiceButton, { alignSelf: 'center', marginTop: 16 }]} onPress={handleUnknown}>
@@ -796,8 +752,8 @@ export default function ChatFlow({
               const e = (textInput || '').trim();
               if (!isValidEmail(e)) { setError('Please enter a valid email address.'); return; }
               try {
-                const methods = await fetchSignInMethodsForEmail(auth, e);
-                if (methods.length > 0) { setError('That email is already registered. Please sign in or use a different address.'); return; }
+                const emailExists = await checkEmailExists(e);
+                if (emailExists) { setError('That email is already registered. Please sign in or use a different address.'); return; }
                 updateAnswer('email', e);
                 Keyboard.dismiss();
                 saveAndNext(e);
@@ -815,10 +771,22 @@ export default function ChatFlow({
                   <TextInput
                     ref={emailRef}
                     style={styles.textInput}
-                    placeholder={current.placeholder}
+                    placeholder="Email Address"
                     placeholderTextColor="#fff"
                     value={textInput}
-                    onChangeText={setTextInput}
+                    onChangeText={(val) => {
+                      let next = val;
+                      if (LEADING_WS_RE.test(next)) {
+                        next = next.replace(LEADING_WS_RE, '');
+                      }
+                      setTextInput(next);
+                    }}
+                    onBlur={() => {
+                      const trimmed = (textInput || '').trim();
+                      if (trimmed !== textInput) {
+                        setTextInput(trimmed);
+                      }
+                    }}
                     {...emailKeyboardProps}
                     {...submitProps(canSend, handleSend, nextReturnKey)}
                   />
@@ -861,8 +829,7 @@ export default function ChatFlow({
                     setBigThreeError(null);
                     const finalized = buildFinalPayload({ ...answers, themeKey: 'default' });
                     try {
-              
-                      onComplete({
+                      void onComplete({
                         ...finalized,
                       });
                     } catch (e) {
@@ -906,7 +873,9 @@ export default function ChatFlow({
         <ScrollView ref={scrollRef} contentContainerStyle={styles.container} onContentSizeChange={handleContentSizeChange}>
           {steps.slice(0, step + 1).map((s, i) => (
             <View key={i} style={styles.bubbleContainer}>
-              <Text style={styles.bubbleText}>{s.renderQuestion(answers)}</Text>
+              <View style={styles.botBubble}> 
+                <Text style={styles.bubbleText}>{s.renderQuestion(answers)}</Text>
+              </View>
               {renderAnswerBubble(s, i)}
             </View>
           ))}
@@ -923,38 +892,101 @@ export default function ChatFlow({
   );
 }
 
-// 🔒 Styles unchanged from your original file
+// Styles
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: scale(20), paddingBottom: verticalScale(20) },
-  bubbleContainer: { marginBottom: verticalScale(16), marginLeft: scale(2) },
-  bubbleText: { alignSelf: 'flex-start', backgroundColor: '#3A506B', color: '#fff', padding: scale(12), borderRadius: scale(12), maxWidth: '75%' },
-  answerBubble: { alignSelf: 'flex-end', backgroundColor: '#5BC0BE', padding: scale(12), borderRadius: scale(12), marginTop: verticalScale(8), maxWidth: '75%' },
+  container: {
+    flexDirection: 'column',
+    paddingVertical: scale(15), 
+    paddingHorizontal: scale(5), 
+  },
+  bubbleContainer: { 
+    marginBottom: verticalScale(16), 
+    marginLeft: scale(2),
+  },
+  bubbleText: { 
+    color: '#fff', 
+    maxWidth: '75%' 
+  },
+  answerBubble: { 
+    alignSelf: 'flex-end', 
+    backgroundColor: '#5BC0BE', 
+    padding: scale(12), 
+    borderRadius: scale(12), 
+    marginTop: verticalScale(8), 
+    maxWidth: '75%' 
+
+  },
   answerText: { color: '#000' },
-  inputContainer: { flexDirection: 'column', padding: scale(15), backgroundColor: '#1C2541', width: '100%' },
+ botBubble: {
+  alignSelf: 'flex-start',
+  backgroundColor: '#3A506B',
+  padding: scale(10),
+  borderRadius: 12,
+  maxWidth: '75%',
+},
+  inputContainer: { flexDirection: 'column', padding: scale(10), backgroundColor: '#1C2541', width: '100%', },
   inputRow: {
     flexDirection: 'row',
     alignContent: 'center',
-    marginTop: scale(5),
+    marginTop: verticalScale(Platform.OS === 'ios' ? 10 : 5),
+    marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5), 
     backgroundColor: '#1C2541',
     width: '100%',
   },
   col75: { flex: 3 },
-  col25: { flex: 0, paddingLeft: scale(10), justifyContent: 'center' },
-  textInput: {
-    flex: 1, backgroundColor: '#3A506B', borderRadius: scale(24), paddingHorizontal: scale(15), color: '#fff', height: verticalScale(50), marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5), alignSelf: 'center', borderWidth: 1,
-    borderColor: 'rgba(142, 68, 173, 0.6)',
+  col25: { 
+    flex: 0, 
+    paddingLeft: scale(10), 
+    justifyContent: 'center' 
   },
-  choiceRow: { flexDirection: 'row', justifyContent: 'space-around', padding: scale(5) },
-  choiceButton: { borderWidth: 1, borderColor: '#e2e2e2ff', borderRadius: scale(20), paddingVertical: verticalScale(10), paddingHorizontal: scale(15), marginBottom: verticalScale(25) },
+  textInput: {
+    flex: 1, 
+    backgroundColor: 'rgba(255,255,255,0.1)', 
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(142, 68, 173, 0.6)',
+    paddingHorizontal: scale(15), 
+    color: '#fff', 
+    height: verticalScale(50), 
+    marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5), 
+    alignSelf: 'center', 
+    
+  },
+  choiceRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-around', 
+    padding: scale(5) 
+  },
+  choiceButton: { borderWidth: 1, 
+    borderColor: '#e2e2e2ff', 
+    borderRadius: scale(20), 
+    paddingVertical: verticalScale(10), 
+    paddingHorizontal: scale(15), 
+    marginBottom: verticalScale(25) 
+  },
   choiceSelected: { backgroundColor: '#5BC0BE' },
   choiceText: { color: '#fff' },
-  datePickerButton: { flex: 1, backgroundColor: '#3A506B', borderRadius: scale(24), justifyContent: 'center', paddingHorizontal: scale(16), height: verticalScale(48) },
+  datePickerButton: { 
+    flex: 1, 
+    backgroundColor: '#3A506B', 
+    borderRadius: scale(24), 
+    justifyContent: 'center', 
+    paddingHorizontal: scale(16), 
+    height: verticalScale(48) 
+  },
   datePickerText: { color: '#fff' },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: scale(12), marginBottom: verticalScale(8) },
-  finalArea: { padding: scale(12), backgroundColor: '#1C2541' },
+  finalArea: { padding: scale(5), backgroundColor: '#1C2541' },
   footerText: { color: '#fff', marginLeft: scale(8) },
   link: { textDecorationLine: 'underline', color: '#6FFFE9' },
-  continueButton: { marginTop: verticalScale(10), backgroundColor: '#6FFFE9', paddingVertical: verticalScale(14), borderRadius: scale(24), alignItems: 'center', marginBottom: verticalScale(Platform.OS === 'ios' ? 30 : 12) },
+  continueButton: { 
+    marginTop: verticalScale(10), 
+    backgroundColor: '#6FFFE9', 
+    paddingVertical: verticalScale(14), 
+    borderRadius: scale(24), 
+    alignItems: 'center', 
+    marginBottom: verticalScale(Platform.OS === 'ios' ? 30 : 12) 
+  },
   continueText: { color: '#000', fontWeight: '600', fontSize: moderateScale(16) },
   continueButtonDisabled: { backgroundColor: '#A0A0A0' },
   continueTextDisabled: { color: '#666' },
@@ -972,10 +1004,27 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(14),
     fontWeight: 'bold',
   },
-  backButton: { alignSelf: 'flex-start', paddingHorizontal: scale(12), paddingVertical: verticalScale(8), marginBottom: 0, marginLeft: scale(8), justifyContent: 'center' },
-  backText: { fontSize: moderateScale(18), color: '#fff', fontWeight: 'bold' },
+  backButton: { 
+    alignSelf: 'flex-start', 
+    paddingHorizontal: scale(12), 
+    paddingVertical: verticalScale(8),
+     marginBottom: 5, 
+     marginLeft: scale(8), 
+     justifyContent: 'center' 
+    },
+  backText: { 
+    fontSize: moderateScale(20), 
+    color: '#fff', fontWeight: 'bold' }
+    ,
   passwordStyle: {
-    width: '100%', flex: 1, backgroundColor: '#3A506B', borderRadius: scale(24), color: '#fff', height: verticalScale(50), marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5), alignSelf: 'center', borderWidth: 1,
+    width: '100%', 
+    flex: 1, 
+    backgroundColor: '#3A506B', 
+    borderRadius: scale(24), color: '#fff', 
+    height: verticalScale(50), 
+    marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5), 
+    alignSelf: 'center', 
+    borderWidth: 1,
     borderColor: 'rgba(142, 68, 173, 0.6)',
   },
   fieldFrame: {
@@ -983,7 +1032,7 @@ const styles = StyleSheet.create({
     borderRadius: scale(24),
     borderWidth: 1,
     borderColor: FIELD_BORDER,
-    backgroundColor: '#3A506B',
+    backgroundColor: '#6b3a67ff',
     paddingHorizontal: scale(16),
     justifyContent: 'center',
   },
@@ -1000,8 +1049,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(12),
   },
   sendIcon: {
-    width: moderateScale(18),
-    height: moderateScale(18),
+    width: moderateScale(20),
+    height: moderateScale(20),
     tintColor: '#fff',
   },
   sendText: { fontSize: moderateScale(18), color: '#fff' },
