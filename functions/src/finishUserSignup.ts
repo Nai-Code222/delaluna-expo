@@ -1,3 +1,5 @@
+// functions/finishUserSignup.ts
+
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { FieldValue } from "firebase-admin/firestore";
@@ -5,43 +7,41 @@ import { DateTime } from "luxon";
 import { z } from "zod";
 import { db } from "./initAdmin";
 import { calculateSignsInternal } from "./utils/calcSigns";
-import { getDailyTarotCard } from "./utils/tarot";
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 
 /**
- * Zod schema for client onboarding payload.
- * Validates inputs before running expensive or critical logic.
+ * Zod schema for the FLATTENED request payload.
  */
 const finishUserSignupSchema = z.object({
+  uid: z.string(),
+  displayName: z.string(),
+
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   pronouns: z.string().optional().nullable(),
-  email: z.string().email(),
 
-  birthday: z.string().min(1),
-  birthtime: z.string().optional().nullable(),
+  email: z.string().email(),
+  birthday: z.string(),
+  birthtime: z.string().nullable().optional(),
 
   birthLat: z.coerce.number(),
   birthLon: z.coerce.number(),
-  birthTimezone: z.string().optional().nullable(),
+  birthTimezone: z.string().nullable().optional(),
 
-  placeOfBirth: z.string().optional().nullable(),
+  placeOfBirth: z.string().nullable().optional(),
 
   isBirthTimeUnknown: z.boolean().optional(),
   isPlaceOfBirthUnknown: z.boolean().optional(),
 
-  themeKey: z.string().optional().nullable(),
-  currentTimezone: z.string().optional().nullable(),
+  themeKey: z.string().nullable().optional(),
+  currentTimezone: z.string().nullable().optional(),
 });
 
 /**
- * Builds a DateTime object from date, time, and timezone.
+ * Build Luxon birth datetime
  */
-function buildBirthDateTime(
-  birthday: string,
-  birthtime: string | null | undefined,
-  birthTimezone: string | null | undefined
-): DateTime {
-  const zone = birthTimezone || "UTC";
+function buildBirthDateTime(birthday: string, birthtime: string | null, tz: string | null) {
+  const zone = tz || "UTC";
 
   if (birthtime && birthtime.includes("T")) {
     return DateTime.fromISO(birthtime, { zone });
@@ -59,22 +59,36 @@ export const finishUserSignup = onCall(async (req) => {
     throw new HttpsError("unauthenticated", "User must be signed in.");
   }
 
-  const uid = req.auth.uid;
-
-  // Validate incoming data
+  // ---------------------------
+  // 1. Validate flattened input
+  // ---------------------------
   const parsed = finishUserSignupSchema.safeParse(req.data);
   if (!parsed.success) {
-    const message = parsed.error.issues
-      .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-      .join("; ");
-
-    logger.warn(`Invalid signup payload for uid=${uid}: ${message}`);
+    const message = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     throw new HttpsError("invalid-argument", message);
   }
 
-  const payload = parsed.data;
+  const {
+    uid,
+    displayName,
+    firstName,
+    lastName,
+    pronouns,
+    email,
+    birthday,
+    birthtime,
+    birthLat,
+    birthLon,
+    birthTimezone,
+    placeOfBirth,
+    isBirthTimeUnknown,
+    isPlaceOfBirthUnknown,
+    themeKey,
+    currentTimezone,
+  } = parsed.data;
 
   const userRef = db.collection("users").doc(uid);
+
   await userRef.set(
     {
       signupStatus: "processing",
@@ -84,24 +98,13 @@ export const finishUserSignup = onCall(async (req) => {
   );
 
   try {
-    const authEmail = req.auth.token.email as string | undefined;
-    if (authEmail && authEmail.toLowerCase() !== payload.email.toLowerCase()) {
-      logger.warn(
-        `Email mismatch for uid=${uid}: auth=${authEmail}, payload=${payload.email}`
-      );
-    }
+    // ---------------------------
+    // 2. Build birth datetime
+    // ---------------------------
+    const birthDT = buildBirthDateTime(birthday, birthtime ?? null, birthTimezone ?? null);
+    if (!birthDT.isValid) throw new Error("Invalid birth date or time");
 
-    const birthDT = buildBirthDateTime(
-      payload.birthday,
-      payload.birthtime ?? null,
-      payload.birthTimezone ?? null
-    );
-
-    if (!birthDT.isValid) {
-      throw new Error("Invalid birthday or birthtime.");
-    }
-
-    const timezoneOffsetHours = birthDT.offset / 60;
+    const tzOffset = birthDT.offset / 60;
 
     const astroParams = {
       day: birthDT.day,
@@ -109,57 +112,55 @@ export const finishUserSignup = onCall(async (req) => {
       year: birthDT.year,
       hour: birthDT.hour,
       min: birthDT.minute,
-      lat: payload.birthLat,
-      lon: payload.birthLon,
-      tzone: timezoneOffsetHours,
+      lat: birthLat,
+      lon: birthLon,
+      tzone: tzOffset,
     };
 
-    // Calculate signs using Swiss ephemeris
+    // ---------------------------
+    // 3. Swiss Ephemeris: sun/moon/rising
+    // ---------------------------
     const signs = await calculateSignsInternal(astroParams);
 
     const sunSign = signs.raw.sun.sign;
     const moonSign = signs.raw.moon.sign;
     const risingSign = signs.raw.ascendant.sign;
 
-    const displayName = `${payload.firstName.trim()} ${payload.lastName.trim()}`
-      .replace(/\s+/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
-
     const now = FieldValue.serverTimestamp();
 
-    // Final user record
+    // ---------------------------
+    // 4. Write user profile
+    // ---------------------------
     const updateDoc = {
       id: uid,
-
-      firstName: payload.firstName,
-      lastName: payload.lastName,
+      firstName,
+      lastName,
       displayName,
-      pronouns: payload.pronouns ?? null,
-
-      email: payload.email,
+      pronouns: pronouns ?? null,
+      email,
       isEmailVerified: req.auth.token.email_verified ?? false,
 
-      birthday: payload.birthday,
-      birthtime: payload.birthtime ?? null,
-      placeOfBirth: payload.placeOfBirth ?? null,
+      birthday,
+      birthtime: birthtime ?? null,
+      placeOfBirth: placeOfBirth ?? null,
 
-      birthLat: payload.birthLat,
-      birthLon: payload.birthLon,
-      birthTimezone: payload.birthTimezone ?? null,
+      birthLat,
+      birthLon,
+      birthTimezone: birthTimezone ?? null,
 
       birthDateTimeUTC: birthDT.toUTC().toISO(),
-      tZoneOffset: timezoneOffsetHours,
+      tZoneOffset: tzOffset,
 
-      isBirthTimeUnknown: payload.isBirthTimeUnknown ?? false,
-      isPlaceOfBirthUnknown: payload.isPlaceOfBirthUnknown ?? false,
+      isBirthTimeUnknown: isBirthTimeUnknown ?? false,
+      isPlaceOfBirthUnknown: isPlaceOfBirthUnknown ?? false,
 
       sunSign,
       moonSign,
       risingSign,
       astroParams,
 
-      themeKey: payload.themeKey || "default",
-      currentTimezone: payload.currentTimezone ?? null,
+      themeKey: themeKey || "default",
+      currentTimezone: currentTimezone ?? null,
 
       signupStatus: "complete",
       updatedAt: now,
@@ -168,24 +169,27 @@ export const finishUserSignup = onCall(async (req) => {
 
     await userRef.set(updateDoc, { merge: true });
 
-    // Generate daily tarot card
-    try {
-      const tarot = getDailyTarotCard(uid);
-      await userRef.collection("tarot").doc("daily").set(tarot, { merge: true });
-      logger.info(`Daily tarot card generated for uid=${uid}`);
-    } catch (err) {
-      logger.warn("Tarot generation failed:", err);
-    }
-
-    logger.info(`finishUserSignup completed successfully for uid=${uid}`);
-
-    return {
-      user: {
-        ...updateDoc,
+    // ---------------------------
+    // 5. Initialize Birth Chart pipeline
+    // ---------------------------
+    await db.doc(`users/${uid}/birthChart/default`).set(
+      {
+        status: "pending",
+        chartImageUrl: null,
+        placements: null,
+        summary: null,
+        retryCount: 0,
+        premiumUnlocked: false,
+        createdAt: FieldValue.serverTimestamp(),
       },
-    };
+      { merge: true }
+    );
+
+    logger.info(`finishUserSignup completed for uid=${uid}`);
+
+    return { user: updateDoc };
   } catch (err: any) {
-    logger.error(`finishUserSignup failed for uid=${uid}:`, err);
+    logger.error(`finishUserSignup error for uid=${uid}:`, err);
 
     await userRef.set(
       {
@@ -198,9 +202,6 @@ export const finishUserSignup = onCall(async (req) => {
       { merge: true }
     );
 
-    throw new HttpsError(
-      "internal",
-      "Signup failed. Please verify your information and try again."
-    );
+    throw new HttpsError("internal", "Signup failed.");
   }
 });
