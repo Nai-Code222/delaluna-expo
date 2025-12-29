@@ -47,7 +47,7 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
     width: "100%",
     paddingVertical: verticalScale(10),
@@ -61,12 +61,12 @@ const styles = StyleSheet.create({
     gap: scale(5),
   },
   icon: {
-    width: scale(20),
-    height: scale(20),
+    width: scale(15),
+    height: scale(15),
     resizeMode: "contain",
   },
   text: {
-    fontSize: moderateScale(14),
+    fontSize: moderateScale(12),
     color: "#FFFFFF",
     fontWeight: "300",
     textTransform: "uppercase",

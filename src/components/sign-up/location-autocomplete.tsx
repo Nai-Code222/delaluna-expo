@@ -9,7 +9,6 @@ import {
   Platform,
 } from 'react-native';
 import tzlookup from '@photostructure/tz-lookup';
-import { scale, verticalScale } from '@/utils/responsive';
 
 type PhotonFeature = {
   properties: {
@@ -151,40 +150,40 @@ export default function LocationAutocomplete({
 }
 
 const styles = StyleSheet.create({
-  container: { width: '85%' },
+  container: {
+    width: '93%',
+  },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1C2541',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(142,68,173,0.6)',
+    paddingHorizontal: 15,
+    height: 48,
     width: '100%',
+    position: 'relative'
   },
   inputWrapper: { position: 'relative' },
   input: {
     flex: 1,
-    backgroundColor: '#3A506B',
-    borderRadius: scale(25),
-    paddingHorizontal: scale(15),
     color: '#fff',
-    height: verticalScale(50),
-    marginBottom: verticalScale(Platform.OS === 'ios' ? 10 : 5),
-    alignSelf: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(142, 68, 173, 0.6)',
+    paddingVertical: 10,
+    paddingHorizontal: 0,
+    fontSize: 16,
   },
   clearBtn: {
-    marginLeft: 8,
-    width: scale(25),
-    height: scale(28),
-    borderRadius: scale(14),
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.18)',
+    position: 'absolute',
+    right: 10,
+    top: '50%',
+    transform: [{ translateY: -12 }],
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'absolute',
-    right: scale(10),
-    top: scale(25),
-    marginTop: -15, // half height
   },
   clearText: {
     color: 'rgba(255,255,255,0.65)',
@@ -199,3 +198,4 @@ const styles = StyleSheet.create({
   },
   itemText: { color: '#fff' },
 });
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     

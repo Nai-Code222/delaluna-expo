@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     paddingHorizontal: scale(13),
     paddingVertical: verticalScale(10),
-    backgroundColor: "#0D0628",
+    backgroundColor: "#0d062803",
     gap: scale(3),
   },
   iconButton: {

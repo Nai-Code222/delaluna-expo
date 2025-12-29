@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   TextInput,
@@ -12,6 +11,7 @@ import {
   Dimensions,
 } from "react-native";
 import tzlookup from "@photostructure/tz-lookup";
+import React, { useState, useRef, useEffect } from "react";
 
 type PhotonFeature = {
   properties: {
