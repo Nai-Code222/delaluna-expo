@@ -10,7 +10,7 @@ global.Buffer = Buffer;
 
 export default function SplashScreen() {
   const animationRef = useRef<LottieView>(null);
-  const { user, initializing } = useAuth();
+  const { authUser, initializing } = useAuth();
 
   useEffect(() => {
     animationRef.current?.play();
@@ -26,10 +26,10 @@ export default function SplashScreen() {
     });
 
     Promise.all([minTimer, authReady]).then(() => {
-      router.replace(user ? '/(main)' : '/(auth)/welcome');
+      router.replace(authUser ? '/(main)' : '/(auth)/welcome');
       //router.replace('/test-signs' as unknown as any); // TEMP SKIP AUTH FOR TESTING
     });
-  }, [user, initializing]);
+  }, [authUser, initializing]);
 
   return (
 
