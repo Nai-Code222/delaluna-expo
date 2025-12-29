@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { doc, updateDoc } from "firebase/firestore";
 import { useAuth } from "../../src/backend/auth-context";
-import { db } from "../../firebaseConfig";
+import { auth, db } from "../../firebaseConfig";
 
 const PREMIUM_KEY = "delaluna_premium_access";
 
 export function usePremiumAccess() {
-  const { user } = useAuth();
+  const { authUser } = useAuth();
   const [isPremium, setIsPremium] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
@@ -32,10 +32,10 @@ export function usePremiumAccess() {
       setIsPremium(true);
       await AsyncStorage.setItem(PREMIUM_KEY, "true");
 
-      if (user?.uid) {
-        const userRef = doc(db, "users", user.uid);
+      if (authUser?.uid) {
+        const userRef = doc(db, "users", authUser.uid);
         await updateDoc(userRef, { isPremium: true });
-        console.log(`Premium status updated for user ${user.uid}`);
+        console.log(`Premium status updated for user ${authUser.uid}`);
       }
     } catch (e) {
       console.error("Error updating premium status:", e);
@@ -48,10 +48,10 @@ export function usePremiumAccess() {
       setIsPremium(false);
       await AsyncStorage.removeItem(PREMIUM_KEY);
 
-      if (user?.uid) {
-        const userRef = doc(db, "users", user.uid);
+      if (authUser?.uid) {
+        const userRef = doc(db, "users", authUser.uid);
         await updateDoc(userRef, { isPremium: false });
-        console.log(`🧹 Premium status cleared for user ${user.uid}`);
+        console.log(`🧹 Premium status cleared for user ${authUser.uid}`);
       }
     } catch (e) {
       console.error("Error clearing premium:", e);
