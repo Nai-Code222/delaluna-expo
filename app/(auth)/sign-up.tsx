@@ -1,6 +1,5 @@
 import "intl";
 import "intl/locale-data/jsonp/en";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -21,17 +20,16 @@ import { UserCredential, sendEmailVerification, updateProfile } from "firebase/a
 import { StatusBar } from "expo-status-bar";
 import { useAuth } from "../../src/backend/auth-context";
 import LoadingScreen from "../../src/components/component-utils/loading-screen";
-import ChatFlow, { StepConfig, FinalSignupPayload } from "../../src/components/sign-up/chat-flow";
-import { UserRecord } from "../../src/model/user-record";
-import signUp from "../../src/services/auth.service";
-import { createUserDoc } from "../../src/services/user.service";
-import { getUserSignsAndChart } from "../../src/services/astrology-api.service";
+import ChatFlow, { StepConfig } from "../../src/components/sign-up/chat-flow";
+import signUp, { buildDisplayName } from "../../src/services/auth.service";
 import { verticalScale, scale, moderateScale } from "@/utils/responsive";
-import { db } from "../../firebaseConfig";
-import { getDailyCard } from "@/services/dailyTarot.service";
-import getTimezone from "@/utils/get-current-timezone.util";
+import finishUserSignup from "@/services/finishUserSignup.service";
+import { validateAndCleanSignupPayload } from "@/schemas/signupAnswers.schema";
+import { FinalSignupPayload } from "@/types/signup.types";
+import { parseError } from "@/utils/errorParser";
+import Constants from "expo-constants";
 
-
+// Safe fallback constants
 const FALLBACK_PLACE_LABEL = "Greenwich, London, United Kingdom";
 const FALLBACK_LAT = 51.4779;
 const FALLBACK_LON = 0.0015;
@@ -41,197 +39,299 @@ export default function SignUpChatScreen() {
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const { user, initializing } = useAuth();
+
+  const { authUser, initializing } = useAuth();
+
   const [confirmVisible, setConfirmVisible] = useState(false);
   const { width } = useWindowDimensions();
   const modalCardWidth = width > 640 ? "55%" : width > 480 ? "70%" : "86%";
   const [headerHeight, setHeaderHeight] = useState(0);
 
+  const extra =
+    (Constants.expoConfig as any)?.extra ??
+    (Constants.manifest as any)?.extra;
+
+  if (!extra) {
+    throw new Error("❌ Missing Firebase config in Expo extra");
+  }
+
+  const USE_EMAIL_VERIFICATION = extra?.USE_EMAIL_VERIFICATION;
+
+  const normalizeBirthdayToISO = (value: any): string => {
+    const raw = String(value ?? "").trim();
+    // already ISO yyyy-MM-dd
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+    // common US format MM/DD/YYYY
+    const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) {
+      const mm = m[1].padStart(2, "0");
+      const dd = m[2].padStart(2, "0");
+      const yyyy = m[3];
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    // last resort: try Date parse
+    const d = new Date(raw);
+    if (!Number.isNaN(d.getTime())) {
+      const yyyy = String(d.getFullYear());
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    return raw; // let server validation catch
+  };
+
+  const normalizeBirthtimeToHHmm = (value: any): string | null => {
+    if (value == null) return null;
+    const raw = String(value).trim();
+    if (!raw) return null;
+    // already HH:mm or HH:mm:ss
+    const hms = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (hms) {
+      const hh = hms[1].padStart(2, "0");
+      const mm = hms[2];
+      return `${hh}:${mm}`;
+    }
+    // common 12-hour format like 3:05 PM
+    const ampm = raw.match(/^(\d{1,2}):(\d{2})\s*([aApP][mM])$/);
+    if (ampm) {
+      let hh = parseInt(ampm[1], 10);
+      const mm = ampm[2];
+      const ap = ampm[3].toLowerCase();
+      if (ap === "pm" && hh < 12) hh += 12;
+      if (ap === "am" && hh === 12) hh = 0;
+      return `${String(hh).padStart(2, "0")}:${mm}`;
+    }
+    return raw.length <= 8 ? raw : null;
+  };
+
+  // If already logged in → redirect to main app
   useEffect(() => {
-    if (!initializing && user) {
+    if (!initializing && authUser) {
       router.replace("/(main)");
     }
-  }, [initializing, user]);
+  }, [initializing, authUser]);
 
-  const steps: StepConfig[] = [
-    { key: "firstName", renderQuestion: () => `Hey, I’m glad you’re here! I have to ask a few quick questions for astrological reasons. Let’s start with some basic info to get you set up. \n\n What’s your name?`, inputType: "text", placeholder: "First name…" },
-    { key: "lastName", renderQuestion: (answers) => `Alright, ${answers.firstName || "[First Name]"}! And, what is your last name?`, inputType: "text", placeholder: "Last name…" },
-    { key: "pronouns", renderQuestion: (answers) => `What are your pronouns, ${answers.firstName || "[First Name]"}?`, inputType: "choices", choices: ["She/Her", "He/Him", "They/Them", "Non Binary"], placeholder: "Pronouns…" },
-    { key: "birthday", renderQuestion: () => `I need to calculate your birth chart. It’s basically a map of the planets and their coordinates at the time you were born. What is your birthdate?`, inputType: "date", placeholder: "Birth date…" },
-    { key: "birthtime", renderQuestion: () => `Would you happen to know what time you were born?`, inputType: "time", placeholder: "Birth time…" },
-    { key: "placeOfBirth", renderQuestion: () => `…and do you know where you were born?`, inputType: "location", placeholder: "Birth place…" },
-    { key: "email", renderQuestion: () => `What’s your email?`, inputType: "email", placeholder: "Email…" },
-    { key: "password", renderQuestion: () => `Alright, that’s it! The last thing I need you to do is create a password.`, inputType: "secure", placeholder: "Password…" },
-    { key: "final", renderQuestion: () => `Your secrets are safe with us 🔐`, inputType: "final" },
-  ];
-
-  const setStepToKey = (key: StepConfig["key"]) => {
-    const index = steps.findIndex((s) => s.key === key);
-    if (index !== -1) setStep(index);
-  };
+  // -------------------------
+  //     SIGNUP PIPELINE
+  // -------------------------
 
   const handleComplete = async (answers: FinalSignupPayload) => {
     let userCred: UserCredential | null = null;
+    answers.birthday = normalizeBirthdayToISO(answers.birthday);
+    answers.birthtime = normalizeBirthtimeToHHmm(answers.birthtime);
+    console.log("🚀 Signup answers received:", answers);
+
+    // Validate and clean signup payload
+    const validation = validateAndCleanSignupPayload(answers);
+    if (!validation.ok) {
+      console.error("⚠️ Signup validation failed:", validation.errors);
+      Alert.alert(
+        "Invalid Information",
+        "Some of your answers need correction before continuing."
+      );
+      return;
+    }
+
+    const cleaned = validation.data;
+    console.log("🚀 Signup answers cleaned:", cleaned);
 
     try {
+      setIsLoading(true);
+
       const {
         firstName,
         lastName,
-        pronouns,
-        email: rawEmail,
-        password,
-        themeKey,
-        birthday,
-        birthtime,
-        birthTimezone,
-        birthLat = FALLBACK_LAT,
-        birthLon = FALLBACK_LON,
-        placeOfBirth = FALLBACK_PLACE_LABEL,
-        isBirthTimeUnknown,
-        isPlaceOfBirthUnknown,
-        birthDateTimeUTC,
-        lastLoginDate,
-        signUpDate,
-        rawBirthdayDate,
-        rawBirthtimeDate,
-      } = answers;
-
-      const email = String(rawEmail ?? "").trim();
-      userCred = await signUp(email, password);
-      const user = userCred.user;
-      const uid = user.uid;
-
-      const displayName = `${firstName?.trim()} ${lastName?.trim()}`
-        .replace(/\s+/g, " ")
-        .replace(/\b\w/g, (char) => char.toUpperCase());
-      await updateProfile(user, { displayName });
-
-      const mm = rawBirthdayDate.getMonth() + 1;
-      const dd = rawBirthdayDate.getDate();
-      const yyyy = rawBirthdayDate.getFullYear();
-      const hh24 = rawBirthtimeDate.getHours();
-      const mn = rawBirthtimeDate.getMinutes();
-      const offset = -rawBirthtimeDate.getTimezoneOffset() / 60;
-
-      const signsParams = { day: dd, month: mm, year: yyyy, hour: hh24, min: mn, lat: birthLat, lon: birthLon, tzone: offset };
-      const birthChartParams = { birthDate: birthday, birthTime: birthtime, lat: birthLat, lon: birthLon, timezone: offset };
-      const { signs, birthChart } = await getUserSignsAndChart({
-        ...signsParams,
-        birthDate: birthday,
-        birthTime: birthtime,
-        timezone: offset,
-      });
-
-      const userRecord: UserRecord = {
-        id: uid,
-        firstName,
-        lastName,
-        displayName,
-        pronouns,
-        birthday,
-        birthtime,
-        placeOfBirth,
         email,
-        isPaidMember: false,
-        isEmailVerified: false, 
-        signUpDate,
-        lastLoginDate,
-        isBirthTimeUnknown,
-        isPlaceOfBirthUnknown,
-        themeKey: themeKey || "default",
+        password,
+        placeOfBirth,
+      } = cleaned;
+
+      // Always enforce fallback values AFTER validation
+      const birthLat = cleaned.birthLat ?? FALLBACK_LAT;
+      const birthLon = cleaned.birthLon ?? FALLBACK_LON;
+      const safePlaceOfBirth = cleaned.placeOfBirth ?? FALLBACK_PLACE_LABEL;
+
+      const trimmedEmail = String(email ?? "").trim();
+
+      // STEP 1 — Create Auth User
+      try {
+        userCred = await signUp(trimmedEmail, password);
+      } catch (signupErr) {
+        const error = parseError(signupErr);
+        console.error("❌ Firebase signup failed to Create Auth User:", error);
+
+        Alert.alert("Signup Failed to create Auth User", error.message);
+        setIsLoading(false);
+        return; // stop pipeline — do not continue to steps 2–4
+      }
+      const fbUser = userCred.user;
+      const uid = fbUser.uid;
+
+      // STEP 2 — Update profile (displayName only)
+      const displayName = buildDisplayName(firstName, lastName);
+
+      await updateProfile(fbUser, { displayName });
+      console.log("✅ Firebase Auth profile updated:", uid);
+
+
+      // STEP 4 — Call Cloud Function "finishUserSignup"
+      //  Build the server payload explicitly so TS does not try to force it into FinalSignupPayload
+      const signupPayloadForServer: FinalSignupPayload = {
+        ...cleaned,
+        pronouns: cleaned.pronouns ?? "",
+        birthtime: cleaned.birthtime ?? null,
+        birthTimezone: cleaned.birthTimezone ?? null,
+        currentTimezone: cleaned.currentTimezone ?? null,
+        email: trimmedEmail,
         birthLat,
         birthLon,
-        birthTimezone,
-        birthDateTimeUTC,
-        tZoneOffset: offset,
-        sunSign: signs.sunSign,
-        moonSign: signs.moonSign,
-        risingSign: signs.risingSign,
-        astroParams: signsParams,
-        currentTimezone: getTimezone()
+        placeOfBirth: safePlaceOfBirth,
+        themeKey: "default",
       };
 
-      let docCreated = false;
-      for (let attempt = 1; attempt <= 2; attempt++) {
-        try {
-          await createUserDoc(uid, userRecord);
-          docCreated = true;
-          
-          break;
-        } catch (err) {
-          console.warn(`Firestore write failed (attempt ${attempt})`, err);
-          if (attempt < 2) await new Promise((res) => setTimeout(res, 500));
+      // create Firestore user doc using UserRecord
+      const response = await finishUserSignup({
+        uid,
+        displayName,
+        ...signupPayloadForServer,
+      });
+
+      console.log("✅ Firestore user doc created:", response);
+
+      const isEmulator = extra?.USE_EMULATOR === "true";
+
+      const actionCodeSettings = isEmulator
+        ? undefined
+        : {
+          url: "delaluna://email-verification",
+          iOS: {
+            bundleId: "com.delaluna.answers",
+          },
+          android: {
+            packageName: "com.delaluna.answers",
+            installApp: true,
+            minimumVersion: "12",
+          },
+          handleCodeInApp: true,
+        };
+
+      // STEP 4 — Email verification (based on toggle)
+      if (USE_EMAIL_VERIFICATION === "true") {
+        console.log("📧 Email verification enabled — sending email…");
+
+        if (!isEmulator && fbUser != null && !fbUser.emailVerified) {
+          await sendEmailVerification(fbUser, actionCodeSettings);
+        } else if (isEmulator) {
+          console.log("⚠️ Auth Emulator detected — skipping sendEmailVerification (deep links unsupported)");
         }
+
+        // Go to pending screen instead of main
+        simulateProgress(() => {
+          router.replace("/verify-email-pending");
+        });
+      } else {
+        console.log("⚠️ Email verification disabled (DEV MODE) — skipping verification");
+
+        // Skip verification → go straight to app
+        simulateProgress(() => {
+          router.replace("/index");
+        });
       }
 
-      if (!docCreated) {
-        console.error("Could not create Firestore doc — will retry later.");
-        await logSignupError(email, uid, new Error("UserDoc creation failed"), userRecord);
-        Alert.alert("Syncing Profile", "Your account was created successfully, but setup is finishing in the background.");
-        retryUserDocCreation(uid, userRecord);
-      }
 
-      setIsLoading(true);
-      let currentProgress = 0;
-      const interval = setInterval(() => {
-        currentProgress += 0.25;
-        setProgress(currentProgress);
-        if (currentProgress >= 1) {
-          clearInterval(interval);
-          sendEmailVerification(user);
-          getDailyCard(user.uid, getTimezone())
-          router.replace({
-            pathname: "/(main)",
-            params: { user: JSON.stringify(userRecord) },
-          });
-        }
-      }, 200);
-    } catch (e: any) {
-      console.warn("Signup failed:", e);
-      await logSignupError(answers.email, userCred?.user?.uid, e);
-      Alert.alert("Signup Error", e?.message || "We hit a snag creating your account. Please try again.");
+
+    } catch (err) {
+      const error = parseError(err);
+      console.error("❌ Signup failed:", error);
+
+      Alert.alert("Signup Error", error.message);
+      setIsLoading(false);
     }
   };
 
-  const retryUserDocCreation = async (uid: string, userRecord: UserRecord) => {
-    try {
-      await createUserDoc(uid, userRecord);
-    } catch (err) {
-      await logSignupError(userRecord.email, uid, err, userRecord);
-    }
-  };
-
-  const logSignupError = async (email: string, uid: string | undefined, error: any, payload?: Record<string, any>) => {
-    try {
-      const docData: any = {
-        email,
-        uid: uid ?? null,
-        message: error?.message ?? String(error),
-        code: error?.code ?? "unknown",
-        createdAt: serverTimestamp(),
-      };
-      await setDoc(doc(db, "signup_errors", `${uid ?? email}-${Date.now()}`), docData);
-    } catch (err) {
-      console.warn("Failed to log signup error:", err);
-    }
+  // fake progress animation for smooth loading UI
+  const simulateProgress = (onDone: () => void) => {
+    let p = 0;
+    const interval = setInterval(() => {
+      p += 0.25;
+      setProgress(p);
+      if (p >= 1) {
+        clearInterval(interval);
+        onDone();
+      }
+    }, 200);
   };
 
   const onCancelPress = () => {
-    if (step !== 0) setConfirmVisible(true);
-    else {
-      setConfirmVisible(false);
-      setTimeout(() => router.replace("/welcome"), 0);
-    }
+    if (step > 0) setConfirmVisible(true);
+    else router.replace("/welcome");
   };
 
   const confirmCancel = () => {
     setConfirmVisible(false);
-    setTimeout(() => router.replace("/welcome"), 0);
+    router.replace("/welcome");
   };
 
   if (isLoading || initializing) {
-    return <LoadingScreen progress={progress} message="Reading your stars..." />;
+    return <LoadingScreen progress={progress} message="Setting up your stars..." />;
   }
+
+  // -------------------------
+  //      UI + CHAT FLOW
+  // -------------------------
+  const steps: StepConfig[] = [
+    {
+      key: "firstName",
+      renderQuestion: () =>
+        `Hey, I’m glad you’re here! I just need a few quick things.\n\nWhat’s your name?`,
+      inputType: "text",
+      placeholder: "First name…",
+    },
+    {
+      key: "lastName",
+      renderQuestion: (a) =>
+        `Alright, ${a.firstName || "[First Name]"}! And your last name?`,
+      inputType: "text",
+      placeholder: "Last name…",
+    },
+    {
+      key: "pronouns",
+      renderQuestion: (a) =>
+        `What are your pronouns, ${a.firstName || "[First Name]"}?`,
+      inputType: "choices",
+      choices: ["She/Her", "He/Him", "They/Them", "Non Binary"],
+    },
+    {
+      key: "birthday",
+      renderQuestion: () => `What is your birthdate?`,
+      inputType: "date",
+    },
+    {
+      key: "birthtime",
+      renderQuestion: () => `Do you know what time you were born?`,
+      inputType: "time",
+    },
+    {
+      key: "placeOfBirth",
+      renderQuestion: () => `Where were you born?`,
+      inputType: "location",
+    },
+    {
+      key: "email",
+      renderQuestion: () => `What’s your email?`,
+      inputType: "email",
+    },
+    {
+      key: "password",
+      renderQuestion: () => `Almost there — create a password.`,
+      inputType: "secure",
+    },
+    {
+      key: "final",
+      renderQuestion: () => `Your secrets are safe with us 🔐`,
+      inputType: "final",
+    },
+  ];
 
   return (
     <ImageBackground
@@ -239,23 +339,35 @@ export default function SignUpChatScreen() {
       style={styles.background}
       resizeMode="cover"
     >
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()} accessible={false}>
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View style={{ flex: 1 }}>
           <StatusBar style="light" translucent backgroundColor="transparent" />
+
           <BlurView intensity={10} tint="dark" style={styles.overlay}>
-            <View style={styles.header} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
+            {/* HEADER */}
+            <View
+              style={styles.header}
+              onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+            >
               {step > 0 ? (
-                <TouchableOpacity onPress={() => { Keyboard.dismiss(); setStep(step - 1); }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setStep(step - 1);
+                  }}
+                >
                   <Text style={styles.goBackText}>← Go Back</Text>
                 </TouchableOpacity>
               ) : (
                 <View />
               )}
+
               <TouchableOpacity onPress={onCancelPress}>
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
             </View>
 
+            {/* CHAT FLOW */}
             <View style={styles.chatFlowWrapper}>
               <ChatFlow
                 steps={steps}
@@ -269,17 +381,32 @@ export default function SignUpChatScreen() {
         </View>
       </TouchableWithoutFeedback>
 
-      <Modal visible={confirmVisible} transparent animationType="fade" onRequestClose={() => setConfirmVisible(false)}>
+      {/* CANCEL MODAL */}
+      <Modal
+        visible={confirmVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConfirmVisible(false)}
+      >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { width: modalCardWidth }]}>
             <Text style={styles.modalTitle}>Discard signup?</Text>
-            <Text style={styles.modalBody}>Your answers will be lost. You can start again anytime.</Text>
+            <Text style={styles.modalBody}>
+              Your answers will be lost. You can start again anytime.
+            </Text>
 
             <View style={styles.modalActions}>
-              <TouchableOpacity onPress={() => setConfirmVisible(false)} style={[styles.modalBtn, styles.btnGhost]}>
+              <TouchableOpacity
+                onPress={() => setConfirmVisible(false)}
+                style={[styles.modalBtn, styles.btnGhost]}
+              >
                 <Text style={styles.btnGhostText}>Keep editing</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={confirmCancel} style={[styles.modalBtn, styles.btnDanger]}>
+
+              <TouchableOpacity
+                onPress={confirmCancel}
+                style={[styles.modalBtn, styles.btnDanger]}
+              >
                 <Text style={styles.btnDangerText}>Discard & Exit</Text>
               </TouchableOpacity>
             </View>
@@ -305,9 +432,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(16),
     marginBottom: verticalScale(8),
   },
-  goBackText: { color: "#6FFFE9", fontSize: moderateScale(18), fontWeight: "500" },
-  cancelText: { color: "#6FFFE9", fontSize: moderateScale(18), fontWeight: "500" },
-  chatFlowWrapper: { flex: 1, width: "100%", alignSelf: "stretch" },
+  goBackText: {
+    color: "#6FFFE9",
+    fontSize: moderateScale(18),
+    fontWeight: "500",
+  },
+  cancelText: {
+    color: "#6FFFE9",
+    fontSize: moderateScale(18),
+    fontWeight: "500",
+  },
+  chatFlowWrapper: { flex: 1, width: "100%" },
+
   modalOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -335,7 +471,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: verticalScale(16),
   },
-  modalActions: { flexDirection: "row", gap: scale(12), justifyContent: "center" },
+  modalActions: {
+    flexDirection: "row",
+    gap: scale(12),
+    justifyContent: "center",
+  },
   modalBtn: {
     paddingVertical: verticalScale(10),
     paddingHorizontal: scale(14),

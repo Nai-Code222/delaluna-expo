@@ -1,118 +1,175 @@
-import React, { useState, forwardRef } from "react";
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
-  View,
+  Keyboard,
   TextInput,
-  TouchableOpacity,
+  View,
   StyleSheet,
   TextInputProps,
-  Animated,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { scale } from "@/utils/responsive";
+  TouchableOpacity,
+} from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-export type DelalunaPasswordInputProps = TextInputProps & {
-  containerStyle?: object;
-  inputStyle?: object;
-  iconSize?: number;
+export type DelalunaPasswordInputRef = {
+  focus: () => void;
+  blur: () => void;
+  clear: () => void;
+  getValue: () => string;
+  setValue: (v: string) => void;
 };
 
-const DelalunaPasswordInput = forwardRef<TextInput, DelalunaPasswordInputProps>(
+type Props = Omit<TextInputProps, 'secureTextEntry' | 'value' | 'onChangeText'> & {
+  value?: string;
+  onChangeText?: (text: string) => void;
+};
+
+const DelalunaPasswordInput = forwardRef<DelalunaPasswordInputRef, Props>(
   (
     {
-      containerStyle,
-      inputStyle,
-      secureTextEntry,
-      iconSize = scale(20),
+      value,
+      onChangeText,
+      placeholder = 'Password',
+      placeholderTextColor = 'rgba(255, 255, 255, 0.5)',
+      returnKeyType = 'done',
+      style,
       ...rest
     },
     ref
   ) => {
-    const [visible, setVisible] = useState(false);
+    const inputRef = useRef<TextInput>(null);
 
-    // animated fade between icons
-    const opacityAnim = new Animated.Value(1);
+    const [internalValue, setInternalValue] = useState('');
+    const isControlled = typeof value === 'string';
+    const currentValue = isControlled ? (value as string) : internalValue;
 
-    const toggleVisibility = () => {
-      Animated.sequence([
-        Animated.timing(opacityAnim, {
-          toValue: 0,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-      ]).start();
+    const [showPassword, setShowPassword] = useState(false);
 
-      setVisible((v) => !v);
+    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+    React.useEffect(() => {
+      const showSub = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardVisible(true));
+      const hideSub = Keyboard.addListener('keyboardDidHide', () => setIsKeyboardVisible(false));
+      return () => {
+        showSub.remove();
+        hideSub.remove();
+      };
+    }, []);
+
+    const handleChangeText = (text: string) => {
+      if (!isControlled) setInternalValue(text);
+      onChangeText?.(text);
+    };
+
+    const toggleShowPassword = () => {
+      // Android-first behavior: toggling visibility should not cause keyboard flicker.
+      // If the keyboard is open, dismiss it and do NOT programmatically refocus.
+      if (isKeyboardVisible) {
+        Keyboard.dismiss();                                                                                                                                  
+        inputRef.current?.blur();
+      }
+      setShowPassword((s) => !s);
+      if (!isKeyboardVisible) {
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 50);
+      }
+    };
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        focus: () => {
+          inputRef.current?.focus();
+        },
+        blur: () => {
+          inputRef.current?.blur();
+        },
+        clear: () => {
+          inputRef.current?.clear();
+          if (!isControlled) setInternalValue('');
+          onChangeText?.('');
+        },
+        getValue: () => currentValue,
+        setValue: (v: string) => {
+          if (!isControlled) setInternalValue(v);
+          onChangeText?.(v);
+        },
+      }),
+      [currentValue, isControlled, onChangeText]
+    );
+
+    const mergedInputStyle = useMemo(() => {
+      return [styles.input, style];
+    }, [style]);
+
+    const commonProps = {
+      value: currentValue,
+      onChangeText: handleChangeText,
+      style: mergedInputStyle,
+      placeholder,
+      placeholderTextColor,
+      returnKeyType,
+      autoCapitalize: 'none' as const,
+      autoCorrect: false,
+      ...rest,
     };
 
     return (
-      <View style={[styles.container, containerStyle]}>
-        <View style={styles.field}>
-          <TextInput
-            ref={ref}
-            {...rest}
-            secureTextEntry={secureTextEntry ?? !visible}
-            autoCorrect={false}
-            autoCapitalize="none"
-            style={[styles.input, inputStyle, { paddingRight: 55 }]} // ← fixed padding to avoid jump
-          />
+      <View style={styles.container}>
+        <TextInput
+          ref={inputRef}
+          secureTextEntry={!showPassword}
+          {...commonProps}
+          onFocus={() => {
+            inputRef.current?.focus();
+          }}
+        />
 
-          {/* Toggle Button */}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={toggleVisibility}
-            onPressIn={() => {}} // prevents blur
-            style={styles.iconContainer}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Animated.View style={{ opacity: opacityAnim }}>
-              <Ionicons
-                name={visible ? "eye" : "eye-off"}
-                size={iconSize}
-                color="#FFFFFF"
-              />
-            </Animated.View>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={toggleShowPassword}
+          hitSlop={10}
+          activeOpacity={0.8}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+        >
+          <MaterialCommunityIcons
+            name={showPassword ? 'eye-off' : 'eye'}
+            size={22}
+            color="rgba(255,255,255,0.7)"
+          />
+        </TouchableOpacity>
       </View>
     );
   }
 );
 
-DelalunaPasswordInput.displayName = "DelalunaPasswordInput";
-
-export default DelalunaPasswordInput;
+DelalunaPasswordInput.displayName = 'DelalunaPasswordInput';
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-  },
-  field: {
-    position: "relative",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.1)",
     borderWidth: 1,
-    borderColor: "rgba(142, 68, 173, 0.6)",
-    justifyContent: "center",
+    borderColor: 'rgba(142,68,173,0.6)',
+    paddingHorizontal: 15,
+    height: 48,
+    width: '100%'
   },
   input: {
-    width: "100%",
-    color: "#FFFFFF",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    flex: 1,
+    color: 'white',
+    paddingVertical: 10,
+    paddingRight: 10,
     fontSize: 16,
   },
-  iconContainer: {
-    position: "absolute",
-    right: 12,
-    top: 0,
-    bottom: 0,
-    width: 40, /// ← FIXED WIDTH (no movement / no jump)
-    justifyContent: "center",
-    alignItems: "center",
-  },
 });
+
+export default DelalunaPasswordInput;

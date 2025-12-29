@@ -29,7 +29,7 @@ import SecondaryButtonComponent from '../../src/components/buttons/secondary-but
 import LoadingScreen from '../../src/components/component-utils/loading-screen';
 
 // ⭐ UPDATED PASSWORD INPUT
-import DelalunaPasswordInput from '../../src/components/component-utils/password-input-field';
+import DelalunaPasswordInput, { DelalunaPasswordInputRef } from '../../src/components/component-utils/password-input-field';
 
 import { updateUserDoc } from '../../src/services/user.service';
 import { ThemeContext } from '../theme-context';
@@ -50,7 +50,7 @@ export default function Login() {
   const { setThemeKey } = useContext(ThemeContext);
 
   // ⭐ This ref is used by the NEXT button from Email
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<DelalunaPasswordInputRef>(null);
 
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();

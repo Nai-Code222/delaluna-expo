@@ -21,10 +21,11 @@ import { useUserProfile } from "@/hooks/useUserProfile"; import { getDoc, doc } 
 import HomeSignsDisplay from "../../src/components/home/home-signs-display.component";
 import HomeTextBox from "../../src/components/home/home-text-box.component";
 import useRenderBackground from "@/hooks/useRenderBackground"; import DateSwitcher from "../../src/components/component-utils/date-switcher.component";
-import { db } from "../../firebaseConfig";
+import { auth, db } from "../../firebaseConfig";
+import { signOut } from "firebase/auth";
 
 export default function HomeScreen() {
-  const { user, initializing } = useContext(AuthContext);
+  const { authUser, initializing } = useContext(AuthContext);
   const insets = useSafeAreaInsets();
   const goToProfile = () => router.replace("/(supporting)/profile.screen");
   const safeOffset =
@@ -37,9 +38,11 @@ export default function HomeScreen() {
 
   // Firestore user profile (cached + realtime)
   const { user: userRecord, loading: profileLoading, cachedAt } = useUserProfile(
-    user?.uid,
+    authUser?.uid,
     initialUserRecord
   );
+
+  
 
   const sectionLabels = [
     "Quote",
@@ -55,10 +58,11 @@ export default function HomeScreen() {
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
-    if (!user?.uid) return;
+    if (!authUser?.uid) return;
     setRefreshing(true);
+    
     try {
-      const snap = await getDoc(doc(db, "users", user.uid));
+      const snap = await getDoc(doc(db, "users", authUser.uid));
       if (snap.exists()) {
         const freshData = snap.data();
         console.log("Manually refreshed user data:", freshData);
@@ -68,7 +72,7 @@ export default function HomeScreen() {
     } finally {
       setRefreshing(false);
     }
-  }, [user?.uid]);
+  }, [authUser?.uid]);
 
   //  Fade animation on theme change
   const fade = useRef(new Animated.Value(0)).current;
@@ -84,8 +88,8 @@ export default function HomeScreen() {
 
   // Auth guard
   useEffect(() => {
-    if (!initializing && !user) router.replace("/(auth)/welcome");
-  }, [initializing, user]);
+    if (!initializing && !authUser) router.replace("/(auth)/welcome");
+  }, [initializing, authUser]);
 
   // Background renderer
   const renderBackground = useRenderBackground();
@@ -110,7 +114,7 @@ export default function HomeScreen() {
 
       {/* Wrap main content with top offset */}
       <View style={[styles.mainContent, { marginTop: HEADER_HEIGHT }]}>
-        <View style={styles.homeTextBox}>
+        <View>
           <HomeSignsDisplay
             sun={userRecord.sunSign}
             moon={userRecord.moonSign}

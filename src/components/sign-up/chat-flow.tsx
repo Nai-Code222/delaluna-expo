@@ -197,6 +197,8 @@ export default function ChatFlow({
   const [hasSelectedSuggestion, setHasSelectedSuggestion] = useState(false);
   const [loadingBigThree, setLoadingBigThree] = useState(false);
   const [bigThreeError, setBigThreeError] = useState<string | null>(null);
+  // Hydration guard: only hydrate each step once
+  const [lastHydratedStep, setLastHydratedStep] = useState<number | null>(null);
 
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
   const current = steps[step];
@@ -220,6 +222,7 @@ export default function ChatFlow({
 
   // step changes: reset errors, hydrate value, focus inputs
   useEffect(() => {
+    if (lastHydratedStep === step) return;
     setError(null);
     if (current.inputType === 'text' && isAnswerKey(current.key)) {
       const saved = (answers as any)[current.key];
@@ -272,6 +275,7 @@ export default function ChatFlow({
       }
       // Notice: no email auto-focus here anymore
     }, 100);
+    setLastHydratedStep(step);
     return () => clearTimeout(t);
   }, [step]);
 
