@@ -115,7 +115,6 @@ const finishUserSignup = async (
       cleaned,
       "finishUserSignup"
     );
-    console.log("✅ finishUserSignup completed successfully:", data);
 
     return data;
   } catch (err: any) {
