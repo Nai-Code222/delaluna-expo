@@ -51,22 +51,41 @@ export const onGeminiCompatibility = onDocumentUpdated(
 
       if (missing) {
         try {
-          const firstCalc = await calculateSignsInternal(first);
-          const secondCalc = await calculateSignsInternal(second);
+          const firstCalc = await calculateSignsInternal({
+            day: first.day,
+            month: first.month,
+            year: first.year,
+            hour: first.hour,
+            min: first.min,
+            lat: first.lat,
+            lon: first.lon,
+            tzone: first.tzone,
+          });
+
+          const secondCalc = await calculateSignsInternal({
+            day: second.day,
+            month: second.month,
+            year: second.year,
+            hour: second.hour,
+            min: second.min,
+            lat: second.lat,
+            lon: second.lon,
+            tzone: second.tzone,
+          });
 
           await docRef.set(
             {
               firstPerson: {
                 ...first,
-                sun: firstCalc.raw.sun.sign,
-                moon: firstCalc.raw.moon.sign,
-                rising: firstCalc.raw.ascendant.sign,
+                sun: firstCalc.planets.sun.sign,
+                moon: firstCalc.planets.moon.sign,
+                rising: firstCalc.ascendant.sign,
               },
               secondPerson: {
                 ...second,
-                sun: secondCalc.raw.sun.sign,
-                moon: secondCalc.raw.moon.sign,
-                rising: secondCalc.raw.ascendant.sign,
+                sun: secondCalc.planets.sun.sign,
+                moon: secondCalc.planets.moon.sign,
+                rising: secondCalc.ascendant.sign,
               },
             },
             { merge: true }

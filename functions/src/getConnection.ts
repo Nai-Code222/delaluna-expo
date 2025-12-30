@@ -95,9 +95,9 @@ async function ensureSigns(p: PersonInput): Promise<PersonInput> {
 
   return {
     ...p,
-    "Sun Sign": signs.raw.sun.sign,
-    "Moon Sign": signs.raw.moon.sign,
-    "Rising Sign": signs.raw.ascendant.sign,
+    "Sun Sign": signs.planets.sun.sign,
+    "Moon Sign": signs.planets.moon.sign,
+    "Rising Sign": signs.ascendant.sign,
   };
 }
 

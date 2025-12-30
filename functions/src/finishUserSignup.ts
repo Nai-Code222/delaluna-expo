@@ -1,4 +1,4 @@
-// functions/finishUserSignup.ts
+// functions/src/finishUserSignup.ts
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
@@ -7,7 +7,7 @@ import { DateTime } from "luxon";
 import { z } from "zod";
 import { db } from "./initAdmin";
 import { calculateSignsInternal } from "./utils/calcSigns";
-import { onDocumentUpdated } from "firebase-functions/v2/firestore";
+import type { NatalChartResult } from "./utils/calcSigns";
 
 /**
  * Zod schema for the FLATTENED request payload.
@@ -120,11 +120,11 @@ export const finishUserSignup = onCall(async (req) => {
     // ---------------------------
     // 3. Swiss Ephemeris: sun/moon/rising
     // ---------------------------
-    const signs = await calculateSignsInternal(astroParams);
+    const signs: NatalChartResult = await calculateSignsInternal(astroParams);
 
-    const sunSign = signs.raw.sun.sign;
-    const moonSign = signs.raw.moon.sign;
-    const risingSign = signs.raw.ascendant.sign;
+    const sunSign = signs.planets.sun.sign;
+    const moonSign = signs.planets.moon.sign;
+    const risingSign = signs.ascendant.sign;
 
     const now = FieldValue.serverTimestamp();
 
@@ -153,11 +153,21 @@ export const finishUserSignup = onCall(async (req) => {
 
       isBirthTimeUnknown: isBirthTimeUnknown ?? false,
       isPlaceOfBirthUnknown: isPlaceOfBirthUnknown ?? false,
-
+      astroParams,
       sunSign,
       moonSign,
       risingSign,
-      astroParams,
+      natalChart: {
+        bigThree: {
+          sun: sunSign,
+          moon: moonSign,
+          rising: risingSign,
+        },
+        planets: signs.planets,
+        houses: signs.houses,
+        ascendant: signs.ascendant,
+        aspects: signs.aspects,
+      },
 
       themeKey: themeKey || "default",
       currentTimezone: currentTimezone ?? null,
@@ -169,25 +179,8 @@ export const finishUserSignup = onCall(async (req) => {
 
     await userRef.set(updateDoc, { merge: true });
 
-    // ---------------------------
-    // 5. Initialize Birth Chart pipeline
-    // ---------------------------
-    await db.doc(`users/${uid}/birthChart/default`).set(
-      {
-        status: "pending",
-        chartImageUrl: null,
-        placements: null,
-        summary: null,
-        retryCount: 0,
-        premiumUnlocked: false,
-        createdAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    );
-
-    logger.info(`finishUserSignup completed for uid=${uid}`);
-
     return { user: updateDoc };
+
   } catch (err: any) {
     logger.error(`finishUserSignup error for uid=${uid}:`, err);
 
