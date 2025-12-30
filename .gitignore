@@ -183,3 +183,6 @@ functions/seed/firestore_export/firestore_export.overall_export_metadata
 functions/seed/firestore_export/all_namespaces/all_kinds/all_namespaces_all_kinds.export_metadata
 .gitignore
 seed/firestore_export/firestore_export.overall_export_metadata
+functions/seed/firestore_export/all_namespaces/all_kinds/output-0
+seed/firestore_export/firestore_export.overall_export_metadata
+seed/firestore_export/firestore_export.overall_export_metadata
