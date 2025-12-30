@@ -198,6 +198,8 @@ export default function SignUpChatScreen() {
 
       console.log("✅ Firestore user doc created:", response);
 
+
+
       const isEmulator = extra?.USE_EMULATOR === "true";
 
       const actionCodeSettings = isEmulator
@@ -225,20 +227,22 @@ export default function SignUpChatScreen() {
           console.log("⚠️ Auth Emulator detected — skipping sendEmailVerification (deep links unsupported)");
         }
 
-        // Go to pending screen instead of main
         simulateProgress(() => {
-          router.replace("/verify-email-pending");
+          router.replace("/(main)/index");
         });
+
+        // Go to pending screen instead of main
+        // simulateProgress(() => {
+        //   router.replace("/verify-email-pending");
+        // });
       } else {
         console.log("⚠️ Email verification disabled (DEV MODE) — skipping verification");
 
         // Skip verification → go straight to app
         simulateProgress(() => {
-          router.replace("/index");
+          router.replace("/(main)/index");
         });
       }
-
-
 
     } catch (err) {
       const error = parseError(err);
