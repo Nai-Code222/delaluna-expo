@@ -5,7 +5,7 @@ import "react-native-get-random-values";
 import Constants from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
-
+import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
 
 // Firebase Core
 import {
@@ -35,11 +35,7 @@ import {
   connectFunctionsEmulator,
 } from "firebase/functions";
 
-
-
-// -------------------------------------------------------
-// 🔧 Load Expo config
-// -------------------------------------------------------
+// Load Expo config
 const extra =
   (Constants.expoConfig as any)?.extra ??
   (Constants.manifest as any)?.extra;
@@ -57,10 +53,7 @@ const firebaseConfig: FirebaseOptions = {
   appId: extra.FIREBASE_APP_ID,
 };
 
-
-// -------------------------------------------------------
-// 🔥 Initialize Firebase
-// -------------------------------------------------------
+// Initialize Firebase
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 // Auth
@@ -74,25 +67,30 @@ export const db = getFirestore(app);
 // Functions
 export const functions = getFunctions(app, "us-central1");
 
+// Firebase Ai Logic
+// Initialize the Gemini Developer API backend service
+const ai = getAI(app, { backend: new GoogleAIBackend() });
 
-// -------------------------------------------------------
-// 🧪 Emulator Support (DEV only)
-// -------------------------------------------------------
+// Create a `GenerativeModel` instance with a model that supports your use case
+const model = getGenerativeModel(ai, { model: "gemini-2.5-flash-image" });
+
+
+// Emulator Support (DEV only)
 const USE_EMULATOR = extra?.USE_EMULATOR === "true";
 
 if (__DEV__ && USE_EMULATOR) {
   const host = Platform.OS === "android" ? "10.0.2.2" : "localhost";
 
-  // 👉 Auth
+  // Auth
   connectAuthEmulator(auth, `http://${host}:9099`);
 
-  // 👉 Firestore
+  // Firestore
   connectFirestoreEmulator(db, host, 8080);
 
-  // 👉 Functions
+  // Functions
   connectFunctionsEmulator(functions, host, 5001);
 
-  console.log("🔥 USING EMULATOR:", host);
+  console.log("USING EMULATOR: ", host);
 }
 
 export { app };
