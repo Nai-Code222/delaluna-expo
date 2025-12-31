@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import React, { useContext, useEffect, useRef, useState, useCallback } from "react";
 import {
   View,
@@ -22,7 +24,12 @@ import HomeSignsDisplay from "../../src/components/home/home-signs-display.compo
 import HomeTextBox from "../../src/components/home/home-text-box.component";
 import useRenderBackground from "@/hooks/useRenderBackground"; import DateSwitcher from "../../src/components/component-utils/date-switcher.component";
 import { auth, db } from "../../firebaseConfig";
-import { signOut } from "firebase/auth";
+import { getTarotCardDraw } from "@/services/tarot-card.service";
+import { generateAndSaveBirthChart } from "@/services/firebase-ai-logic.service";
+import { getDailyCard } from "@/services/dailyTarot.service";
+import { buildBirthChartPrompt } from "../../functions/src/utils/buildBirthChartPrompt";
+import { buildHoroscopePrompt } from "../../functions/src/utils/buildHoroscopePrompt";
+import { generateHoroscope, generateHoroscopes } from "@/services/generate-horoscope.service";
 
 export default function HomeScreen() {
   const { authUser, initializing } = useContext(AuthContext);
@@ -34,15 +41,13 @@ export default function HomeScreen() {
   const { user: userParam } = useLocalSearchParams();
   const initialUserRecord = userParam ? JSON.parse(userParam as string) : null;
   const HEADER_HEIGHT = Platform.OS === "ios" ? 115 : 85;
-  
+
 
   // Firestore user profile (cached + realtime)
   const { user: userRecord, loading: profileLoading, cachedAt } = useUserProfile(
     authUser?.uid,
     initialUserRecord
   );
-
-  
 
   const sectionLabels = [
     "Quote",
@@ -55,24 +60,72 @@ export default function HomeScreen() {
     "Release",
   ];
 
+  const maybeGenerateBirthChart = async () => {
+    if (!authUser?.uid || !userRecord) return;
+
+    const chartRef = doc(
+      db,
+      "users",
+      authUser.uid,
+      "birthChart",
+      "default"
+    );
+
+    const snap = await getDoc(chartRef);
+
+    // If already generated, do nothing
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data?.status === "complete" && data?.imageUrl) {
+        return;
+      }
+    }
+
+    console.log("🌌 Generating birth chart...");
+
+    const prompt = buildBirthChartPrompt({
+      birthDate: userRecord.birthday,
+      birthTime: userRecord.birthtime,
+      lat: userRecord.birthLat,
+      lon: userRecord.birthLon,
+      timezone: userRecord.tZoneOffset,
+    });
+
+    await generateAndSaveBirthChart(authUser.uid, prompt);
+
+    console.log("✨ Birth chart saved");
+  };
+
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     if (!authUser?.uid) return;
+
     setRefreshing(true);
-    
+
     try {
+
+      // const cards = await getTarotCardDraw(
+      //   authUser.uid,
+      //   3,
+      // );
+
+      // const horoscopes = await generateHoroscopes(authUser.uid, userRecord.risingSign, userRecord.sunSign, userRecord.moonSign, cards);
+
+      // Generate birth chart
+      //await maybeGenerateBirthChart();
+
+      // Optional: re-fetch user doc
       const snap = await getDoc(doc(db, "users", authUser.uid));
       if (snap.exists()) {
-        const freshData = snap.data();
-        console.log("Manually refreshed user data:", freshData);
+        console.log("Manually refreshed user data:", snap.data());
       }
     } catch (e) {
-      console.warn("Manual refresh failed:", e);
+      console.warn("Refresh failed:", e);
     } finally {
       setRefreshing(false);
     }
-  }, [authUser?.uid]);
+  }, [authUser?.uid, userRecord]);
 
   //  Fade animation on theme change
   const fade = useRef(new Animated.Value(0)).current;
@@ -103,7 +156,6 @@ export default function HomeScreen() {
     );
   }
 
-
   return renderBackground(
     <Animated.View style={[styles.container, { opacity: fade }]}>
       <HeaderNav
@@ -120,7 +172,6 @@ export default function HomeScreen() {
             moon={userRecord.moonSign}
             rising={userRecord.risingSign}
           />
-
         </View>
         <DateSwitcher>
 
@@ -134,7 +185,7 @@ export default function HomeScreen() {
               tintColor="#fff"
             />
           }
-        > 
+        >
           <View style={styles.content}>
             {sectionLabels.map((label, index) => (
               <HomeTextBox key={index} title={label} style={{ marginBottom: 15 }} />
