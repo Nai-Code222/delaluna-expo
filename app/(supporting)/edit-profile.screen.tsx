@@ -32,8 +32,8 @@ import GlassButton from '../../src/components/buttons/glass-button';
 import HeaderNav from '../../src/components/component-utils/header-nav';
 import PronounDropdown from '../../src/components/buttons/pronoun-dropdown';
 import { ThemeContext } from "../theme-context";
-import { getBigThree } from '../../src/services/astro.service';
 import { updateUserDoc } from '../../src/services/user.service';
+import { useAuth } from '@/backend/auth-context';
 
 type Params = {
   firstName: string;
@@ -113,6 +113,8 @@ export default function EditProfileScreen() {
   const { theme } = useContext(ThemeContext);
   const insets = useSafeAreaInsets();
   const window = Dimensions.get('window');
+  const { authUser, initializing } = useAuth();
+  
 
   // Original values used for diffing (we keep whatever came via params)
   const original = {
@@ -145,11 +147,11 @@ export default function EditProfileScreen() {
 
   const [timeOfBirth, setTimeOfBirth] = useState(normalizeTimeHHmm(params.birthtime)); // "HH:mm"
   const [timeError, setTimeError] = useState<string | null>(null);
-  const [isBirthTimeUnknown, setisBirthTimeUnknown] = useState(params.isBirthTimeUnknown === 'true');
+  const [isBirthTimeUnknown, setisBirthTimeUnknown] = useState(params.isBirthTimeUnknown === 'true' ? true : false);
 
   const [placeOfBirth, setPlaceOfBirth] = useState(params.placeOfBirth);
   const [placeError, setPlaceError] = useState<string | null>(null);
-  const [placeUnknown, setPlaceUnknown] = useState(params.isPlaceOfBirthUnknown === 'true');
+  const [placeUnknown, setPlaceUnknown] = useState(params.isPlaceOfBirthUnknown === 'true' ? true : false);
 
   const [userID] = useState(params.userID);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -200,6 +202,8 @@ export default function EditProfileScreen() {
   const FALLBACK_HH = 12; // noon
   const FALLBACK_MM = 0;
 
+
+  
   useEffect(() => {
     const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
@@ -366,102 +370,76 @@ export default function EditProfileScreen() {
     ]);
   };
 
+  // Centralized birth-change guard
+  const hasBirthDataChanged = () => {
+    return (
+      birthday !== original.birthday ||
+      timeOfBirth !== original.birthtime ||
+      isBirthTimeUnknown !== original.isBirthTimeUnknown ||
+      placeOfBirth !== original.placeOfBirth ||
+      placeUnknown !== original.isPlaceOfBirthUnknown ||
+      birthLat !== original.birthLat ||
+      birthLon !== original.birthLon ||
+      birthTimezone !== original.birthTimezone
+    );
+  };
+
   const handleSave = async () => {
-    if (!placeUnknown && !placeSelected && placeOfBirth !== original.placeOfBirth) {
+    const birthDataChanged = hasBirthDataChanged();
+
+    if (!placeUnknown && !placeSelected && birthDataChanged) {
       setPlaceError('Please select a location from suggestions');
       return;
     }
+
     if (nameError || lastNameError || birthdayError || timeError || placeError) return;
 
-    // Build current values we may persist (intermediate)
-    const currentAll = {
+    // Prepare canonical values for payload (match signup pipeline)
+    const birthDateISO = (birthday || '').trim(); // 'yyyy-MM-dd'
+    let hh = FALLBACK_HH, mm = FALLBACK_MM;
+    if (!isBirthTimeUnknown && timeOfBirth) {
+      const parts = timeOfBirth.split(':').map(Number);
+      if (parts.length === 2 && !Number.isNaN(parts[0]) && !Number.isNaN(parts[1])) {
+        hh = Math.max(0, Math.min(23, parts[0]));
+        mm = Math.max(0, Math.min(59, parts[1]));
+      }
+    }
+    const tz = placeUnknown ? FALLBACK_TZ : (birthTimezone || FALLBACK_TZ);
+    const lat = placeUnknown ? FALLBACK_LAT : (birthLat ?? FALLBACK_LAT);
+    const lon = placeUnknown ? FALLBACK_LON : (birthLon ?? FALLBACK_LON);
+
+    const birthtime12h = isBirthTimeUnknown
+      ? "12:00 PM"
+      : DateTime.fromObject({ hour: hh, minute: mm }).toFormat("hh:mm a");
+
+    const birthdayUi = DateTime.fromISO(birthDateISO).toFormat("MM/dd/yyyy");
+
+    const basePayload = {
       firstName,
       lastName,
       pronouns: pronoun,
-      birthday,                 // 'yyyy-MM-dd' in state
-      birthtime: timeOfBirth,   // 'HH:mm' in state
-      isBirthTimeUnknown,
-      placeOfBirth,
-      isPlaceOfBirthUnknown: placeUnknown,
-      birthLat,
-      birthLon,
-      birthTimezone,
     };
 
-    // Figure out what changed vs original
-    const changes = Object.entries(currentAll).reduce((acc, [k, v]) => {
-      const orig = (original as any)[k];
-      if (orig !== v) acc[k] = v;
-      return acc;
-    }, {} as Record<string, any>);
+    let payloadForServer: any = { ...basePayload };
 
-    // Did any astro-driving fields change?
-    const astroInputsChanged =
-      changes.birthday !== undefined ||
-      changes.birthtime !== undefined ||
-      changes.isBirthTimeUnknown !== undefined ||
-      changes.placeOfBirth !== undefined ||
-      changes.isPlaceOfBirthUnknown !== undefined ||
-      changes.birthLat !== undefined ||
-      changes.birthLon !== undefined ||
-      changes.birthTimezone !== undefined;
-
-    if (astroInputsChanged) {
-      // Prepare canonical values and UI strings
-      const birthDateISO = (birthday || '').trim(); // 'yyyy-MM-dd'
-      let hh = FALLBACK_HH, mm = FALLBACK_MM;
-
-      if (!isBirthTimeUnknown && timeOfBirth) {
-        const parts = timeOfBirth.split(':').map(Number);
-        if (parts.length === 2 && !Number.isNaN(parts[0]) && !Number.isNaN(parts[1])) {
-          hh = Math.max(0, Math.min(23, parts[0]));
-          mm = Math.max(0, Math.min(59, parts[1]));
-        }
-      }
-      const tz = placeUnknown ? FALLBACK_TZ : (birthTimezone || FALLBACK_TZ);
-      const lat = placeUnknown ? FALLBACK_LAT : (birthLat ?? FALLBACK_LAT);
-      const lon = placeUnknown ? FALLBACK_LON : (birthLon ?? FALLBACK_LON);
-
-      // Local (in birth TZ) then format to strings per spec
-      let dtLocal = DateTime.fromISO(birthDateISO, { zone: tz })
-        .set({ hour: hh, minute: mm, second: 0, millisecond: 0 });
-      if (!dtLocal.isValid) {
-        dtLocal = DateTime.fromISO(birthDateISO).set({ hour: hh, minute: mm, second: 0, millisecond: 0 });
-      }
-
-      const birthtime12h = to12h(hh, mm); // "hh:mm a"
-      const birthdayUi = dtLocal.toFormat('MM/dd/yyyy'); // "MM/dd/yyyy"
-      const birthDateTimeUTCStr = formatBirthStamp(dtLocal); // "MM/dd/yyyy - hh:mm:ss AM UTC-6"
-
-      // For astro math, use the instant in UTC as Date
-      const dtUtc = dtLocal.toUTC();
-      const birthInstant = dtUtc.toJSDate();
-
-      // Astro
-      const { sun, moon, rising } = getBigThree(birthInstant, { latitude: lat, longitude: lon, height: 0 });
-
-      Object.assign(changes, {
+    if (birthDataChanged) {
+      payloadForServer = {
+        ...payloadForServer,
+        birthday: birthdayUi,
+        birthtime: birthtime12h,
         birthLat: lat,
         birthLon: lon,
         birthTimezone: tz,
-        birthday: birthdayUi,          // store UI format
-        birthtime: birthtime12h,       // "hh:mm a"
-        birthDateTimeUTC: birthDateTimeUTCStr, // UI stamp string
-        zodiacSign: sun.sign,
-        moonSign: moon.sign,
-        risingSign: rising.sign,
-      });
-    }
-
-    if (!Object.keys(changes).length) {
-      setShowSuccessAlert(true);
-      setTimeout(() => { setShowSuccessAlert(false); router.replace('/(supporting)/profile.screen'); }, 1500);
-      return;
+        placeOfBirth,
+        isBirthTimeUnknown,
+        isPlaceOfBirthUnknown: placeUnknown,
+        currentTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? null,
+      };
     }
 
     try {
       setSaving(true);
-      await updateUserDoc(userID, changes);
+      await updateUserDoc(userID, payloadForServer);
       setShowSuccessAlert(true);
       setTimeout(() => { setShowSuccessAlert(false); router.replace('/(supporting)/profile.screen'); }, 1500);
     } catch (e) {

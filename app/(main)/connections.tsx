@@ -92,7 +92,7 @@ const AnimatedConnectionItem = memo(
 
 export default function ConnectionsScreen() {
   const { theme } = useContext(ThemeContext);
-  const { user } = useContext(AuthContext);
+  const { authUser } = useContext(AuthContext);
   const insets = useSafeAreaInsets();
   const renderBackground = useRenderBackground();
 
@@ -115,8 +115,8 @@ export default function ConnectionsScreen() {
 
   // 🔥 Firestore listener
   useEffect(() => {
-    if (!user?.uid) return;
-    const ref = collection(db, "users", user.uid, "connections");
+    if (!authUser?.uid) return;
+    const ref = collection(db, "users", authUser.uid, "connections");
     const q = query(ref, orderBy("createdAt", "desc"));
 
     const unsubscribe = onSnapshot(
@@ -133,7 +133,7 @@ export default function ConnectionsScreen() {
     );
 
     return () => unsubscribe();
-  }, [user?.uid]);
+  }, [authUser?.uid]);
 
   const handleDeleteConnection = async (connectionId: string) => {
     Alert.alert(
@@ -147,7 +147,7 @@ export default function ConnectionsScreen() {
           onPress: async () => {
             try {
               const deleteFn = httpsCallable(functions, "deleteConnection");
-              await deleteFn({ userId: user?.uid, connectionId });
+              await deleteFn({ userId: authUser?.uid, connectionId });
               setConnections((prev) =>
                 prev.filter((c) => c.id !== connectionId)
               );

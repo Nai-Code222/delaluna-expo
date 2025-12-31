@@ -49,8 +49,8 @@ import { createConnection } from "../../src/services/connection.service";
 
 export default function SingleConnectionCreateScreen() {
   const { theme } = useContext(ThemeContext);
-  const { user } = useContext(AuthContext);
-  const { user: userRecord } = useUserProfile(user?.uid);
+  const { authUser } = useContext(AuthContext);
+  const { user: userRecord } = useUserProfile(authUser?.uid);
   const renderBackground = useRenderBackground();
   const [isMe, setIsMe] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -406,7 +406,7 @@ export default function SingleConnectionCreateScreen() {
       };
       
 
-      const userID: string = user!.uid;
+      const userID: string = authUser!.uid;
       const connectionReport = await createConnection({userId: userID, isMe: isMe, relationshipType: relationshipType, firstPerson: enrichedFirst, secondPerson: enrichedSecond});
       console.log("Connection Report: ", {connectionReport});
   

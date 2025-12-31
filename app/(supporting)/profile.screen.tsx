@@ -31,7 +31,7 @@ const MAX_SCALE = 1.12;
 const PRONOUNS = ['She/Her', 'He/Him', 'They/Them', 'Non Binary'];
 
 export default function ProfileScreen() {
-  const { user, initializing } = useAuth();
+  const { authUser, initializing } = useAuth();
   const { theme, setThemeKey } = useContext(ThemeContext);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -40,8 +40,8 @@ export default function ProfileScreen() {
   const isFocused = useIsFocused();
   let userData: DocumentData;
 
-  const initialIndex = user
-    ? PRONOUNS.findIndex((p) => p === user.displayName)
+  const initialIndex = authUser
+    ? PRONOUNS.findIndex((p) => p === authUser.displayName)
     : 0;
 
   const [selectedIdx, setSelectedIdx] = useState(
@@ -49,10 +49,10 @@ export default function ProfileScreen() {
   );
 
   const getUserRecord = async () => {
-    if (!user?.uid) return;
+    if (!authUser?.uid) return;
 
     try {
-      const ref = getUserDocRef(auth.currentUser!.uid);
+      const ref = getUserDocRef(authUser.uid);
       const docSnap = await getDoc(ref);
 
       if (!docSnap.exists()) {
@@ -74,13 +74,13 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     if (initializing) return;
-    if (!user) {
+    if (!authUser) {
       router.replace('/(auth)/welcome');
     } else {
       setProfileLoading(true);
       getUserRecord();
     }
-  }, [user, initializing]);
+  }, [authUser, initializing]);
 
   // Moved here: hooks must run before any early return
   const { width, height } = useWindowDimensions();
@@ -102,8 +102,8 @@ export default function ProfileScreen() {
         isBirthTimeUnknown: String(userRecord.isBirthTimeUnknown),
         placeOfBirth: userRecord.placeOfBirth ?? '',
         isPlaceOfBirthUnknown: String(userRecord.isPlaceOfBirthUnknown),
-        email: user?.email ?? '',
-        userID: user?.uid ?? '',
+        email: authUser?.email ?? '',
+        userID: authUser?.uid ?? '',
       },
     });
   };
@@ -112,7 +112,7 @@ export default function ProfileScreen() {
     router.replace({
       pathname: '/(supporting)/update-theme.screen',
       params: {
-        userID: user?.uid ?? '',
+        userID: authUser?.uid ?? '',
       },
     });
   }
@@ -161,8 +161,8 @@ export default function ProfileScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              deleteDoc(getUserDocRef(user?.uid || ''))
-              await user?.delete()
+              deleteDoc(getUserDocRef(authUser?.uid || ''))
+              await authUser?.delete()
               router.replace('/(auth)/welcome')
             } catch (error) {
               setErrorMessage('Account deletion failed. Please try again.')
@@ -273,7 +273,7 @@ export default function ProfileScreen() {
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldLabel}>Email </Text>
                 <View style={styles.userDataContainer}>
-                  <Text style={styles.userDataTextField}>{user?.email}</Text>
+                  <Text style={styles.userDataTextField}>{authUser?.email}</Text>
                 </View>
               </View>
               <View style={styles.profileInformationContainer}>
