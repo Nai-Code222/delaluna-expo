@@ -186,3 +186,9 @@ seed/firestore_export/firestore_export.overall_export_metadata
 functions/seed/firestore_export/all_namespaces/all_kinds/output-0
 seed/firestore_export/firestore_export.overall_export_metadata
 seed/firestore_export/firestore_export.overall_export_metadata
+seed/firestore_export/firestore_export.overall_export_metadata
+seed/firebase-export-metadata.json
+functions/seed/auth_export/config.json
+functions/seed/auth_export/accounts.json
+seed/storage_export/buckets.json
+seed/firestore_export/firestore_export.overall_export_metadata
