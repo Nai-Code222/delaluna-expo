@@ -33,7 +33,7 @@ const AuthContext = createContext<AuthContextType>({
   birthChartError: null,
   birthChartLoading: false,
   birthChartPremiumUnlocked: false,
-  regenerateBirthChart: () => {},
+  regenerateBirthChart: () => { },
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -111,13 +111,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
 
-  useEffect(() => {
-    if (!birthChartStatus) return;
-    if (birthChartStatus === "placements_ready") {
-      router.push("/birth-chart");
-    }
-  }, [birthChartStatus]);
+  // TEMP: disable birth chart auto-routing during v1
+  // useEffect(() => {
+  //   if (!birthChartStatus) return;
+  //   if (birthChartStatus === "placements_ready") {
+  //     router.push("/birth-chart");
+  //   }
+  // }, [birthChartStatus]);
 
+  
   const regenerateBirthChart = () => {
     // placeholder: will trigger cloud function
     console.log("Regenerate birth chart requested");
