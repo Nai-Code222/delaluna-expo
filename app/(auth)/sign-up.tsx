@@ -209,6 +209,7 @@ export default function SignUpChatScreen() {
 
       const isEmulator : boolean = extra?.USE_EMULATOR;
       router.replace("/index");
+      return;
 
       // const actionCodeSettings = isEmulator
       //   ? undefined
@@ -228,7 +229,7 @@ export default function SignUpChatScreen() {
       // STEP 4 — Email verification (based on toggle)
       // if (USE_EMAIL_VERIFICATION === "true") {
       //   console.log("📧 Email verification enabled — sending email…");
-
+      //
       //   if (isEmulator) {
       //     console.log("⚠️ Auth Emulator detected — skipping sendEmailVerification (deep links unsupported)");
       //     simulateProgress(() => {
@@ -242,10 +243,10 @@ export default function SignUpChatScreen() {
       //       router.replace("/verify-email-pending");
       //     });
       //   }
-
+      //
       // } else {
       //   console.log("⚠️ Email verification disabled (DEV MODE) — skipping verification");
-
+      //
       //   router.replace("/index");
       // }
 
