@@ -192,3 +192,5 @@ functions/seed/auth_export/config.json
 functions/seed/auth_export/accounts.json
 seed/storage_export/buckets.json
 seed/firestore_export/firestore_export.overall_export_metadata
+functions/seed/firebase-export-metadata.json
+functions/seed/storage_export/buckets.json
