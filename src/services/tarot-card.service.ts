@@ -8,44 +8,57 @@ import { TAROT_CARDS } from "@/data/tarotCards.registry";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import type { DrawnTarotCard } from "@/types/tarot-cards.type";
 import { DailyCardPack, DailyCardPackSchema } from "@/schemas/dailyCardPack.schema";
-
+import { generateHoroscope } from "./generate-horoscope.service";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-function seededRandom(seed: string) {
-  let h = 0;
+function createSeededRng(seed: string) {
+  let h = 2166136261 >>> 0;
   for (let i = 0; i < seed.length; i++) {
-    h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
   }
-  return (h >>> 0) / 4294967296;
+
+  return function () {
+    // Mulberry32
+    h += 0x6D2B79F5;
+    let t = h;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
-function drawCard(userId: string, date: string) {
+function shuffleDeck<T>(deck: T[], seed: string): T[] {
+  const shuffled = [...deck];
+  const rand = createSeededRng(seed);
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled;
+}
+
+function drawDailySpread(userId: string, date: string, count: number): DrawnTarotCard[] {
   const seed = `${userId}_${date}`;
-  const rand = seededRandom(seed);
-  const index = Math.floor(rand * TAROT_CARDS.length);
-  const card = TAROT_CARDS[index];
+  const shuffledDeck = shuffleDeck(TAROT_CARDS, seed);
+  const rand = createSeededRng(seed + "_rev");
 
-  const reversedRand = seededRandom(seed + "_rev");
-  const reversed = reversedRand < (card.reversalProbability ?? 0.35);
+  return shuffledDeck.slice(0, count).map(card => {
+    const reversed = rand() < (card.reversalProbability ?? 0.35);
 
-  const keywords = reversed
-    ? card.keywordsReversed
-    : card.keywordsUpright;
-
-  const meaning = reversed ? card.meaningReversed : card.meaningUpright;
-
-  const selected: DrawnTarotCard = {
-    id: card.id,
-    name: card.name,
-    imagePath: card.imagePath,
-    reversed,
-    keywords,
-    meaning,
-  };
-
-  return DrawnTarotCardSchema.parse(selected);
+    return DrawnTarotCardSchema.parse({
+      id: card.id,
+      name: card.name,
+      imagePath: card.imagePath,
+      reversed,
+      keywords: reversed ? card.keywordsReversed : card.keywordsUpright,
+      meaning: reversed ? card.meaningReversed : card.meaningUpright,
+    });
+  });
 }
 
 function buildTarotJSON(cards: DrawnTarotCard[]): string {
@@ -82,22 +95,26 @@ function buildDailyCardPack(date: string, cards: DrawnTarotCard[]): DailyCardPac
   });
 }
 
-async function getOrCreateCardsForDate(userId: string, date: string, count: number) {
+async function getOrCreateCardsForDate(
+  userId: string,
+  date: string,
+  count: number
+) {
   const db = getFirestore();
-  const ref = doc(db, "users", userId, "cards", date);
-  const snap = await getDoc(ref);
 
-  // If DailyCardPack already exists, return the FULL pack
-  if (snap.exists()) {
-    return DailyCardPackSchema.parse(snap.data());
+  const cardsRef = doc(db, "users", userId, "cards", date);
+  const cardsSnap = await getDoc(cardsRef);
+
+  // If tarot already exists, return it
+  if (cardsSnap.exists()) {
+    return DailyCardPackSchema.parse(cardsSnap.data());
   }
 
-  // Otherwise: draw cards and build a FULL pack
-  const cards = Array.from({ length: count }, () => drawCard(userId, date));
+  // Create daily tarot pack
+  const cards = drawDailySpread(userId, date, count);
   const pack = buildDailyCardPack(date, cards);
 
-  // Save the entire DailyCardPack (NOT just cards)
-  await setDoc(ref, pack);
+  await setDoc(cardsRef, pack);
 
   return pack;
 }

@@ -1,3 +1,6 @@
+import type { DailyCardPack } from "@/model/daily-cards.model";
+
+
 export interface TarotCard {
   id: number;                    // "the_fool"
   name: string;                  // "The Fool"
@@ -24,5 +27,11 @@ export interface DrawnTarotCard {
 }
 
 export interface TarotCardList {
-    cards: DrawnTarotCard[];
+  cards: DrawnTarotCard[];
+}
+
+export interface TarotDrawResult {
+  yesterday: DailyCardPack;
+  today: DailyCardPack;
+  tomorrow: DailyCardPack;
 }

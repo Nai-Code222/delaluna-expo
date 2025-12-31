@@ -2,6 +2,7 @@
 
 import { httpsCallable } from "firebase/functions";
 import { functions } from "../../firebaseConfig";
+import { getTarotCardDraw } from "./tarot-card.service";
 
 export interface SignupUserRecord {
   id: string;
@@ -103,12 +104,10 @@ const finishUserSignup = async (
       "finishUserSignup"
     );
 
-    console.log("🔔 finishUserSignup request (before clean):", request);
-
     // Clean undefined values but preserve null
     const cleaned : FinishUserSignupRequest = stripUndefined(request);
 
-    console.log("🧼 finishUserSignup cleaned request:", cleaned);
+    console.log("🧼 finishUserSignup clean request:", cleaned);
 
     const data = await callWithLogging(
       callable,

@@ -28,6 +28,8 @@ import { validateAndCleanSignupPayload } from "@/schemas/signupAnswers.schema";
 import { FinalSignupPayload } from "@/types/signup.types";
 import { parseError } from "@/utils/errorParser";
 import Constants from "expo-constants";
+import { getTarotCardDraw } from "@/services/tarot-card.service";
+import { generateHoroscope, generateHoroscopes } from "@/services/generate-horoscope.service";
 
 // Safe fallback constants
 const FALLBACK_PLACE_LABEL = "Greenwich, London, United Kingdom";
@@ -198,51 +200,54 @@ export default function SignUpChatScreen() {
 
       console.log("✅ Firestore user doc created:", response);
 
+      const cards = await getTarotCardDraw(
+        uid,
+        3,
+      );
 
+      const horoscopes = await generateHoroscopes(uid, response.user.risingSign, response.user.sunSign, response.user.moonSign, cards);
 
-      const isEmulator = extra?.USE_EMULATOR === "true";
+      const isEmulator : boolean = extra?.USE_EMULATOR;
+      router.replace("/index");
 
-      const actionCodeSettings = isEmulator
-        ? undefined
-        : {
-          url: "delaluna://email-verification",
-          iOS: {
-            bundleId: "com.delaluna.answers",
-          },
-          android: {
-            packageName: "com.delaluna.answers",
-            installApp: true,
-            minimumVersion: "12",
-          },
-          handleCodeInApp: true,
-        };
+      // const actionCodeSettings = isEmulator
+      //   ? undefined
+      //   : {
+      //     url: "delaluna://email-verification",
+      //     iOS: {
+      //       bundleId: "com.delaluna.answers",
+      //     },
+      //     android: {
+      //       packageName: "com.delaluna.answers",
+      //       installApp: true,
+      //       minimumVersion: "12",
+      //     },
+      //     handleCodeInApp: true,
+      //   };
 
       // STEP 4 — Email verification (based on toggle)
-      if (USE_EMAIL_VERIFICATION === "true") {
-        console.log("📧 Email verification enabled — sending email…");
+      // if (USE_EMAIL_VERIFICATION === "true") {
+      //   console.log("📧 Email verification enabled — sending email…");
 
-        if (!isEmulator && fbUser != null && !fbUser.emailVerified) {
-          await sendEmailVerification(fbUser, actionCodeSettings);
-        } else if (isEmulator) {
-          console.log("⚠️ Auth Emulator detected — skipping sendEmailVerification (deep links unsupported)");
-        }
+      //   if (isEmulator) {
+      //     console.log("⚠️ Auth Emulator detected — skipping sendEmailVerification (deep links unsupported)");
+      //     simulateProgress(() => {
+      //       router.replace("/index");
+      //     });
+      //   }
+      //   else if (!isEmulator && fbUser != null && !fbUser.emailVerified) {
+      //     await sendEmailVerification(fbUser, actionCodeSettings);
+      //     // Go to pending screen instead of main
+      //     simulateProgress(() => {
+      //       router.replace("/verify-email-pending");
+      //     });
+      //   }
 
-        simulateProgress(() => {
-          router.replace("/(main)/index");
-        });
+      // } else {
+      //   console.log("⚠️ Email verification disabled (DEV MODE) — skipping verification");
 
-        // Go to pending screen instead of main
-        // simulateProgress(() => {
-        //   router.replace("/verify-email-pending");
-        // });
-      } else {
-        console.log("⚠️ Email verification disabled (DEV MODE) — skipping verification");
-
-        // Skip verification → go straight to app
-        simulateProgress(() => {
-          router.replace("/(main)/index");
-        });
-      }
+      //   router.replace("/index");
+      // }
 
     } catch (err) {
       const error = parseError(err);
@@ -280,9 +285,7 @@ export default function SignUpChatScreen() {
     return <LoadingScreen progress={progress} message="Setting up your stars..." />;
   }
 
-  // -------------------------
-  //      UI + CHAT FLOW
-  // -------------------------
+  // UI + CHAT FLOW
   const steps: StepConfig[] = [
     {
       key: "firstName",
