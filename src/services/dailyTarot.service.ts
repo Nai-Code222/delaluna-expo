@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { z } from "zod";
+import { DailyCardPackSchema } from "@/schemas/dailyCardPack.schema";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -55,10 +56,35 @@ function getYesterdayTodayTomorrowDates(): {
     tomorrow,
   };
 }
+async function generateDailyCardDraw(userId: string, date: string, count: number) {
+  const ref = doc(db, "users", userId, "cards", date);
+  const snap = await getDoc(ref);
+
+  // If DailyCardPack already exists, return the FULL pack
+  if (snap.exists()) {
+    return DailyCardPackSchema.parse(snap.data());
+  }
+
+
+
+}
+
+function generateDateList() {
+  const tz = dayjs.tz.guess();
+  const now = dayjs().tz(tz);
+
+  const yesterday = now.subtract(1, "day").format("YYYY-MM-DD");
+  const today = now.format("YYYY-MM-DD");
+  const tomorrow = now.add(1, "day").format("YYYY-MM-DD");
+
+  const dates: string[] = [yesterday, today, tomorrow];
+}
 
 export async function getDailyCard(
   userId: string,
-  userTimezone?: string
+  cardDrawCount: number,
+  userTimezone?: string,
+
 ): Promise<z.infer<typeof DailyTarotSchema> | null> {
   const ref = doc(db, "users", userId);
   const snap = await getDoc(ref);
@@ -68,10 +94,14 @@ export async function getDailyCard(
   const data = snap.data();
 
   // 1️⃣ Determine timezone
-  const tz = userTimezone || dayjs.tz.guess();
+  const tz = dayjs.tz.guess();
+  const now = dayjs().tz(tz);
 
   // 2️⃣ Format today's date in that timezone
-  const today = dayjs().tz(tz).format("YYYY-MM-DD");
+  const yesterday = now.subtract(1, "day").format("YYYY-MM-DD");
+  const today = now.format("YYYY-MM-DD");
+  const tomorrow = now.add(1, "day").format("YYYY-MM-DD");
+
 
   // 3️⃣ Reuse today's card if it already exists
   if (data.dailyTarot?.date === today) {
