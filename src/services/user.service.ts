@@ -8,6 +8,8 @@ import {
 import { UserRecord } from '../model/user-record';
 import { auth, db } from '../../firebaseConfig';
 import { FinalSignupPayload } from '@/types/signup.types';
+import { collection, query, orderBy, getDocs } from "firebase/firestore";
+import type { HoroscopeResult } from "@/types/horoscope.types";
 
 /**
  * Create a new Firebase Auth user
@@ -153,6 +155,31 @@ export function onAuthStateChanged(cb: any) {
  */
 export function getUserDocRef(userId: string) {
   return doc(db, 'users', userId);
+}
+
+/**
+ * Get User Horoscope Collection (by date)
+ * Returns a map keyed by YYYY-MM-DD
+ */
+export async function getUserHoroscopes(
+  userID: string
+): Promise<Record<string, HoroscopeResult>> {
+  const colRef = collection(db, "users", userID, "horoscope");
+  const q = query(colRef, orderBy("createTime", "desc"));
+
+  const snap = await getDocs(q);
+
+  const results: Record<string, HoroscopeResult> = {};
+
+  snap.forEach((docSnap) => {
+    const data = docSnap.data();
+
+    if (data?.result) {
+      results[docSnap.id] = data.result as HoroscopeResult;
+    }
+  });
+
+  return results;
 }
 
 /**

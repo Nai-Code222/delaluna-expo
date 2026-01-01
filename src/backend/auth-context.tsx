@@ -57,6 +57,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [horoscopeLoading, setHoroscopeLoading] = useState(true);
   const [dailyCards, setDailyCards] = useState<any | null>(null);
   const [cardsLoading, setCardsLoading] = useState(true);
+  const [horoscopeReady, setHoroscopeReady] = useState(false);
+  const [cardsReady, setCardsReady] = useState(false);
 
   useEffect(() => {
     let unsubscribeProfile: (() => void) | null = null;
@@ -65,11 +67,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let unsubscribeCards: (() => void) | null = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      setInitializing(true);
       setAuthUser(firebaseUser);
 
       if (!firebaseUser) {
         setProfile(null);
-        setInitializing(false);
+        setHoroscope(null);
+        setDailyCards(null);
+        setHoroscopeReady(false);
+        setCardsReady(false);
+        setInitializing(false); // ✅ logout is immediate
         if (unsubscribeProfile) unsubscribeProfile();
         return;
       }
@@ -80,12 +87,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ref,
         (snap) => {
           setProfile(snap.exists() ? (snap.data() as SignupUserRecord) : null);
-          setInitializing(false);
         },
         (err) => {
           console.warn("profile listener error:", err);
           setProfile(null);
-          setInitializing(false);
         }
       );
 
@@ -129,8 +134,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const data = snap.data();
 
           if (data?.status?.state === "complete" && data?.result) {
-            setHoroscope(data.result);     // ✅ CLEAN VERSION ONLY
+            console.log("🔮 Horoscope READY", {
+              date: today,
+              hasResult: true,
+            });
+
+            setHoroscope(data.result);
             setHoroscopeLoading(false);
+            setHoroscopeReady(true); // ✅ READY ONLY AFTER CLEAN DATA
           }
         },
         (err) => {
@@ -154,8 +165,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const data = snap.data();
 
           if (Array.isArray(data?.cards) && data.cards.length > 0) {
+            console.log("🃏 Cards READY", {
+              count: data.cards.length,
+              date: today,
+            });
+
             setDailyCards(data);
             setCardsLoading(false);
+            setCardsReady(true);
           }
         },
         (err) => {
@@ -174,6 +191,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (unsubscribeCards) unsubscribeCards();
     };
   }, []);
+
+  useEffect(() => {
+    console.log("🧠 App readiness check", {
+      authUser: !!authUser,
+      profile: !!profile,
+      horoscopeReady,
+      cardsReady,
+      initializing,
+    });
+
+    // Logged out → app ready immediately
+    if (!authUser) {
+      console.log("🚪 Logged out → app ready");
+      setInitializing(false);
+      return;
+    }
+
+    // Logged in → wait for required data
+    if (profile && horoscopeReady && cardsReady) {
+      console.log("✨ App READY (profile + horoscope + cards)");
+      setInitializing(false);
+    }
+  }, [authUser, profile, horoscopeReady, cardsReady]);
 
   // TODO: TEMP: disable birth chart auto-routing during v1
   // useEffect(() => {
