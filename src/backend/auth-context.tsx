@@ -134,14 +134,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const data = snap.data();
 
           if (data?.status?.state === "complete" && data?.result) {
-            console.log("🔮 Horoscope READY", {
-              date: today,
-              hasResult: true,
-            });
-
             setHoroscope(data.result);
             setHoroscopeLoading(false);
-            setHoroscopeReady(true); // ✅ READY ONLY AFTER CLEAN DATA
+            setHoroscopeReady(true); // CLEAN DATA
           }
         },
         (err) => {
@@ -165,11 +160,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const data = snap.data();
 
           if (Array.isArray(data?.cards) && data.cards.length > 0) {
-            console.log("🃏 Cards READY", {
-              count: data.cards.length,
-              date: today,
-            });
-
             setDailyCards(data);
             setCardsLoading(false);
             setCardsReady(true);
@@ -193,17 +183,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    console.log("🧠 App readiness check", {
-      authUser: !!authUser,
-      profile: !!profile,
-      horoscopeReady,
-      cardsReady,
-      initializing,
-    });
-
+    
     // Logged out → app ready immediately
     if (!authUser) {
-      console.log("🚪 Logged out → app ready");
       setInitializing(false);
       return;
     }
