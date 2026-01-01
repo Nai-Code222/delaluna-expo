@@ -22,6 +22,10 @@ type AuthContextType = {
   birthChartLoading: boolean;
   birthChartPremiumUnlocked: boolean;
   regenerateBirthChart: () => void;
+  horoscope: any | null;
+  horoscopeLoading: boolean;
+  dailyCards: any | null;
+  cardsLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -34,6 +38,10 @@ const AuthContext = createContext<AuthContextType>({
   birthChartLoading: false,
   birthChartPremiumUnlocked: false,
   regenerateBirthChart: () => { },
+  horoscope: null,
+  horoscopeLoading: true,
+  dailyCards: null,
+  cardsLoading: true,
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -45,10 +53,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [birthChartError, setBirthChartError] = useState<string | null>(null);
   const [birthChartLoading, setBirthChartLoading] = useState<boolean>(false);
   const [birthChartPremiumUnlocked, setBirthChartPremiumUnlocked] = useState<boolean>(false);
+  const [horoscope, setHoroscope] = useState<any | null>(null);
+  const [horoscopeLoading, setHoroscopeLoading] = useState(true);
+  const [dailyCards, setDailyCards] = useState<any | null>(null);
+  const [cardsLoading, setCardsLoading] = useState(true);
 
   useEffect(() => {
     let unsubscribeProfile: (() => void) | null = null;
     let unsubscribeChart: (() => void) | null = null;
+    let unsubscribeHoroscope: (() => void) | null = null;
+    let unsubscribeCards: (() => void) | null = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setAuthUser(firebaseUser);
@@ -99,19 +113,69 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setBirthChartLoading(false);
         setBirthChartPremiumUnlocked(false);
       });
+
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      const horoscopeRef = doc(db, "users", firebaseUser.uid, "horoscope", today);
+
+      unsubscribeHoroscope = onSnapshot(
+        horoscopeRef,
+        (snap) => {
+          if (!snap.exists()) {
+            setHoroscope(null);
+            setHoroscopeLoading(true);
+            return;
+          }
+
+          const data = snap.data();
+
+          if (data?.status?.state === "complete" && data?.result) {
+            setHoroscope(data.result);     // ✅ CLEAN VERSION ONLY
+            setHoroscopeLoading(false);
+          }
+        },
+        (err) => {
+          console.warn("horoscope listener error:", err);
+          setHoroscope(null);
+          setHoroscopeLoading(false);
+        }
+      );
+
+      const cardsRef = doc(db, "users", firebaseUser.uid, "cards", today);
+
+      unsubscribeCards = onSnapshot(
+        cardsRef,
+        (snap) => {
+          if (!snap.exists()) {
+            setDailyCards(null);
+            setCardsLoading(true);
+            return;
+          }
+
+          const data = snap.data();
+
+          if (Array.isArray(data?.cards) && data.cards.length > 0) {
+            setDailyCards(data);
+            setCardsLoading(false);
+          }
+        },
+        (err) => {
+          console.warn("cards listener error:", err);
+          setDailyCards(null);
+          setCardsLoading(false);
+        }
+      );
     });
 
     return () => {
       unsubscribeAuth();
       if (unsubscribeProfile) unsubscribeProfile();
       if (unsubscribeChart) unsubscribeChart();
+      if (unsubscribeHoroscope) unsubscribeHoroscope();
+      if (unsubscribeCards) unsubscribeCards();
     };
   }, []);
 
-
-
-
-  // TEMP: disable birth chart auto-routing during v1
+  // TODO: TEMP: disable birth chart auto-routing during v1
   // useEffect(() => {
   //   if (!birthChartStatus) return;
   //   if (birthChartStatus === "placements_ready") {
@@ -119,7 +183,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   //   }
   // }, [birthChartStatus]);
 
-  
+  // TODO: Trigger birthchart generate
   const regenerateBirthChart = () => {
     // placeholder: will trigger cloud function
     console.log("Regenerate birth chart requested");
@@ -135,7 +199,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     birthChartLoading,
     birthChartPremiumUnlocked,
     regenerateBirthChart,
-  }), [authUser, profile, initializing, birthChart, birthChartStatus, birthChartError, birthChartLoading, birthChartPremiumUnlocked]);
+    horoscope,
+    horoscopeLoading,
+    dailyCards,
+    cardsLoading,
+  }), [authUser, profile, initializing, birthChart, birthChartStatus, birthChartError, birthChartLoading, birthChartPremiumUnlocked, horoscope, horoscopeLoading, dailyCards, cardsLoading]);
 
   return (
     <AuthContext.Provider value={contextValue}>
