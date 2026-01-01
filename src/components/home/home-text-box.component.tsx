@@ -6,22 +6,34 @@ import TarotCardImageFrame from "./tarot-card-image-view.component";
 
 interface HomeTextBoxProps {
   title: string;
-  text?: string;
+  content?: string | string[];
   style?: ViewStyle;
   cardNumber?: number; 
   reversed?: boolean;   // 🌙 prepare for reversed cards
 }
 
-export default function HomeTextBox({ 
-  title, 
-  text = "", 
-  style, 
-  cardNumber, 
-  reversed = false 
+export default function HomeTextBox({
+  title,
+  content = "",
+  style,
+  cardNumber,
+  reversed = false,
 }: HomeTextBoxProps) {
 
   const isBottleSection = title.toLowerCase().includes("in a bottle");
   const isTarotSection = title.toLowerCase().includes("todays cards");
+
+  const renderContent = () => {
+    if (Array.isArray(content)) {
+      return content.map((item, idx) => (
+        <Text key={idx} style={styles.text}>
+          • {item}
+        </Text>
+      ));
+    }
+
+    return <Text style={styles.text}>{content}</Text>;
+  };
 
   return (
     <View style={[styles.container, style]}>
@@ -41,14 +53,14 @@ export default function HomeTextBox({
 
           {/* TAROT MEANING BOX */}
           <DelalunaContainer style={styles.box}>
-            <Text style={styles.text}>{text}</Text>
+            {renderContent()}
           </DelalunaContainer>
         </>
       ) : isBottleSection ? (
         <MessageInABottleComponent placeholder="Message to the universe" />
       ) : (
         <DelalunaContainer style={styles.box}>
-          <Text style={styles.text}>{text}</Text>
+          {renderContent()}
         </DelalunaContainer>
       )}
     </View>
