@@ -51,6 +51,8 @@ export default function HomeScreen() {
   const sectionLabels = [
     "Quote",
     "Advice",
+    "Do's",
+    "Donts",
     "Affirmation",
     "Message in a Bottle",
     "Moon Phase",
