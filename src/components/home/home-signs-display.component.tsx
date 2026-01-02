@@ -3,6 +3,7 @@ import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 
 import { verticalScale, scale, moderateScale } from "@/utils/responsive";
+import { Ionicons } from "@expo/vector-icons";
 
 interface HomeSignsDisplayProps {
   sun: string;
@@ -18,7 +19,7 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
         <Image
           source={require("@/assets/icons/sun_icon.png")}
 
-          style={styles.icon}
+          style={[styles.icon]}
         />
         <Text style={styles.text}>{sun}</Text>
       </View>
@@ -40,6 +41,14 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
         />
         <Text style={styles.text}>{rising}</Text>
       </View>
+
+      {/* Birth Chart */}
+      <View style={styles.signItem}>
+        <Ionicons  name="calendar-clear-outline" size={scale(18)} color="#FFF">
+          
+        </Ionicons>
+        <Text style={styles.birtChartText}>Birth Chart</Text>
+      </View>
     </View>
   );
 }
@@ -47,7 +56,7 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     alignItems: "center",
     width: "100%",
     paddingVertical: verticalScale(10),
@@ -59,17 +68,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: scale(5),
+
   },
   icon: {
     width: scale(15),
     height: scale(15),
     resizeMode: "contain",
+    color: "#FFFFFF",
   },
   text: {
-    fontSize: moderateScale(12),
+    fontSize: moderateScale(10),
     color: "#FFFFFF",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+  birtChartText: {
+    fontSize: moderateScale(12),
+    color: "#ffffffff",
     fontWeight: "300",
     textTransform: "uppercase",
     letterSpacing: 0.6,
+  },
+  listText: {
+
   },
 });

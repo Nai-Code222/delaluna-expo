@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import {
   View,
   Text,
@@ -8,68 +8,37 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { scale, verticalScale, moderateScale } from "@/utils/responsive";
+import dayjs from "dayjs";
 
-export default function DateSwitcher() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+interface DateSwitcherProps {
+  value: string;        // YYYY-MM-DD
+  dates: string[];      // allowed dates
+  onChange: (date: string) => void;
+}
+
+export default function DateSwitcher({
+  value,
+  dates,
+  onChange,
+}: DateSwitcherProps) {
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Helper: set midnight timer
-  const setMidnightTimer = () => {
-    const now = new Date();
-    const midnight = new Date();
-    midnight.setHours(24, 0, 0, 0);
-    const timeUntilMidnight = midnight.getTime() - now.getTime();
+  const index = dates.indexOf(value);
+  const disableLeft = index <= 0;
+  const disableRight = index >= dates.length - 1;
 
-    timerRef.current = setTimeout(() => {
-      setSelectedDate(new Date());
-      setMidnightTimer(); // schedule next refresh
-    }, timeUntilMidnight);
-  };
-
-  useEffect(() => {
-    setMidnightTimer();
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  // Fade transition
-  const fadeTransition = (newDate: Date) => {
-    Animated.sequence([
-      Animated.timing(fadeAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
-      Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: true }),
-    ]).start(() => setSelectedDate(newDate));
-  };
-
-  // Navigation
   const goPrevious = () => {
-    const newDate = new Date(selectedDate);
-    newDate.setDate(selectedDate.getDate() - 1);
-    fadeTransition(newDate);
+    if (disableLeft) return;
+    onChange(dates[index - 1]);
   };
+
   const goNext = () => {
-    const newDate = new Date(selectedDate);
-    newDate.setDate(selectedDate.getDate() + 1);
-    fadeTransition(newDate);
+    if (disableRight) return;
+    onChange(dates[index + 1]);
   };
 
-  // Restrict to Yesterday / Today / Tomorrow
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-
-  const disableLeft = selectedDate <= yesterday;
-  const disableRight = selectedDate >= tomorrow;
-
-  const formatDate = (date: Date) =>
-    date.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
+  const formatDate = (ymd: string) =>
+    dayjs(ymd, "YYYY-MM-DD").format("MMMM D, YYYY");
 
   return (
     <View style={styles.container}>
@@ -87,7 +56,7 @@ export default function DateSwitcher() {
       </TouchableOpacity>
 
       <Animated.Text style={[styles.dateText, { opacity: fadeAnim }]}>
-        {formatDate(selectedDate)}
+        {formatDate(value)}
       </Animated.Text>
 
       <TouchableOpacity

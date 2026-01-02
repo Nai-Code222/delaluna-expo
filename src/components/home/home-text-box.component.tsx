@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ViewStyle } from "react-native";
 import MessageInABottleComponent from "../component-utils/message-in-a-bottle.component";
 import DelalunaContainer from "../component-utils/delaluna-container.component";
 import TarotCardImageFrame from "./tarot-card-image-view.component";
+import { BulletList } from "../typography/bullet-list-text";
 
 interface HomeTextBoxProps {
   title: string;
@@ -21,18 +22,18 @@ export default function HomeTextBox({
 }: HomeTextBoxProps) {
 
   const isBottleSection = title.toLowerCase().includes("in a bottle");
-  const isTarotSection = title.toLowerCase().includes("todays cards");
+  const isTarotSection = title.toLowerCase().includes("today") && title.toLowerCase().includes("card");
+  const isListStyleSection = Array.isArray(content);
+  const isNewLoveSection = title.toLowerCase().includes("new love") || title.toLowerCase().includes("lucky numbers");
 
-  const renderContent = () => {
-    if (Array.isArray(content)) {
-      return content.map((item, idx) => (
-        <Text key={idx} style={styles.text}>
-          • {item}
-        </Text>
-      ));
-    }
-
+  const renderTextContent = () => {
+    if (!content || Array.isArray(content)) return null;
     return <Text style={styles.text}>{content}</Text>;
+  };
+
+  const renderListContent = () => {
+    if (!Array.isArray(content) || content.length === 0) return null;
+    return <BulletList items={content} />;
   };
 
   return (
@@ -53,14 +54,26 @@ export default function HomeTextBox({
 
           {/* TAROT MEANING BOX */}
           <DelalunaContainer style={styles.box}>
-            {renderContent()}
+            {isListStyleSection ? renderListContent() : renderTextContent()}
           </DelalunaContainer>
         </>
       ) : isBottleSection ? (
         <MessageInABottleComponent placeholder="Message to the universe" />
+      ) : isNewLoveSection ? (
+        <View style={styles.newLoveRow}>
+          {Array.isArray(content) ? content.map((item, index) => (
+            <Text key={index} style={styles.newLoveText}>
+              {item}{index < content.length - 1 ? ' ' : ''}
+            </Text>
+          )) : <Text style={styles.newLoveText}>{content}</Text>}
+        </View>
+      ) : isListStyleSection ? (
+        <DelalunaContainer style={styles.box}>
+          {renderListContent()}
+        </DelalunaContainer>
       ) : (
         <DelalunaContainer style={styles.box}>
-          {renderContent()}
+          {renderTextContent()}
         </DelalunaContainer>
       )}
     </View>
@@ -96,5 +109,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 25,
     color: "#FFFFFF",
+  },
+  newLoveRow: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    width: "100%",
+    padding: 10,
+  },
+  newLoveText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: "#FFFFFF",
+    alignItems: "center",
   },
 });
