@@ -10,8 +10,6 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '../../firebaseConfig';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { SignupUserRecord } from '@/services/finishUserSignup.service';
-import { router } from "expo-router";
-import { getUserHoroscopes } from '@/services/user.service';
 import type { HoroscopeResult } from "@/types/horoscope.types";
 
 
