@@ -31,6 +31,8 @@ export async function generateHoroscopes(
       pack.meaningString
     );
   }
+
+  return entries;
 }
 
 /**

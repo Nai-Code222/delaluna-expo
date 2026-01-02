@@ -165,16 +165,17 @@ export async function getUserHoroscopes(
   userID: string
 ): Promise<Record<string, HoroscopeResult>> {
   const colRef = collection(db, "users", userID, "horoscope");
-  const q = query(colRef, orderBy("createTime", "desc"));
-
-  const snap = await getDocs(q);
+  const snap = await getDocs(colRef);
 
   const results: Record<string, HoroscopeResult> = {};
 
   snap.forEach((docSnap) => {
     const data = docSnap.data();
 
-    if (data?.result) {
+    if (
+      data?.status?.state === "complete" &&
+      data?.result
+    ) {
       results[docSnap.id] = data.result as HoroscopeResult;
     }
   });
