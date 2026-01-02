@@ -24,15 +24,22 @@ import HomeSignsDisplay from "../../src/components/home/home-signs-display.compo
 import HomeTextBox from "../../src/components/home/home-text-box.component";
 import useRenderBackground from "@/hooks/useRenderBackground"; import DateSwitcher from "../../src/components/component-utils/date-switcher.component";
 import { auth, db } from "../../firebaseConfig";
-import { getTarotCardDraw } from "@/services/tarot-card.service";
 import { generateAndSaveBirthChart } from "@/services/firebase-ai-logic.service";
-import { getDailyCard } from "@/services/dailyTarot.service";
 import { buildBirthChartPrompt } from "../../functions/src/utils/buildBirthChartPrompt";
-import { buildHoroscopePrompt } from "../../functions/src/utils/buildHoroscopePrompt";
-import { generateHoroscope, generateHoroscopes } from "@/services/generate-horoscope.service";
+import type { DrawnTarotCard } from "@/types/tarot-cards.type";
 
 export default function HomeScreen() {
-  const { authUser, initializing } = useContext(AuthContext);
+  const { authUser, initializing, horoscopes, dailyCards } = useContext(AuthContext);
+  useEffect(() => {
+    console.log("🏠 Home received from context");
+  }, [horoscopes, dailyCards]);
+  
+  const today = dayjs().format("YYYY-MM-DD");
+  const [selectedDate, setSelectedDate] = useState(today);
+
+  const selectedHoroscope = horoscopes?.[selectedDate];
+  const selectedCards = dailyCards?.[selectedDate];
+
   const insets = useSafeAreaInsets();
   const goToProfile = () => router.replace("/(supporting)/profile.screen");
   const safeOffset =
@@ -47,19 +54,6 @@ export default function HomeScreen() {
     authUser?.uid,
     initialUserRecord
   );
-
-  const sectionLabels = [
-    "Quote",
-    "Advice",
-    "Do's",
-    "Donts",
-    "Affirmation",
-    "Message in a Bottle",
-    "Moon Phase",
-    "Todays Cards",
-    "New Love",
-    "Release",
-  ];
 
   const maybeGenerateBirthChart = async () => {
     if (!authUser?.uid || !userRecord) return;
@@ -167,16 +161,18 @@ export default function HomeScreen() {
 
       {/* Wrap main content with top offset */}
       <View style={[styles.mainContent, { marginTop: HEADER_HEIGHT }]}>
-        <View>
+        <View style={[ { width: '100%' }]}>
           <HomeSignsDisplay
             sun={userRecord.sunSign}
             moon={userRecord.moonSign}
             rising={userRecord.risingSign}
           />
         </View>
-        <DateSwitcher>
-
-        </DateSwitcher>
+        <DateSwitcher
+          value={selectedDate}
+          onChange={setSelectedDate}
+          dates={Object.keys(horoscopes ?? {})}
+        />
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           refreshControl={
@@ -188,9 +184,48 @@ export default function HomeScreen() {
           }
         >
           <View style={styles.content}>
-            {sectionLabels.map((label, index) => (
-              <HomeTextBox key={index} title={label} style={{ marginBottom: 15 }} />
-            ))}
+            {selectedHoroscope?.quote && (
+              <HomeTextBox title="Quote" content={selectedHoroscope.quote} />
+            )}
+
+            {selectedHoroscope?.advice && (
+              <HomeTextBox title="Advice" content={selectedHoroscope.advice} />
+            )}
+
+            {selectedHoroscope?.do && (
+              <HomeTextBox title="Do's" content={selectedHoroscope.do} />
+            )}
+
+            {selectedHoroscope?.dont && (
+              <HomeTextBox title="Don'ts" content={selectedHoroscope.dont} />
+            )}
+
+            {selectedHoroscope?.affirmation && (
+              <HomeTextBox title="Affirmation" content={selectedHoroscope.affirmation} />
+            )}
+
+            {selectedCards?.cards && (
+  <HomeTextBox
+    title="Today's Cards"
+    content={selectedHoroscope.tarot}
+  />
+)}
+
+            {selectedHoroscope?.moon && (
+              <HomeTextBox title="Moon Phase" content={selectedHoroscope.moon} />
+            )}
+
+            {selectedHoroscope?.luckyNumbers && (
+              <HomeTextBox title="Lucky Numbers" content={selectedHoroscope.luckyNumbers} />
+            )}
+
+            {selectedHoroscope?.newLove && (
+              <HomeTextBox title="New Love" content={selectedHoroscope.newLove} />
+            )}
+
+            {selectedHoroscope?.release && (
+              <HomeTextBox title="Release" content={selectedHoroscope.release} />
+            )}
           </View>
         </ScrollView>
       </View>
@@ -219,7 +254,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingBottom: 100,
+    paddingBottom: 10,
   },
   content: {
     justifyContent: "center",
