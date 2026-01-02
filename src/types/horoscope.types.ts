@@ -1,7 +1,5 @@
 // src/types/horoscope.types.ts
 
-// src/types/horoscope.types.ts
-
 export interface HoroscopeResult {
   // Core guidance
   quote?: string;
