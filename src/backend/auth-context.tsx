@@ -8,9 +8,12 @@ import React, {
 } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '../../firebaseConfig';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { SignupUserRecord } from '@/services/finishUserSignup.service';
 import { router } from "expo-router";
+import { getUserHoroscopes } from '@/services/user.service';
+import type { HoroscopeResult } from "@/types/horoscope.types";
+
 
 type AuthContextType = {
   authUser: User | null;
@@ -22,10 +25,11 @@ type AuthContextType = {
   birthChartLoading: boolean;
   birthChartPremiumUnlocked: boolean;
   regenerateBirthChart: () => void;
-  horoscope: any | null;
+  horoscopes: Record<string, HoroscopeResult>;
   horoscopeLoading: boolean;
-  dailyCards: any | null;
+  dailyCards: Record<string, any> | null;
   cardsLoading: boolean;
+  
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -38,7 +42,7 @@ const AuthContext = createContext<AuthContextType>({
   birthChartLoading: false,
   birthChartPremiumUnlocked: false,
   regenerateBirthChart: () => { },
-  horoscope: null,
+  horoscopes: {},
   horoscopeLoading: true,
   dailyCards: null,
   cardsLoading: true,
@@ -53,9 +57,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [birthChartError, setBirthChartError] = useState<string | null>(null);
   const [birthChartLoading, setBirthChartLoading] = useState<boolean>(false);
   const [birthChartPremiumUnlocked, setBirthChartPremiumUnlocked] = useState<boolean>(false);
-  const [horoscope, setHoroscope] = useState<any | null>(null);
+  const [horoscopes, setHoroscopes] =
+    useState<Record<string, HoroscopeResult>>({});
   const [horoscopeLoading, setHoroscopeLoading] = useState(true);
-  const [dailyCards, setDailyCards] = useState<any | null>(null);
+  const [dailyCards, setDailyCards] = useState<Record<string, any> | null>(null);
   const [cardsLoading, setCardsLoading] = useState(true);
   const [horoscopeReady, setHoroscopeReady] = useState(false);
   const [cardsReady, setCardsReady] = useState(false);
@@ -72,7 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (!firebaseUser) {
         setProfile(null);
-        setHoroscope(null);
+        setHoroscopes({});
         setDailyCards(null);
         setHoroscopeReady(false);
         setCardsReady(false);
@@ -119,56 +124,69 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setBirthChartPremiumUnlocked(false);
       });
 
-      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-      const horoscopeRef = doc(db, "users", firebaseUser.uid, "horoscope", today);
+      const horoscopeCollectionRef = collection(
+        db,
+        "users",
+        firebaseUser.uid,
+        "horoscope"
+      );
 
       unsubscribeHoroscope = onSnapshot(
-        horoscopeRef,
-        (snap) => {
-          if (!snap.exists()) {
-            setHoroscope(null);
-            setHoroscopeLoading(true);
-            return;
-          }
+        horoscopeCollectionRef,
+        (snapshot) => {
+          const next: Record<string, HoroscopeResult> = {};
+          let hasValidDay = false;
 
-          const data = snap.data();
+          snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            if (data?.status?.state === "complete" && data?.result) {
+              next[docSnap.id] = data.result as HoroscopeResult;
+              hasValidDay = true;
+            }
+          });
 
-          if (data?.status?.state === "complete" && data?.result) {
-            setHoroscope(data.result);
-            setHoroscopeLoading(false);
-            setHoroscopeReady(true); // CLEAN DATA
-          }
+          setHoroscopes(next);
+          setHoroscopeLoading(!hasValidDay);
+          setHoroscopeReady(hasValidDay);
         },
         (err) => {
-          console.warn("horoscope listener error:", err);
-          setHoroscope(null);
+          console.warn("horoscope collection listener error:", err);
+          setHoroscopes({});
           setHoroscopeLoading(false);
+          setHoroscopeReady(false);
         }
       );
 
-      const cardsRef = doc(db, "users", firebaseUser.uid, "cards", today);
+      const cardsCollectionRef = collection(db, "users", firebaseUser.uid, "cards");
 
       unsubscribeCards = onSnapshot(
-        cardsRef,
-        (snap) => {
-          if (!snap.exists()) {
-            setDailyCards(null);
-            setCardsLoading(true);
-            return;
-          }
+        cardsCollectionRef,
+        (snapshot) => {
+          const cardsMap: Record<string, any> = {};
+          let hasValidDay = false;
 
-          const data = snap.data();
+          snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            if (Array.isArray(data?.cards) && data.cards.length > 0) {
+              cardsMap[docSnap.id] = data;
+              hasValidDay = true;
+            }
+          });
 
-          if (Array.isArray(data?.cards) && data.cards.length > 0) {
-            setDailyCards(data);
+          setDailyCards(cardsMap);
+          if (hasValidDay) {
             setCardsLoading(false);
             setCardsReady(true);
+          } else {
+            setCardsLoading(true);
+            setCardsReady(false);
           }
         },
         (err) => {
           console.warn("cards listener error:", err);
           setDailyCards(null);
           setCardsLoading(false);
+          setCardsReady(false);
         }
       );
     });
@@ -221,11 +239,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     birthChartLoading,
     birthChartPremiumUnlocked,
     regenerateBirthChart,
-    horoscope,
+    horoscopes,
     horoscopeLoading,
     dailyCards,
     cardsLoading,
-  }), [authUser, profile, initializing, birthChart, birthChartStatus, birthChartError, birthChartLoading, birthChartPremiumUnlocked, horoscope, horoscopeLoading, dailyCards, cardsLoading]);
+  }), [authUser, profile, initializing, birthChart, birthChartStatus, birthChartError, birthChartLoading, birthChartPremiumUnlocked, horoscopes, horoscopeLoading, dailyCards, cardsLoading]);
 
   return (
     <AuthContext.Provider value={contextValue}>
