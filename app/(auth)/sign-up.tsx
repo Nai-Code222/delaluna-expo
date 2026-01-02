@@ -205,7 +205,7 @@ export default function SignUpChatScreen() {
         3,
       );
 
-      const horoscopes = await generateHoroscopes(uid, response.user.risingSign, response.user.sunSign, response.user.moonSign, cards);
+      await generateHoroscopes(uid, response.user.risingSign, response.user.sunSign, response.user.moonSign, cards);
 
       const isEmulator : boolean = extra?.USE_EMULATOR;
       router.replace("/index");
