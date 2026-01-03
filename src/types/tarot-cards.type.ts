@@ -17,10 +17,10 @@ export interface TarotCard {
 }
 
 export interface DrawnTarotCard {
-  id: number;                    // "the_fool"
-  name: string;                  // "The Fool"
+  id: number;
+  name: string;
   imagePath: string;
-
+  
   reversed: boolean;
   keywords: string[];
   meaning: string;
@@ -34,4 +34,15 @@ export interface TarotDrawResult {
   yesterday: DailyCardPack;
   today: DailyCardPack;
   tomorrow: DailyCardPack;
+}
+
+export interface DailyDrawnTarotCard {
+  date: string;
+  cards: DrawnTarotCard[],
+  keywordList: string[],
+  keywordString: string;
+  meaningString: string;
+  reversedCount: number;
+  uprightCount: number;
+  createdAt: number;
 }
