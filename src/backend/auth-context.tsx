@@ -11,6 +11,7 @@ import { auth, db } from '../../firebaseConfig';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { SignupUserRecord } from '@/services/finishUserSignup.service';
 import type { HoroscopeResult } from "@/types/horoscope.types";
+import { DailyDrawnTarotCard } from '@/types/tarot-cards.type';
 
 
 type AuthContextType = {
@@ -25,7 +26,7 @@ type AuthContextType = {
   regenerateBirthChart: () => void;
   horoscopes: Record<string, HoroscopeResult>;
   horoscopeLoading: boolean;
-  dailyCards: Record<string, any> | null;
+  dailyCards: Record<string, DailyDrawnTarotCard> | null;
   cardsLoading: boolean;
   
 };
