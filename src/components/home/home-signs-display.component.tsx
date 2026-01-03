@@ -1,9 +1,10 @@
 import React from "react";
 
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 
 import { verticalScale, scale, moderateScale } from "@/utils/responsive";
 import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
 
 interface HomeSignsDisplayProps {
   sun: string;
@@ -12,6 +13,10 @@ interface HomeSignsDisplayProps {
 }
 
 export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplayProps) {
+
+  // style={styles.loginButton}
+  const goToBirthchart = () => router.replace("/(supporting)/birth-chart.screen");
+
   return (
     <View style={styles.container}>
       {/* Sun Sign */}
@@ -44,10 +49,9 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
 
       {/* Birth Chart */}
       <View style={styles.signItem}>
-        <Ionicons  name="calendar-clear-outline" size={scale(18)} color="#FFF">
-          
-        </Ionicons>
+        <TouchableOpacity onPress={(goToBirthchart)}>
         <Text style={styles.birtChartText}>Birth Chart</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
