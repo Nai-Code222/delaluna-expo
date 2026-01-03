@@ -13,8 +13,6 @@ interface HomeSignsDisplayProps {
 }
 
 export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplayProps) {
-
-  // style={styles.loginButton}
   const goToBirthchart = () => router.replace("/(supporting)/birth-chart.screen");
 
   return (
@@ -50,6 +48,7 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
       {/* Birth Chart */}
       <View style={styles.signItem}>
         <TouchableOpacity onPress={(goToBirthchart)}>
+
         <Text style={styles.birtChartText}>Birth Chart</Text>
         </TouchableOpacity>
       </View>
