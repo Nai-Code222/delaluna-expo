@@ -6,12 +6,12 @@ import { StyleSheet, View, Image } from "react-native";
 
 interface TarotCardProps {
   cardNumber: number[];     // REQUIRED card number (53–133)
-  reversed?: boolean;     // OPTIONAL reversed card
+  reversed?: boolean[];     // OPTIONAL reversed card
 }
 
 export default function TarotCardImageFrame({ 
   cardNumber, 
-  reversed = false 
+  reversed = []
 }: TarotCardProps) {
 
   const getTarotCardImageUrl = (cardNumber: number) =>
@@ -24,7 +24,7 @@ export default function TarotCardImageFrame({
           key={`${num}-${idx}`}
           style={[
             styles.image,
-            reversed && { transform: [{ rotate: "180deg" }] },
+            reversed[idx] && { transform: [{ rotate: "180deg" }] },
           ]}
           source={{ uri: getTarotCardImageUrl(num) }}
         />

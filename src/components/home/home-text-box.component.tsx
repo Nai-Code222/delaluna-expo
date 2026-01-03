@@ -19,7 +19,6 @@ export default function HomeTextBox({
   content = "",
   style,
   cards,
-  reversed = false,
 }: HomeTextBoxProps) {
 
   const isBottleSection = title.toLowerCase().includes("in a bottle");
@@ -47,6 +46,7 @@ export default function HomeTextBox({
           {cards && cards.length > 0 ? (
             <TarotCardImageFrame
               cardNumber={cards.map(c => c.id)}
+              reversed={cards.map(c=> c.reversed)}
             />
           ) : (
             <Text style={{ color: "#fff" }}>Loading card...</Text>
