@@ -6,6 +6,7 @@ import React, {
   ReactNode,
   useMemo,
 } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '../../firebaseConfig';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
@@ -16,19 +17,25 @@ import { DailyDrawnTarotCard } from '@/types/tarot-cards.type';
 
 type AuthContextType = {
   authUser: User | null;
-  profile: SignupUserRecord | null;        // replace with UserRecord type once ready
-  initializing: boolean;      // true until BOTH auth + profile are loaded
+  profile: SignupUserRecord | null;
+  initializing: boolean;
+
   birthChart: any | null;
   birthChartStatus: string | null;
   birthChartError: string | null;
   birthChartLoading: boolean;
   birthChartPremiumUnlocked: boolean;
   regenerateBirthChart: () => void;
+
   horoscopes: Record<string, HoroscopeResult>;
   horoscopeLoading: boolean;
-  dailyCards: Record<string, DailyDrawnTarotCard> | null;
+
+  dailyCards: Record<string, DailyDrawnTarotCard>;
   cardsLoading: boolean;
-  
+
+  availableDates: string[];
+  defaultDate: string | null;
+  isAppReady: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -43,8 +50,11 @@ const AuthContext = createContext<AuthContextType>({
   regenerateBirthChart: () => { },
   horoscopes: {},
   horoscopeLoading: true,
-  dailyCards: null,
+  dailyCards: {},
   cardsLoading: true,
+  availableDates: [],
+  defaultDate: null,
+  isAppReady: false,
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -59,7 +69,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [horoscopes, setHoroscopes] =
     useState<Record<string, HoroscopeResult>>({});
   const [horoscopeLoading, setHoroscopeLoading] = useState(true);
-  const [dailyCards, setDailyCards] = useState<Record<string, any> | null>(null);
+  const [dailyCards, setDailyCards] =
+    useState<Record<string, DailyDrawnTarotCard>>({});
+  // --- Safe maps for downstream consumers (never undefined) ---
+  const safeHoroscopes = horoscopes ?? {};
+  const safeDailyCards = dailyCards ?? {};
+
+  // --- Derived available dates and default date ---
+  const availableDates = useMemo(() => {
+    const hDates = Object.keys(safeHoroscopes);
+    const cDates = Object.keys(safeDailyCards);
+    return Array.from(new Set([...hDates, ...cDates])).sort();
+  }, [safeHoroscopes, safeDailyCards]);
+
+  const defaultDate = availableDates.at(-1) ?? null;
+
+  // --- Single authoritative readiness flag ---
+  const isAppReady =
+    !!authUser &&
+    !!profile &&
+    availableDates.length > 0 &&
+    !initializing;
   const [cardsLoading, setCardsLoading] = useState(true);
   const [horoscopeReady, setHoroscopeReady] = useState(false);
   const [cardsReady, setCardsReady] = useState(false);
@@ -71,13 +101,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let unsubscribeCards: (() => void) | null = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      setInitializing(true);
       setAuthUser(firebaseUser);
+      // Set initializing true once per auth transition to avoid UI flashes and redundant updates.
+      setInitializing(true);
 
       if (!firebaseUser) {
         setProfile(null);
         setHoroscopes({});
-        setDailyCards(null);
+        setDailyCards({});
         setHoroscopeReady(false);
         setCardsReady(false);
         setInitializing(false); // ✅ logout is immediate
@@ -161,13 +192,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       unsubscribeCards = onSnapshot(
         cardsCollectionRef,
         (snapshot) => {
-          const cardsMap: Record<string, any> = {};
+          const cardsMap: Record<string, DailyDrawnTarotCard> = {};
           let hasValidDay = false;
 
           snapshot.forEach((docSnap) => {
             const data = docSnap.data();
             if (Array.isArray(data?.cards) && data.cards.length > 0) {
-              cardsMap[docSnap.id] = data;
+              cardsMap[docSnap.id] = data as DailyDrawnTarotCard;
               hasValidDay = true;
             }
           });
@@ -183,7 +214,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         },
         (err) => {
           console.warn("cards listener error:", err);
-          setDailyCards(null);
+          setDailyCards({});
           setCardsLoading(false);
           setCardsReady(false);
         }
@@ -207,12 +238,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    // Logged in → wait for required data
+    // Defensive log if horoscope day exists without matching cards
+    if (horoscopeReady && !cardsReady) {
+      const horoscopeDates = Object.keys(safeHoroscopes);
+      const cardDates = Object.keys(safeDailyCards);
+      const missingCards = horoscopeDates.filter(date => !cardDates.includes(date));
+      
+    }
+
+    // Logged in → wait for required data (both horoscopes and cards)
     if (profile && horoscopeReady && cardsReady) {
       console.log("✨ App READY (profile + horoscope + cards)");
       setInitializing(false);
+
+      // Explicitly hide splash on iOS once app is truly ready
+      SplashScreen.hideAsync().catch(() => {});
     }
-  }, [authUser, profile, horoscopeReady, cardsReady]);
+  }, [authUser, profile, horoscopeReady, cardsReady, safeHoroscopes, safeDailyCards]);
 
   // TODO: TEMP: disable birth chart auto-routing during v1
   // useEffect(() => {
@@ -238,11 +280,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     birthChartLoading,
     birthChartPremiumUnlocked,
     regenerateBirthChart,
-    horoscopes,
+    horoscopes: safeHoroscopes,
     horoscopeLoading,
-    dailyCards,
+    dailyCards: safeDailyCards,
     cardsLoading,
-  }), [authUser, profile, initializing, birthChart, birthChartStatus, birthChartError, birthChartLoading, birthChartPremiumUnlocked, horoscopes, horoscopeLoading, dailyCards, cardsLoading]);
+    availableDates,
+    defaultDate,
+    isAppReady,
+  }), [
+    authUser,
+    profile,
+    initializing,
+    birthChart,
+    birthChartStatus,
+    birthChartError,
+    birthChartLoading,
+    birthChartPremiumUnlocked,
+    horoscopeLoading,
+    cardsLoading,
+    availableDates,
+    defaultDate,
+    isAppReady,
+    safeHoroscopes,
+    safeDailyCards,
+  ]);
 
   return (
     <AuthContext.Provider value={contextValue}>
