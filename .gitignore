@@ -194,3 +194,4 @@ seed/storage_export/buckets.json
 seed/firestore_export/firestore_export.overall_export_metadata
 functions/seed/firebase-export-metadata.json
 functions/seed/storage_export/buckets.json
+.env.local
