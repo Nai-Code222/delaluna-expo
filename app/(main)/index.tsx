@@ -26,19 +26,18 @@ import useRenderBackground from "@/hooks/useRenderBackground"; import DateSwitch
 import { auth, db } from "../../firebaseConfig";
 import { generateAndSaveBirthChart } from "@/services/firebase-ai-logic.service";
 import { buildBirthChartPrompt } from "../../functions/src/utils/buildBirthChartPrompt";
-import type { DrawnTarotCard } from "@/types/tarot-cards.type";
 
 export default function HomeScreen() {
   const { authUser, initializing, horoscopes, dailyCards } = useContext(AuthContext);
   useEffect(() => {
     console.log("🏠 Home received from context");
   }, [horoscopes, dailyCards]);
-  
+
   const today = dayjs().format("YYYY-MM-DD");
   const [selectedDate, setSelectedDate] = useState(today);
 
   const selectedHoroscope = horoscopes?.[selectedDate];
-  const selectedCards = dailyCards?.[selectedDate];
+  const selectedCards = dailyCards?.[selectedDate].cards;
 
   const insets = useSafeAreaInsets();
   const goToProfile = () => router.replace("/(supporting)/profile.screen");
@@ -48,7 +47,7 @@ export default function HomeScreen() {
   const { user: userParam } = useLocalSearchParams();
   const initialUserRecord = userParam ? JSON.parse(userParam as string) : null;
   const HEADER_HEIGHT = Platform.OS === "ios" ? 115 : 85;
-  
+
   // Firestore user profile (cached + realtime)
   const { user: userRecord, loading: profileLoading, cachedAt } = useUserProfile(
     authUser?.uid,
@@ -161,7 +160,7 @@ export default function HomeScreen() {
 
       {/* Wrap main content with top offset */}
       <View style={[styles.mainContent, { marginTop: HEADER_HEIGHT }]}>
-        <View style={[ { width: '100%' }]}>
+        <View style={[{ width: '100%' }]}>
           <HomeSignsDisplay
             sun={userRecord.sunSign}
             moon={userRecord.moonSign}
@@ -204,12 +203,13 @@ export default function HomeScreen() {
               <HomeTextBox title="Affirmation" content={selectedHoroscope.affirmation} />
             )}
 
-            {selectedCards?.cards && (
-  <HomeTextBox
-    title="Today's Cards"
-    content={selectedHoroscope.tarot}
-  />
-)}
+            {selectedCards && (
+              <HomeTextBox
+                title="Today's Cards"
+                content={selectedHoroscope.tarot}
+                cards={selectedCards}
+              />
+            )}
 
             {selectedHoroscope?.moon && (
               <HomeTextBox title="Moon Phase" content={selectedHoroscope.moon} />
