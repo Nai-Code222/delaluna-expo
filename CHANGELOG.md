@@ -15,3 +15,23 @@
 
 ---
 
+
+## Commit: Update app configuration for emulator and email verification settings; enhance SignUpChatScreen logic to prevent redirection during signup process; integrate Firebase Storage setup with a note on real bucket usage
+**Author:** Nai-Code222 <jeanairoberts@outlook.com>
+**Date:** 01/03/2026, 02:16:29 PM CST
+**Hash:** `3893314f`
+
+### File Changes:
+**Added:**
+- + firebaseConfig.ts
+
+**Modified:**
+- * app.config.js
+- * app/(auth)/sign-up.tsx
+
+### Statistics:
+- Total files changed: 3
+- Added: 1, Modified: 2, Deleted: 0
+
+---
+
