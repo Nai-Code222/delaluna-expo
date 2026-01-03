@@ -9,8 +9,6 @@ import {
   Image,
   Platform,
   StatusBar,
-  Animated,
-  Easing,
   RefreshControl,
   ScrollView,
 } from "react-native";
@@ -19,25 +17,41 @@ import { router, useLocalSearchParams } from "expo-router";
 import AuthContext from "../../src/backend/auth-context";
 import HeaderNav from "../../src/components/component-utils/header-nav";
 import { ThemeContext } from "../theme-context";
-import { useUserProfile } from "@/hooks/useUserProfile"; import { getDoc, doc } from "firebase/firestore";
 import HomeSignsDisplay from "../../src/components/home/home-signs-display.component";
 import HomeTextBox from "../../src/components/home/home-text-box.component";
-import useRenderBackground from "@/hooks/useRenderBackground"; import DateSwitcher from "../../src/components/component-utils/date-switcher.component";
+import useRenderBackground from "@/hooks/useRenderBackground";
+import DateSwitcher from "../../src/components/component-utils/date-switcher.component";
 import { auth, db } from "../../firebaseConfig";
-import { generateAndSaveBirthChart } from "@/services/firebase-ai-logic.service";
-import { buildBirthChartPrompt } from "../../functions/src/utils/buildBirthChartPrompt";
+import { getDoc, doc } from "firebase/firestore";
 
 export default function HomeScreen() {
-  const { authUser, initializing, horoscopes, dailyCards } = useContext(AuthContext);
+  const {
+    authUser,
+    initializing,
+    profile,
+    horoscopes,
+    dailyCards,
+    availableDates,
+    defaultDate,
+  } = useContext(AuthContext);
+
+  const todayKey = dayjs().format("YYYY-MM-DD");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
   useEffect(() => {
-    console.log("🏠 Home received from context");
-  }, [horoscopes, dailyCards]);
+    if (!availableDates?.length) return;
 
-  const today = dayjs().format("YYYY-MM-DD");
-  const [selectedDate, setSelectedDate] = useState(today);
+    if (!selectedDate) {
+      if (availableDates.includes(todayKey)) {
+        setSelectedDate(todayKey);
+      } else {
+        setSelectedDate(defaultDate);
+      }
+    }
+  }, [availableDates, defaultDate, selectedDate, todayKey]);
 
-  const selectedHoroscope = horoscopes?.[selectedDate];
-  const selectedCards = dailyCards?.[selectedDate].cards;
+  const selectedHoroscope = selectedDate ? horoscopes?.[selectedDate] : undefined;
+  const selectedCards = selectedDate ? dailyCards?.[selectedDate]?.cards : undefined;
 
   const insets = useSafeAreaInsets();
   const goToProfile = () => router.replace("/(supporting)/profile.screen");
@@ -48,48 +62,6 @@ export default function HomeScreen() {
   const initialUserRecord = userParam ? JSON.parse(userParam as string) : null;
   const HEADER_HEIGHT = Platform.OS === "ios" ? 115 : 85;
 
-  // Firestore user profile (cached + realtime)
-  const { user: userRecord, loading: profileLoading, cachedAt } = useUserProfile(
-    authUser?.uid,
-    initialUserRecord
-  );
-
-  const maybeGenerateBirthChart = async () => {
-    if (!authUser?.uid || !userRecord) return;
-
-    const chartRef = doc(
-      db,
-      "users",
-      authUser.uid,
-      "birthChart",
-      "default"
-    );
-
-    const snap = await getDoc(chartRef);
-
-    // If already generated, do nothing
-    if (snap.exists()) {
-      const data = snap.data();
-      if (data?.status === "complete" && data?.imageUrl) {
-        return;
-      }
-    }
-
-    console.log("🌌 Generating birth chart...");
-
-    const prompt = buildBirthChartPrompt({
-      birthDate: userRecord.birthday,
-      birthTime: userRecord.birthtime,
-      lat: userRecord.birthLat,
-      lon: userRecord.birthLon,
-      timezone: userRecord.tZoneOffset,
-    });
-
-    await generateAndSaveBirthChart(authUser.uid, prompt);
-
-    console.log("✨ Birth chart saved");
-  };
-
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -98,17 +70,6 @@ export default function HomeScreen() {
     setRefreshing(true);
 
     try {
-
-      // const cards = await getTarotCardDraw(
-      //   authUser.uid,
-      //   3,
-      // );
-
-      // const horoscopes = await generateHoroscopes(authUser.uid, userRecord.risingSign, userRecord.sunSign, userRecord.moonSign, cards);
-
-      // Generate birth chart
-      //await maybeGenerateBirthChart();
-
       // Optional: re-fetch user doc
       const snap = await getDoc(doc(db, "users", authUser.uid));
       if (snap.exists()) {
@@ -119,19 +80,8 @@ export default function HomeScreen() {
     } finally {
       setRefreshing(false);
     }
-  }, [authUser?.uid, userRecord]);
+  }, [authUser?.uid]);
 
-  //  Fade animation on theme change
-  const fade = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    fade.setValue(0);
-    Animated.timing(fade, {
-      toValue: 1,
-      duration: 220,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [theme]);
 
   // Auth guard
   useEffect(() => {
@@ -142,7 +92,7 @@ export default function HomeScreen() {
   const renderBackground = useRenderBackground();
 
   // ⏳ While auth/profile loading
-  if (initializing || profileLoading) {
+  if (initializing) {
     return renderBackground(
       <View style={styles.loader}>
         <ActivityIndicator size="large" />
@@ -150,8 +100,16 @@ export default function HomeScreen() {
     );
   }
 
+  if (!initializing && (!selectedDate || !selectedHoroscope)) {
+    return renderBackground(
+      <View style={[styles.loader, { justifyContent: "center", alignItems: "center" }]}>
+        <Text style={{ color: "#fff" }}>Preparing your insights…</Text>
+      </View>
+    );
+  }
+
   return renderBackground(
-    <Animated.View style={[styles.container, { opacity: fade }]}>
+    <View style={styles.container}>
       <HeaderNav
         title="Home"
         rightIconName="person-circle-outline"
@@ -161,17 +119,21 @@ export default function HomeScreen() {
       {/* Wrap main content with top offset */}
       <View style={[styles.mainContent, { marginTop: HEADER_HEIGHT }]}>
         <View style={[{ width: '100%' }]}>
-          <HomeSignsDisplay
-            sun={userRecord.sunSign}
-            moon={userRecord.moonSign}
-            rising={userRecord.risingSign}
-          />
+          {profile && (
+            <HomeSignsDisplay
+              sun={profile.sunSign}
+              moon={profile.moonSign}
+              rising={profile.risingSign}
+            />
+          )}
         </View>
-        <DateSwitcher
-          value={selectedDate}
-          onChange={setSelectedDate}
-          dates={Object.keys(horoscopes ?? {})}
-        />
+        {availableDates?.length > 0 && selectedDate && (
+          <DateSwitcher
+            value={selectedDate}
+            onChange={setSelectedDate}
+            dates={availableDates}
+          />
+        )}
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           refreshControl={
@@ -203,7 +165,7 @@ export default function HomeScreen() {
               <HomeTextBox title="Affirmation" content={selectedHoroscope.affirmation} />
             )}
 
-            {selectedCards && (
+            {selectedCards && selectedHoroscope?.tarot && (
               <HomeTextBox
                 title="Today's Cards"
                 content={selectedHoroscope.tarot}
@@ -229,7 +191,7 @@ export default function HomeScreen() {
           </View>
         </ScrollView>
       </View>
-    </Animated.View>
+    </View>
   );
 
 }
