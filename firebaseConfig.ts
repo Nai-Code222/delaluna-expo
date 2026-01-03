@@ -35,6 +35,9 @@ import {
   connectFunctionsEmulator,
 } from "firebase/functions";
 
+// Storage
+import { getStorage } from "firebase/storage";
+
 // Load Expo config
 const extra =
   (Constants.expoConfig as any)?.extra ??
@@ -64,6 +67,9 @@ export const auth = initializeAuth(app, {
 // Firestore
 export const db = getFirestore(app);
 
+// Storage (always REAL — no emulator)
+export const storage = getStorage(app);
+
 // Functions
 export const functions = getFunctions(app, "us-central1");
 
@@ -74,6 +80,8 @@ const ai = getAI(app, { backend: new GoogleAIBackend() });
 // Create a `GenerativeModel` instance with a model that supports your use case
 const model = getGenerativeModel(ai, { model: "gemini-2.5-flash-image" });
 
+// NOTE: Firebase Storage intentionally uses the REAL bucket
+// (tarot images are static assets and should not be re-uploaded)
 
 // Emulator Support (DEV only)
 const USE_EMULATOR = extra?.USE_EMULATOR === "true";

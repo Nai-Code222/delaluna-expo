@@ -22,8 +22,8 @@ export default {
 
     extra: {
       // local vs prod toggle
-      USE_EMULATOR: "false",
-      USE_EMAIL_VERIFICATION: "true",
+      USE_EMULATOR: "true",
+      USE_EMAIL_VERIFICATION: "false",
       eas: {
         projectId: "24610560-82da-4ee8-99d3-e51db4e8401c"
       },

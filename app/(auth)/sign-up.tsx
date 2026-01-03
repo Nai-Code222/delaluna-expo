@@ -41,6 +41,7 @@ export default function SignUpChatScreen() {
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isSigningUp, setIsSigningUp] = useState(false);
 
   const { authUser, initializing } = useAuth();
 
@@ -108,16 +109,17 @@ export default function SignUpChatScreen() {
 
   // If already logged in → redirect to main app
   useEffect(() => {
-    if (!initializing && authUser) {
+    if (!initializing && authUser && !isSigningUp) {
       router.replace("/(main)");
     }
-  }, [initializing, authUser]);
+  }, [initializing, authUser, isSigningUp]);
 
   // -------------------------
   //     SIGNUP PIPELINE
   // -------------------------
 
   const handleComplete = async (answers: FinalSignupPayload) => {
+    setIsSigningUp(true);
     let userCred: UserCredential | null = null;
     answers.birthday = normalizeBirthdayToISO(answers.birthday);
     answers.birthtime = normalizeBirthtimeToHHmm(answers.birthtime);
@@ -208,8 +210,8 @@ export default function SignUpChatScreen() {
       await generateHoroscopes(uid, response.user.risingSign, response.user.sunSign, response.user.moonSign, cards);
 
       const isEmulator : boolean = extra?.USE_EMULATOR;
-      router.replace("/index");
-      return;
+      console.log(isEmulator);
+      router.replace("/(main)");
 
       // const actionCodeSettings = isEmulator
       //   ? undefined
