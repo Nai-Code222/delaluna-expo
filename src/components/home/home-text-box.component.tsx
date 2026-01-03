@@ -4,12 +4,13 @@ import MessageInABottleComponent from "../component-utils/message-in-a-bottle.co
 import DelalunaContainer from "../component-utils/delaluna-container.component";
 import TarotCardImageFrame from "./tarot-card-image-view.component";
 import { BulletList } from "../typography/bullet-list-text";
+import { DrawnTarotCard } from "@/types/tarot-cards.type";
 
 interface HomeTextBoxProps {
   title: string;
   content?: string | string[];
   style?: ViewStyle;
-  cardNumber?: number; 
+  cards?: DrawnTarotCard[]; 
   reversed?: boolean;   // 🌙 prepare for reversed cards
 }
 
@@ -17,7 +18,7 @@ export default function HomeTextBox({
   title,
   content = "",
   style,
-  cardNumber,
+  cards,
   reversed = false,
 }: HomeTextBoxProps) {
 
@@ -43,10 +44,9 @@ export default function HomeTextBox({
       {isTarotSection ? (
         <>
           {/* TAROT IMAGE */}
-          {cardNumber ? (
-            <TarotCardImageFrame 
-              cardNumber={cardNumber} 
-              reversed={reversed}
+          {cards && cards.length > 0 ? (
+            <TarotCardImageFrame
+              cardNumber={cards.map(c => c.id)}
             />
           ) : (
             <Text style={{ color: "#fff" }}>Loading card...</Text>
@@ -62,9 +62,10 @@ export default function HomeTextBox({
       ) : isNewLoveSection ? (
         <View style={styles.newLoveRow}>
           {Array.isArray(content) ? content.map((item, index) => (
-            <Text key={index} style={styles.newLoveText}>
-              {item}{index < content.length - 1 ? ' ' : ''}
-            </Text>
+            <React.Fragment key={index}>
+              <Text style={styles.newLoveText}>{item}</Text>
+              {index < content.length - 1 && <Text style={styles.separator}>•</Text>}
+            </React.Fragment>
           )) : <Text style={styles.newLoveText}>{content}</Text>}
         </View>
       ) : isListStyleSection ? (
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "flex-start",
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 5,
   },
   title: {
     fontSize: 16,
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(142, 68, 173, 0.4)",
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 5,
   },
   text: {
     fontSize: 14,
@@ -114,12 +115,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-evenly",
     width: "100%",
-    padding: 10,
+    padding: 15,
   },
   newLoveText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: "#FFFFFF",
     alignItems: "center",
+  },
+  separator: {
+    fontSize: 16,
+    color: "#FFFFFF",
+    marginHorizontal: 6,
+    alignSelf: "center",
   },
 });
