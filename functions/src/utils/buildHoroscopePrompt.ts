@@ -98,8 +98,8 @@ Avoid:
 ====================================================
 - Return JSON ONLY. No markdown. No commentary.
 - All values must be strings or arrays of strings.
-- "do" MUST contain exactly 3 list style items or phrases.
-- "dont" MUST contain exactly 3 list style items or phrases.
+- "do" MUST contain exactly 3 list style items or phrases containg no more than 3 words. (example. keep it real, tighten up, on dnd, fix your crown, keep head up)
+- "dont" MUST contain exactly 3 list style items or phrases. (excample. stop lying, overspend, keep it dl, dont enetertain scrubs)
 - "newLove" MUST contain exactly 3 zodiac sign names (strings only).
 - "luckyNumbers" MUST contain 3 numbers as strings (e.g. ["3","7","14"]).
 - Tarot interpretation must be isolated to the "tarot" field.

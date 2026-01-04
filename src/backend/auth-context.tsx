@@ -84,15 +84,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const defaultDate = availableDates.at(-1) ?? null;
 
+  // --- Cards/Horoscope readiness states (must be declared before isAppReady) ---
+  const [cardsLoading, setCardsLoading] = useState(true);
+  const [horoscopeReady, setHoroscopeReady] = useState(false);
+  const [cardsReady, setCardsReady] = useState(false);
+
   // --- Single authoritative readiness flag ---
   const isAppReady =
     !!authUser &&
     !!profile &&
-    availableDates.length > 0 &&
+    horoscopeReady &&
+    cardsReady &&
     !initializing;
-  const [cardsLoading, setCardsLoading] = useState(true);
-  const [horoscopeReady, setHoroscopeReady] = useState(false);
-  const [cardsReady, setCardsReady] = useState(false);
 
   useEffect(() => {
     let unsubscribeProfile: (() => void) | null = null;
@@ -231,7 +234,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    
+
     // Logged out → app ready immediately
     if (!authUser) {
       setInitializing(false);
@@ -243,7 +246,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const horoscopeDates = Object.keys(safeHoroscopes);
       const cardDates = Object.keys(safeDailyCards);
       const missingCards = horoscopeDates.filter(date => !cardDates.includes(date));
-      
+
     }
 
     // Logged in → wait for required data (both horoscopes and cards)
@@ -252,7 +255,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setInitializing(false);
 
       // Explicitly hide splash on iOS once app is truly ready
-      SplashScreen.hideAsync().catch(() => {});
+      SplashScreen.hideAsync().catch(() => { });
     }
   }, [authUser, profile, horoscopeReady, cardsReady, safeHoroscopes, safeDailyCards]);
 

@@ -58,5 +58,8 @@ export * from "./deleteConnection";
 export * from "./onGeminiCompatibility";
 export * from "./onGeminiResponse";
 
+// 🌙 Birth Chart Generation
+export * from "./generateBirthChart";
+
 // 🌐 Optional HTTP endpoints for Postman testing
 export { getSigns, getSignsHttp } from "./getSigns";

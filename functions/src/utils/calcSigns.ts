@@ -1,5 +1,10 @@
 import swe from "@hatijs/core";
 import { DateTime } from "luxon";
+import path from "path";
+
+// VERY IMPORTANT: set Swiss Ephemeris path for house calculations
+const EPHE_PATH = path.join(process.cwd(), "ephe");
+swe.node_swe_set_ephe_path(EPHE_PATH);
 
 const ZODIAC_SIGNS = [
   "Aries","Taurus","Gemini","Cancer","Leo","Virgo",
@@ -93,24 +98,16 @@ export function formatDegree(longitude: number) {
   return `${sign} ${degree}°${minute.toString().padStart(2, "0")}′`;
 }
 
-function getHouseForLongitude(longitude: number, cusps: number[]) {
-  const lon = (longitude + 360) % 360;
-  for (let i = 0; i < 12; i++) {
-    const start = (cusps[i] + 360) % 360;
-    const end = (cusps[(i + 1) % 12] + 360) % 360;
-
-    if (start < end) {
-      if (lon >= start && lon < end) return i + 1;
-    } else {
-      if (lon >= start || lon < end) return i + 1;
-    }
-  }
-  return 12;
-}
-
 function angularDistance(a: number, b: number) {
   const diff = Math.abs(a - b) % 360;
   return diff > 180 ? 360 - diff : diff;
+}
+
+function getWholeSignHouse(planetLongitude: number, ascendantLongitude: number): number {
+  const planetSignIndex = Math.floor(((planetLongitude % 360) + 360) % 360 / 30);
+  const ascSignIndex = Math.floor(((ascendantLongitude % 360) + 360) % 360 / 30);
+  // Calculate house number from 1 to 12
+  return ((planetSignIndex - ascSignIndex + 12) % 12) + 1;
 }
 
 export async function calculateSignsInternal(
@@ -151,6 +148,7 @@ export async function calculateSignsInternal(
     };
   }
 
+  // Calculate Ascendant longitude using Swiss Ephemeris
   const houses = swe.node_swe_houses_ex2(
     jd,
     swe.SEFLG_SWIEPH,
@@ -158,19 +156,13 @@ export async function calculateSignsInternal(
     lon,
     "P"
   ) as any;
-
-  const houseCusps: number[] = [];
-  for (let i = 1; i <= 12; i++) {
-    houseCusps.push(((houses.cusps?.[i] ?? 0) + 360) % 360);
-  }
-
   const asc = ((houses.ascendant ?? houses.asc ?? 0) + 360) % 360;
   const risingSign = getZodiacSign(asc);
 
   for (const key of Object.keys(planetData)) {
-    planetData[key].house = getHouseForLongitude(
+    planetData[key].house = getWholeSignHouse(
       planetData[key].longitude,
-      houseCusps
+      asc
     );
   }
 
@@ -203,6 +195,21 @@ export async function calculateSignsInternal(
     }
   }
 
+  const housesOutput: HouseCusp[] = [];
+  const ascSignIndex = Math.floor(asc / 30);
+  for (let i = 0; i < 12; i++) {
+    const houseNumber = i + 1;
+    const signIndex = (ascSignIndex + i) % 12;
+    const longitude = signIndex * 30;
+    const sign = ZODIAC_SIGNS[signIndex];
+    housesOutput.push({
+      house: houseNumber,
+      longitude,
+      sign,
+      formatted: formatDegree(longitude),
+    });
+  }
+
   return {
     julianDay: jd,
     ascendant: {
@@ -210,12 +217,7 @@ export async function calculateSignsInternal(
       sign: risingSign,
       formatted: formatDegree(asc),
     },
-    houses: houseCusps.map((lon, idx) => ({
-      house: idx + 1,
-      longitude: lon,
-      sign: getZodiacSign(lon),
-      formatted: formatDegree(lon),
-    })),
+    houses: housesOutput,
     planets: planetData,
     aspects,
   };
