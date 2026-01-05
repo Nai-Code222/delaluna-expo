@@ -34,7 +34,7 @@ function useNotificationDeepLinks() {
 
         switch (data.type) {
           case "birthChartComplete":
-            router.push("/main/birth-chart");
+            console.log("Chart is ready!");
             break;
           default:
             break;
