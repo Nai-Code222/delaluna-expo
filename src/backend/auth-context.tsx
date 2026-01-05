@@ -13,7 +13,9 @@ import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { SignupUserRecord } from '@/services/finishUserSignup.service';
 import type { HoroscopeResult } from "@/types/horoscope.types";
 import { DailyDrawnTarotCard } from '@/types/tarot-cards.type';
+import { requestBirthChartGeneration } from "@/services/client.birthChart.service";
 
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 type AuthContextType = {
   authUser: User | null;
@@ -85,17 +87,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const defaultDate = availableDates.at(-1) ?? null;
 
   // --- Cards/Horoscope readiness states (must be declared before isAppReady) ---
-  const [cardsLoading, setCardsLoading] = useState(true);
   const [horoscopeReady, setHoroscopeReady] = useState(false);
   const [cardsReady, setCardsReady] = useState(false);
+  const cardsLoading = !cardsReady;
 
   // --- Single authoritative readiness flag ---
   const isAppReady =
-    !!authUser &&
-    !!profile &&
-    horoscopeReady &&
-    cardsReady &&
-    !initializing;
+    !initializing &&
+    (authUser === null || !!profile);
 
   useEffect(() => {
     let unsubscribeProfile: (() => void) | null = null;
@@ -114,7 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setDailyCards({});
         setHoroscopeReady(false);
         setCardsReady(false);
-        setInitializing(false); // ✅ logout is immediate
+        setInitializing(false); // logout is immediate
         if (unsubscribeProfile) unsubscribeProfile();
         return;
       }
@@ -144,9 +143,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         const data = snap.data();
         setBirthChart(data);
-        setBirthChartStatus(data.status ?? null);
+        setBirthChartStatus(data.status?.state ?? null);
         setBirthChartError(data.error ?? null);
-        setBirthChartLoading(data.status && data.status !== "complete");
+        setBirthChartLoading(
+          data.status === "pending" || data.status === "processing"
+        );
         setBirthChartPremiumUnlocked(!!data.premiumUnlocked);
       }, (err) => {
         console.warn("birth chart listener error:", err);
@@ -208,17 +209,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           setDailyCards(cardsMap);
           if (hasValidDay) {
-            setCardsLoading(false);
             setCardsReady(true);
           } else {
-            setCardsLoading(true);
             setCardsReady(false);
           }
         },
         (err) => {
           console.warn("cards listener error:", err);
           setDailyCards({});
-          setCardsLoading(false);
           setCardsReady(false);
         }
       );
@@ -234,30 +232,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-
     // Logged out → app ready immediately
     if (!authUser) {
       setInitializing(false);
+      SplashScreen.hideAsync().catch(() => {});
       return;
     }
 
-    // Defensive log if horoscope day exists without matching cards
-    if (horoscopeReady && !cardsReady) {
-      const horoscopeDates = Object.keys(safeHoroscopes);
-      const cardDates = Object.keys(safeDailyCards);
-      const missingCards = horoscopeDates.filter(date => !cardDates.includes(date));
-
-    }
-
-    // Logged in → wait for required data (both horoscopes and cards)
-    if (profile && horoscopeReady && cardsReady) {
-      console.log("✨ App READY (profile + horoscope + cards)");
+    // Logged in → profile is the ONLY gate
+    if (profile) {
+      console.log("✨ App READY (auth + profile)");
       setInitializing(false);
-
-      // Explicitly hide splash on iOS once app is truly ready
-      SplashScreen.hideAsync().catch(() => { });
+      SplashScreen.hideAsync().catch(() => {});
     }
-  }, [authUser, profile, horoscopeReady, cardsReady, safeHoroscopes, safeDailyCards]);
+  }, [authUser, profile]);
 
   // TODO: TEMP: disable birth chart auto-routing during v1
   // useEffect(() => {
@@ -267,11 +255,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   //   }
   // }, [birthChartStatus]);
 
-  // TODO: Trigger birthchart generate
-  const regenerateBirthChart = () => {
-    // placeholder: will trigger cloud function
-    console.log("Regenerate birth chart requested");
-  };
+  const regenerateBirthChart = async () => {
+  if (!authUser) return;
+
+  try {
+    setBirthChartLoading(true);
+
+    await requestBirthChartGeneration({
+      force: true,
+    });
+
+    console.log("🔁 Birth chart regeneration requested");
+  } catch (err) {
+    console.error("❌ Failed to regenerate birth chart", err);
+    setBirthChartError("generation_failed");
+    setBirthChartLoading(false);
+  }
+};
 
   const contextValue = useMemo(() => ({
     authUser,
