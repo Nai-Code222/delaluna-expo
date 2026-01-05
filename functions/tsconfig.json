@@ -17,6 +17,6 @@
 
     "types": ["node", "luxon"]
   },
-  "include": ["src", "src/types", "../src/prompts"],
+  "include": ["src"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }
