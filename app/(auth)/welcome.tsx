@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, ImageBackground, useWindowDimensions } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { router } from 'expo-router';
@@ -8,12 +8,15 @@ import PrimaryButton from '@/components/buttons/primary-button-component';
 import SecondaryButton from '@/components/buttons/secondary-button-component';
 import ButtonText from '@/components/typography/button-text';
 import { scale, verticalScale } from '@/utils/responsive';
+import { useAuth } from '@/backend/auth-context';
 
 export default function Welcome() {
   const { width } = useWindowDimensions();
   const logoW = Math.min(width * 0.72, scale(360));
   const logoH = logoW * 0.95; // adjust to your logo aspect
+  const { authUser, initializing } = useAuth();
 
+  
 
   return (
     <View style={styles.container}>
@@ -52,7 +55,7 @@ export default function Welcome() {
       <View style={styles.bottomContainer}>
         <PrimaryButton
           title="Get Started"
-          onPress={() => router.replace('/(auth)/sign-up')}
+          onPress={() => router.replace('/sign-up')}
         />
 
         <View style={styles.divider} />
@@ -61,7 +64,7 @@ export default function Welcome() {
           <SecondaryButton
             title="Already a member?"
             linkString="Log In"
-            onPress={() => router.replace('/(auth)/login')}
+            onPress={() => router.replace('/login')}
           />
         </ButtonText>
       </View>

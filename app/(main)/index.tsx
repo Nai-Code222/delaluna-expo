@@ -6,7 +6,6 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  Image,
   Platform,
   StatusBar,
   RefreshControl,
@@ -14,26 +13,30 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import AuthContext from "../../src/backend/auth-context";
 import HeaderNav from "../../src/components/component-utils/header-nav";
 import { ThemeContext } from "../theme-context";
 import HomeSignsDisplay from "../../src/components/home/home-signs-display.component";
 import HomeTextBox from "../../src/components/home/home-text-box.component";
 import useRenderBackground from "@/hooks/useRenderBackground";
 import DateSwitcher from "../../src/components/component-utils/date-switcher.component";
-import { auth, db } from "../../firebaseConfig";
+import { db } from "../../firebaseConfig";
 import { getDoc, doc } from "firebase/firestore";
+import { useAuth } from "@/backend/auth-context";
 
 export default function HomeScreen() {
   const {
     authUser,
-    initializing,
+    isAppReady,
     profile,
     horoscopes,
     dailyCards,
     availableDates,
     defaultDate,
-  } = useContext(AuthContext);
+    birthChart,
+    birthChartStatus,
+    birthChartLoading,
+    regenerateBirthChart,
+  } = useAuth();
 
   const todayKey = dayjs().format("YYYY-MM-DD");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -41,17 +44,15 @@ export default function HomeScreen() {
   useEffect(() => {
     if (!availableDates?.length) return;
 
-    if (!selectedDate) {
-      if (availableDates.includes(todayKey)) {
-        setSelectedDate(todayKey);
-      } else {
-        setSelectedDate(defaultDate);
-      }
+    if (availableDates.includes(todayKey)) {
+      setSelectedDate(todayKey);
+    } else {
+      setSelectedDate(defaultDate);
     }
-  }, [availableDates, defaultDate, selectedDate, todayKey]);
+  }, [availableDates, defaultDate, todayKey]);
 
-  const selectedHoroscope = selectedDate ? horoscopes?.[selectedDate] : undefined;
-  const selectedCards = selectedDate ? dailyCards?.[selectedDate]?.cards : undefined;
+  const selectedHoroscope = selectedDate ? horoscopes?.[selectedDate] ?? null : null;
+  const selectedCards = selectedDate ? dailyCards?.[selectedDate]?.cards ?? null : null;
 
   const insets = useSafeAreaInsets();
   const goToProfile = () => router.replace("/(supporting)/profile.screen");
@@ -70,6 +71,11 @@ export default function HomeScreen() {
     setRefreshing(true);
 
     try {
+      // 🔮 Trigger birth chart generation on pull-to-refresh
+      if (birthChartStatus !== "processing") {
+        regenerateBirthChart();
+      }
+
       // Optional: re-fetch user doc
       const snap = await getDoc(doc(db, "users", authUser.uid));
       if (snap.exists()) {
@@ -80,30 +86,22 @@ export default function HomeScreen() {
     } finally {
       setRefreshing(false);
     }
-  }, [authUser?.uid]);
+  }, [authUser?.uid, birthChartStatus, regenerateBirthChart]);
 
 
   // Auth guard
   useEffect(() => {
-    if (!initializing && !authUser) router.replace("/(auth)/welcome");
-  }, [initializing, authUser]);
+    if (isAppReady === false && !authUser) console.log("/(auth)/welcome");
+  }, [isAppReady, authUser]);
 
   // Background renderer
   const renderBackground = useRenderBackground();
 
   // ⏳ While auth/profile loading
-  if (initializing) {
+  if (!isAppReady) {
     return renderBackground(
       <View style={styles.loader}>
         <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  if (!initializing && (!selectedDate || !selectedHoroscope)) {
-    return renderBackground(
-      <View style={[styles.loader, { justifyContent: "center", alignItems: "center" }]}>
-        <Text style={{ color: "#fff" }}>Preparing your insights…</Text>
       </View>
     );
   }
@@ -112,6 +110,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <HeaderNav
         title="Home"
+        
         rightIconName="person-circle-outline"
         onRightPress={goToProfile}
       />
@@ -125,6 +124,40 @@ export default function HomeScreen() {
               moon={profile.moonSign}
               rising={profile.risingSign}
             />
+          )}
+        </View>
+
+        {/* 🌌 Birth Chart Section */}
+        <View style={{ width: "100%", marginBottom: 16 }}>
+          <Text style={styles.sectionTitle}>Birth Chart</Text>
+
+          {birthChartLoading && (
+            <Text style={styles.subtleText}>
+              Generating your birth chart…
+            </Text>
+          )}
+
+          {!birthChartLoading && !birthChart && (
+            <Text style={styles.subtleText}>
+              Your birth chart isn’t ready yet.
+            </Text>
+          )}
+
+          {birthChartStatus === "error" && (
+            <Text style={styles.errorText}>
+              Something went wrong generating your chart.
+            </Text>
+          )}
+
+          {!birthChartLoading && (
+            <View style={{ marginTop: 8 }}>
+              <Text
+                style={styles.actionText}
+                onPress={regenerateBirthChart}
+              >
+                {birthChart ? "Regenerate Birth Chart" : "Generate Birth Chart"}
+              </Text>
+            </View>
           )}
         </View>
         {availableDates?.length > 0 && selectedDate && (
@@ -165,7 +198,7 @@ export default function HomeScreen() {
               <HomeTextBox title="Affirmation" content={selectedHoroscope.affirmation} />
             )}
 
-            {selectedCards && selectedHoroscope?.tarot && (
+            {selectedCards && selectedCards.length > 0 && selectedHoroscope?.tarot && (
               <HomeTextBox
                 title="Today's Cards"
                 content={selectedHoroscope.tarot}
@@ -228,5 +261,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     height: "15%",
-  }
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    marginBottom: 6,
+    alignSelf: "center",
+  },
+  subtleText: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 13,
+    textAlign: "center",
+  },
+  errorText: {
+    color: "#FF6B6B",
+    fontSize: 13,
+    textAlign: "center",
+  },
+  actionText: {
+    color: "#C77DFF",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+  },
 });
