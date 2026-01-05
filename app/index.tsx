@@ -27,7 +27,6 @@ export default function SplashScreen() {
 
     Promise.all([minTimer, authReady]).then(() => {
       router.replace(authUser ? '/(main)' : '/(auth)/welcome');
-      //router.replace('/test-signs' as unknown as any); // TEMP SKIP AUTH FOR TESTING
     });
   }, [authUser, initializing]);
 
