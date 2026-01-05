@@ -1,17 +1,21 @@
-import { Link, Stack } from 'expo-router';
+import { Link, router, Stack } from 'expo-router';
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 
 
 export default function NotFoundScreen() {
+  function goToWelcomeScreen(): void {
+    router.replace('/welcome')
+  }
+
   return (
     <>
       <Stack.Screen options={{ title: 'Oops!' }} />
       <View style={styles.container}>
         <Text style={styles.title}>This screen doesn't exist.</Text>
 
-        <TouchableOpacity>
-          <Text style={styles.linkText}>Go to home screen!</Text>
+        <TouchableOpacity onPress={goToWelcomeScreen}>
+          <Text style={styles.linkText}>Go to home!</Text>
         </TouchableOpacity>
       
       </View>
