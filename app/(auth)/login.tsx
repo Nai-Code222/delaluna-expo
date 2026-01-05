@@ -1,4 +1,5 @@
 // app/login.tsx
+
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import React, { useContext, useEffect, useState, useRef } from 'react';
@@ -17,7 +18,7 @@ import {
 } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'expo-router';
-import { getFirestore, doc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, serverTimestamp } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
@@ -27,8 +28,6 @@ import { DateTime } from 'luxon';
 import { useAuth } from '../../src/backend/auth-context';
 import SecondaryButtonComponent from '../../src/components/buttons/secondary-button-component';
 import LoadingScreen from '../../src/components/component-utils/loading-screen';
-
-// ⭐ UPDATED PASSWORD INPUT
 import DelalunaPasswordInput, { DelalunaPasswordInputRef } from '../../src/components/component-utils/password-input-field';
 
 import { updateUserDoc } from '../../src/services/user.service';
@@ -49,13 +48,8 @@ export default function Login() {
   const router = useRouter();
   const { setThemeKey } = useContext(ThemeContext);
 
-  // ⭐ This ref is used by the NEXT button from Email
   const passwordRef = useRef<DelalunaPasswordInputRef>(null);
 
-  const insets = useSafeAreaInsets();
-  const headerHeight = useHeaderHeight();
-
-  // Track keyboard visibility for KAV
   const [kbVisible, setKbVisible] = useState(false);
 
   useEffect(() => {
@@ -118,7 +112,6 @@ export default function Login() {
     setLoading(true);
     setSkipAutoRedirect(true);
 
-    // ⭐ Capture timezone correctly
     const timezone = getTimezone();
 
     const cred = await signInWithEmailAndPassword(
@@ -221,7 +214,6 @@ export default function Login() {
                     onSubmitEditing={() => passwordRef.current?.focus()}
                   />
 
-                  {/* PASSWORD */}
                   <DelalunaPasswordInput
                     ref={passwordRef}
                     value={password}
