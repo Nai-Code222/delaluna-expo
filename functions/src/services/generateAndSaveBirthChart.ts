@@ -57,6 +57,7 @@ export async function generateAndSaveBirthChart(uid: string) {
 
   try {
     const svg = await generateGeminiImage(prompt);
+    
 
     if (!svg || !svg.trim().startsWith("<svg")) {
       throw new Error("Invalid SVG returned");

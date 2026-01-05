@@ -2,6 +2,7 @@ import * as functions from "firebase-functions/v1";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { buildBirthChartPrompt } from "./prompts/natalChart.prompt";
+import { FieldValue } from "firebase-admin/firestore";
 
 type GenerateBirthChartRequest = {
   force?: boolean;
@@ -19,7 +20,7 @@ if (!admin.apps.length) {
   admin.initializeApp();
 }
 
-const now = () => admin.firestore.FieldValue.serverTimestamp();
+const now = () => FieldValue.serverTimestamp();
 
 function getApiKey() {
   return (
@@ -190,7 +191,6 @@ export const generateBirthChart = functions
 
       const db = admin.firestore();
       const birthChartRef: admin.firestore.DocumentReference = db.doc(`users/${uid}/birthChart/default`);
-      const natalRef: admin.firestore.DocumentReference = db.doc(`users/${uid}/natalChart`);
 
       // If already processing and not forced, bail
       const existing: admin.firestore.DocumentSnapshot = await birthChartRef.get();
@@ -216,15 +216,21 @@ export const generateBirthChart = functions
         };
       }
 
-      // Load natal chart
-      const natalSnap: admin.firestore.DocumentSnapshot = await natalRef.get();
-      if (!natalSnap.exists) {
+      // Load natal chart from user document
+      const userSnap: admin.firestore.DocumentSnapshot = await db.doc(`users/${uid}`).get();
+      if (!userSnap.exists) {
         throw new functions.https.HttpsError(
           "failed-precondition",
-          "Natal chart not found at users/{uid}/natalChart."
+          "User document not found at users/{uid}."
         );
       }
-      const natalChart = natalSnap.data();
+      const natalChart = userSnap.data()?.natalChart;
+      if (!natalChart) {
+        throw new functions.https.HttpsError(
+          "failed-precondition",
+          "Natal chart not found in user document."
+        );
+      }
 
       logger.info("generateBirthChart start", { uid, force, attempts: nextAttempts });
 
@@ -238,12 +244,12 @@ export const generateBirthChart = functions
             attempts: nextAttempts,
           },
           source: {
-            natalChartDocPath: natalRef.path,
+            natalChartDocPath: `users/${uid}`,
             generatedFrom: "callable:generateBirthChart",
             model: "gemini-2.5-flash",
           },
           requestedAt: now(),
-          error: admin.firestore.FieldValue.delete(),
+          error: FieldValue.delete(),
         },
         { merge: true }
       );
