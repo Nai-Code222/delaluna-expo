@@ -11,7 +11,6 @@ export function BulletList({ items, bullet = "•" }: BulletListProps) {
     <View style={styles.list}>
       {items.map((item, index) => (
         <View key={index} style={styles.row}>
-          <Text style={styles.bullet}>{bullet}</Text>
           <Text style={styles.text}>{item}</Text>
         </View>
       ))}
@@ -27,7 +26,7 @@ const styles = StyleSheet.create({
   row: {
   width: "100%",
   flexDirection: "row",
-  alignItems: "flex-start",
+  alignItems: "center",
   marginBottom: 10,
 },
   bullet: {
@@ -43,5 +42,6 @@ text: {
   fontSize: 14,
   lineHeight: 22,
   color: "#FFFFFF",
+   textAlign: "center"
 },
 });

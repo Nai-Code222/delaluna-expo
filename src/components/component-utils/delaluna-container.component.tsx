@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     borderRadius: scale(12),
     borderWidth: 1.5,
     borderColor: "rgba(142, 68, 173, 0.6)",
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    //backgroundColor: "rgba(255, 255, 255, 0.05)",
   },
 
   // 💫 Highlight / Premium Glow
@@ -85,6 +85,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(16),
     gap: scale(8),
     borderRadius: scale(12),
-    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    
   },
 });

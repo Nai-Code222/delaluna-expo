@@ -69,11 +69,11 @@ export default function HomeTextBox({
           )) : <Text style={styles.newLoveText}>{content}</Text>}
         </View>
       ) : isListStyleSection ? (
-        <DelalunaContainer style={styles.box}>
+        <DelalunaContainer>
           {renderListContent()}
         </DelalunaContainer>
       ) : (
-        <DelalunaContainer style={styles.box}>
+        <DelalunaContainer>
           {renderTextContent()}
         </DelalunaContainer>
       )}
@@ -88,12 +88,12 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "flex-start",
     gap: 8,
-    marginBottom: 5,
+    marginBottom: 25,
   },
   title: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#FFFFFF",
+    color: "#5BC0BE",
     alignSelf: "center",
     marginBottom: 6,
   },

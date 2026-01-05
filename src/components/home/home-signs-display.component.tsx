@@ -13,7 +13,7 @@ interface HomeSignsDisplayProps {
 }
 
 export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplayProps) {
-  const goToBirthchart = () => router.replace("/(supporting)/birth-chart.screen");
+  const goToBirthchart = () => console.log("router.replace(/(supporting)/birth-chart.screen)");
 
   return (
     <View style={styles.container}>
@@ -49,7 +49,7 @@ export default function HomeSignsDisplay({ sun, moon, rising }: HomeSignsDisplay
       <View style={styles.signItem}>
         <TouchableOpacity onPress={(goToBirthchart)}>
 
-        <Text style={styles.birtChartText}>Birth Chart</Text>
+        <Text style={styles.birtChartText}>View Chart</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   },
   birtChartText: {
     fontSize: moderateScale(12),
-    color: "#ffffffff",
+    color: "#8eeceaff",
     fontWeight: "300",
     textTransform: "uppercase",
     letterSpacing: 0.6,
