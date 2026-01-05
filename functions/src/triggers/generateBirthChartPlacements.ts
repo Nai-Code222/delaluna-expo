@@ -1,7 +1,7 @@
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
 import { getFirestore } from "firebase-admin/firestore";
-import { buildBirthChartPlacementPrompt } from "./utils/buildBirthChartPlacementPrompt";
+import { buildBirthChartPlacementPrompt } from "../prompts/buildBirthChartPlacementPrompt";
 import { z } from "zod";
 import { getMessaging } from "firebase-admin/messaging";
 

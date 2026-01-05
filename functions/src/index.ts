@@ -47,19 +47,19 @@ export const health = functions.https.onRequest((req, res) => {
 ---------------------------------------------------*/
 
 // 🌞 Core Astrology
-export * from "./getSigns";
+export * from "./utils/getSigns";
 export * from "./finishUserSignup";
 
 // 💫 Compatibility & Connections
-export * from "./getConnection";
-export * from "./deleteConnection";
+export * from "./callables/getConnection";
+export * from "./callables/deleteConnection";
 
 // 🪄 Gemini AI Handlers
 export * from "./onGeminiCompatibility";
 export * from "./onGeminiResponse";
 
 // 🌙 Birth Chart Generation
-export * from "./generateBirthChart";
+export * from "./triggers/generateBirthChart";
 
 // 🌐 Optional HTTP endpoints for Postman testing
-export { getSigns, getSignsHttp } from "./getSigns";
+export { getSigns, getSignsHttp } from "./utils/getSigns";

@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions/v1";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { buildBirthChartPrompt } from "./prompts/natalChart.prompt";
+import { buildBirthChartPrompt } from "../prompts/natalChart.prompt";
 import { FieldValue } from "firebase-admin/firestore";
 
 type GenerateBirthChartRequest = {

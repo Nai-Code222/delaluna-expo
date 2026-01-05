@@ -2,8 +2,8 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import * as logger from "firebase-functions/logger";
 import { z } from "zod";
-import { buildCompatibilityPrompt } from "./utils/buildCompatibilityPrompt";
-import { calculateSignsInternal } from "./utils/calcSigns";
+import { buildCompatibilityPrompt } from "../prompts/buildCompatibilityPrompt";
+import { calculateSignsInternal } from "../utils/calcSigns";
 
 const db = getFirestore();
 

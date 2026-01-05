@@ -1,7 +1,7 @@
 // src/services/generate-horoscope.service.ts
 
 import { doc, setDoc, getFirestore } from "firebase/firestore";
-import { buildHoroscopePrompt } from "../../functions/src/utils/buildHoroscopePrompt";
+import { buildHoroscopePrompt } from "../../functions/src/prompts/buildHoroscopePrompt";
 import { TarotDrawResult } from "@/types/tarot-cards.type";
 
 export async function generateHoroscopes(
