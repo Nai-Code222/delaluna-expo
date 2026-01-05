@@ -29,7 +29,8 @@ import { FinalSignupPayload } from "@/types/signup.types";
 import { parseError } from "@/utils/errorParser";
 import Constants from "expo-constants";
 import { getTarotCardDraw } from "@/services/tarot-card.service";
-import { generateHoroscope, generateHoroscopes } from "@/services/generate-horoscope.service";
+import { generateHoroscopes } from "@/services/generate-horoscope.service";
+import { requestBirthChartGeneration } from "@/services/client.birthChart.service"
 
 // Safe fallback constants
 const FALLBACK_PLACE_LABEL = "Greenwich, London, United Kingdom";
@@ -108,12 +109,7 @@ export default function SignUpChatScreen() {
   };
 
   // If already logged in → redirect to main app
-  useEffect(() => {
-    if (!initializing && authUser && !isSigningUp) {
-      router.replace("/(main)");
-    }
-  }, [initializing, authUser, isSigningUp]);
-
+  
   // -------------------------
   //     SIGNUP PIPELINE
   // -------------------------
@@ -133,6 +129,8 @@ export default function SignUpChatScreen() {
         "Invalid Information",
         "Some of your answers need correction before continuing."
       );
+
+
       return;
     }
 
@@ -193,14 +191,11 @@ export default function SignUpChatScreen() {
         themeKey: "default",
       };
 
-      // create Firestore user doc using UserRecord
       const response = await finishUserSignup({
         uid,
         displayName,
         ...signupPayloadForServer,
       });
-
-      console.log("✅ Firestore user doc created:", response);
 
       const cards = await getTarotCardDraw(
         uid,
@@ -209,9 +204,14 @@ export default function SignUpChatScreen() {
 
       await generateHoroscopes(uid, response.user.risingSign, response.user.sunSign, response.user.moonSign, cards);
 
-      const isEmulator : boolean = extra?.USE_EMULATOR;
-      console.log(isEmulator);
-      router.replace("/(main)");
+      const isEmulator: boolean = extra?.USE_EMULATOR;
+      console.log("Emulator in use: ", isEmulator);
+
+      simulateProgress(() => {
+        setIsSigningUp(false);
+        console.log("Simprogress")
+       
+      });
 
       // const actionCodeSettings = isEmulator
       //   ? undefined
@@ -259,6 +259,7 @@ export default function SignUpChatScreen() {
       Alert.alert("Signup Error", error.message);
       setIsLoading(false);
     }
+
   };
 
   // fake progress animation for smooth loading UI
