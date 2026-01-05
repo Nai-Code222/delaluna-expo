@@ -20,14 +20,13 @@ export default function BirthChartScreen() {
     });
   }, [birthChartStatus, birthChartLoading, birthChartError]);
 
-  const isLoading =
-    birthChartLoading ||
-    birthChartStatus === "image_pending" ||
-    birthChartStatus === "placements_pending";
+  // Status and step from new Firestore schema
+  const statusState = birthChart?.status?.state;
+  const statusStep = birthChart?.status?.step;
 
-  const chartImageUrl = birthChart?.chartImageUrl ?? null;
-  const placements = birthChart?.placements ?? {};
-  const summary = birthChart?.summary ?? "";
+  const isLoading = birthChartLoading || statusState === "processing";
+
+  const chartImageUrl = birthChart?.svg?.downloadUrl ?? null;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -38,18 +37,18 @@ export default function BirthChartScreen() {
         <View style={styles.loadingBox}>
           <ActivityIndicator size="large" color="#A78BFA" />
           <Text style={styles.loadingText}>
-            {birthChartStatus === "image_pending" && "✨ Casting your chart wheel…"}
-            {birthChartStatus === "placements_pending" && "🔮 Reading your placements…"}
-            {birthChartLoading && "Loading your Birth Chart…"}
+            {statusStep === "svg" && "✨ Casting your chart wheel…"}
+            {statusStep === "free" && "🔮 Writing your chart overview…"}
+            {statusStep === "premium" && "🌙 Finalizing your interpretation…"}
           </Text>
         </View>
       )}
 
       {/* ERROR */}
-      {birthChartError && (
+      {birthChart?.error?.message && (
         <View style={styles.errorBox}>
           <Text style={styles.errorText}>
-            Something went wrong: {birthChartError}
+            Something went wrong: {birthChart?.error?.message ?? "Unknown error"}
           </Text>
           <TouchableOpacity style={styles.retryButton} onPress={regenerateBirthChart}>
             <Text style={styles.retryButtonText}>Retry Generation</Text>
@@ -68,23 +67,17 @@ export default function BirthChartScreen() {
         </View>
       )}
 
-      {/* SUMMARY */}
-      {!isLoading && summary ? (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Overview</Text>
-          <Text style={styles.sectionText}>{summary}</Text>
-        </View>
-      ) : null}
-
-      {/* PLACEMENTS */}
-      {!isLoading && placements && (
+      {/* NATAL TABLE */}
+      {!isLoading && Array.isArray(birthChart?.natalTable) && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Your Placements</Text>
 
-          {Object.entries(placements).map(([key, value]) => (
-            <View key={key} style={styles.placementRow}>
-              <Text style={styles.placementKey}>{key}</Text>
-              <Text style={styles.placementValue}>{String(value)}</Text>
+          {birthChart.natalTable.map((row: any, idx: number) => (
+            <View key={idx} style={styles.placementRow}>
+              <Text style={styles.placementKey}>{row.planet}</Text>
+              <Text style={styles.placementValue}>
+                {row.degree} · {row.sign} · House {row.house}
+              </Text>
             </View>
           ))}
         </View>
