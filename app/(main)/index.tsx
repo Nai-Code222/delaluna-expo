@@ -206,21 +206,24 @@ export default function HomeScreen() {
               />
             )}
 
+            <HomeTextBox title="Message in a Bottle"/>
+
             {selectedHoroscope?.moon && (
               <HomeTextBox title="Moon Phase" content={selectedHoroscope.moon} />
             )}
-
-            {selectedHoroscope?.luckyNumbers && (
-              <HomeTextBox title="Lucky Numbers" content={selectedHoroscope.luckyNumbers} />
-            )}
+            
+            <HomeTextBox title="Planets in Retrograde" content={" Planets in Retrograde "}/>
 
             {selectedHoroscope?.newLove && (
               <HomeTextBox title="New Love" content={selectedHoroscope.newLove} />
             )}
 
-            {selectedHoroscope?.release && (
-              <HomeTextBox title="Release" content={selectedHoroscope.release} />
+            <HomeTextBox title="Returns" content={"These zodiacs have a higher likelihood of seeking you for closure, clarification or continuation."} />
+
+            {selectedHoroscope?.luckyNumbers && (
+              <HomeTextBox title="Lucky Numbers" content={selectedHoroscope.luckyNumbers} />
             )}
+
           </View>
         </ScrollView>
       </View>
@@ -228,7 +231,6 @@ export default function HomeScreen() {
   );
 
 }
-
 
 const styles = StyleSheet.create({
   background: { flex: 1, width: "100%", height: "100%" },
