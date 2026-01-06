@@ -19,7 +19,6 @@ export function buildHoroscopePrompt(options: {
     userMoon,
     tarotCardKeywords,
     tarotCardMeanings,
-    
   } = options;
 
   return `
@@ -33,7 +32,7 @@ ASTROLOGY — PRIMARY DRIVER
 Use astrology as the FOUNDATION of the horoscope.
 
 You MUST:
-- Anchor the interpretation to the user’s Rising, Sun and Moon signs
+- Anchor the interpretation to the user Rising, Sun and Moon signs
 - Describe the Moon sign and phase for the date
 - Reference relevant planetary transits influencing mood, timing, and decisions
 
@@ -49,24 +48,27 @@ Astrology MUST directly influence:
 - advice
 - affirmation
 - warning
-- moon
 - transits
-- release
+- moon
+- moonPhaseDetails
+- planetsRetrograde
+- returns (signs ONLY)
 - newLove (sign compatibility ONLY)
-- dos
-- donts
+- do
+- dont
+- release
 
 
 ====================================================
 TAROT INTERPRETATION
 ====================================================
-Use Tarot Keyword List and Meaning List to generate an interpretation of the meaning of today’s cards. 
+Use Tarot Keywords and Tarot Meanings to generate an interpretation of the meaning of today’s cards. 
 MUST BE be 5-7 sentences NO LONGER OR SHORTER.
 
-Tarot Keyword List:
+Tarot Keywords:
 ${tarotCardKeywords}
 
-Tarot Meaning List:
+Tarot Meanings:
 ${tarotCardMeanings}
 
 Tarot ONLY influence:
@@ -81,13 +83,19 @@ Moon: ${userMoon}
 Date: ${date}
 
 ====================================================
-📝 STYLE REQUIREMENTS
+STYLE REQUIREMENTS
 ====================================================
 Write like Delaluna:
-- witty, honest, emotionally intelligent, empowering
+- witty, honest, emotionally intelligent, empowering, wise, honest
 - confident, grounded, and specific
 - spice and savage allowed, never cruel to the user
-- Tarot and Moon MUST BE be 5-7 sentences. No shorter or Longer. 
+- tarot MUST BE 5-7 sentences. No shorter or Longer.
+- moonPhaseDetails should be moon phase name, type and degree (example: Aries Moon, Waxing Gibbous, 22°)
+- moon MUST BE 5-7 sentences No shorter or Longer.
+- planetsRetrograde should ONLY be the names of currently planets in retrograde if there are none enter "none".  
+- new love should be zodiacs that the user has a higher likelihood of vibing with or feeling attraction toward the user today. 
+- return is zodiac signs have a higher likelihood of seeking for closure, clarification or continuation.
+- transits must be 5-7 sentences
 
 Avoid:
 - clichés
@@ -104,7 +112,7 @@ Avoid:
 - "dont" MUST contain exactly 3 list style items or phrases. (excample. stop lying, overspend, keep it dl, dont enetertain scrubs)
 - "newLove" MUST contain exactly 3 zodiac sign names (strings only).
 - "luckyNumbers" MUST contain 3 numbers as strings (e.g. ["3","7","14"]).
-- Tarot interpretation must be isolated to the "tarot" field.
+- Tarot interpretation must be isolated to ONLY the "tarot" field.
 - Astrology must clearly drive the rest of the horoscope.
 
 ====================================================
@@ -118,9 +126,12 @@ Avoid:
   "do": [],
   "dont": [],
   "warning": "",
+  "moonPhaseDetails": [],
   "moon": "",
+  "planetsRetrograde": [],
   "transits": "",
   "tarot": "",
+  "returns": [],
   "newLove": [],
   "luckyNumbers": [],
   "release": ""
