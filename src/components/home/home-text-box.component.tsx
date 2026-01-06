@@ -5,26 +5,68 @@ import DelalunaContainer from "../component-utils/delaluna-container.component";
 import TarotCardImageFrame from "./tarot-card-image-view.component";
 import { BulletList } from "../typography/bullet-list-text";
 import { DrawnTarotCard } from "@/types/tarot-cards.type";
+import { Ionicons } from "@expo/vector-icons";
+import { scale } from "@/utils/responsive";
+
+// Define section types
+export type SectionName =
+  | "quote"
+  | "advice"
+  | "dos"
+  | "donts"
+  | "affirmation"
+  | "tarot"
+  | "message"
+  | "moon"
+  | "moonPhaseDetails"
+  | "retrograde"
+  | "newLove"
+  | "returns"
+  | "luckyNumbers";
+
+// Icon mapping for each section
+const SECTION_ICONS: Record<SectionName, { name: keyof typeof Ionicons.glyphMap; color?: string }> = {
+  quote: { name: "chatbubble-outline", color: "#5BC0BE" },
+  advice: { name: "bulb-outline", color: "#F4A261" },
+  dos: { name: "checkmark-circle-outline", color: "#2A9D8F" },
+  donts: { name: "close-circle-outline", color: "#E76F51" },
+  affirmation: { name: "sparkles-outline", color: "#E63946" },
+  tarot: { name: "sparkles-outline", color: "#9D4EDD" },
+  message: { name: "send-outline", color: "#06FFA5" },
+  moon : { name: "moon-outline", color: "#F1FAEE" },
+  moonPhaseDetails : { name: "moon-outline", color: "#F1FAEE" },
+  retrograde: { name: "planet-outline", color: "#8E44AD" },
+  newLove: { name: "heart-outline", color: "#FF69B4" },
+  returns: { name: "repeat-outline", color: "#FCA311" },
+  luckyNumbers: { name: "dice-outline", color: "#FFD60A" },
+};
 
 interface HomeTextBoxProps {
+  sectionName: SectionName;
   title: string;
   content?: string | string[];
   style?: ViewStyle;
-  cards?: DrawnTarotCard[]; 
-  reversed?: boolean;   // 🌙 prepare for reversed cards
+  cards?: DrawnTarotCard[];
+  reversed?: boolean;
 }
 
 export default function HomeTextBox({
+  sectionName,
   title,
   content = "",
   style,
   cards,
 }: HomeTextBoxProps) {
 
-  const isBottleSection = title.toLowerCase().includes("in a bottle");
-  const isTarotSection = title.toLowerCase().includes("today") && title.toLowerCase().includes("card");
+  const isBottleSection = sectionName === "message";
+  const isTarotSection = sectionName === "tarot";
+  const isMoonPhase = sectionName === "moonPhaseDetails";
   const isListStyleSection = Array.isArray(content);
-  const isNewLoveSection = title.toLowerCase().includes("new love") || title.toLowerCase().includes("lucky numbers");
+  const isHoriListSection = sectionName === "newLove" || sectionName === "luckyNumbers" || sectionName === "returns";
+  const iconSize = scale(20);
+
+  // Get icon config for this section
+  const iconConfig = SECTION_ICONS[sectionName];
 
   const renderTextContent = () => {
     if (!content || Array.isArray(content)) return null;
@@ -38,7 +80,14 @@ export default function HomeTextBox({
 
   return (
     <View style={[styles.container, style]}>
-      <Text style={styles.title}>{title}</Text>
+      <View style={styles.titleContainer}>
+        <Ionicons
+          name={iconConfig.name}
+          size={iconSize}
+          color={"#ffffffff"}
+        />
+        <Text style={styles.title}>{title}</Text>
+      </View>
 
       {isTarotSection ? (
         <>
@@ -46,7 +95,7 @@ export default function HomeTextBox({
           {cards && cards.length > 0 ? (
             <TarotCardImageFrame
               cardNumber={cards.map(c => c.id)}
-              reversed={cards.map(c=> c.reversed)}
+              reversed={cards.map(c => c.reversed)}
             />
           ) : (
             <Text style={{ color: "#fff" }}>Loading card...</Text>
@@ -59,7 +108,7 @@ export default function HomeTextBox({
         </>
       ) : isBottleSection ? (
         <MessageInABottleComponent placeholder="Message to the universe" />
-      ) : isNewLoveSection ? (
+      ) : isHoriListSection ? (
         <View style={styles.newLoveRow}>
           {Array.isArray(content) ? content.map((item, index) => (
             <React.Fragment key={index}>
@@ -90,12 +139,17 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 25,
   },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "center",
+    gap: 6,
+    marginBottom: 6,
+  },
   title: {
     fontSize: 16,
     fontWeight: "700",
     color: "#5BC0BE",
-    alignSelf: "center",
-    marginBottom: 6,
   },
   box: {
     width: "100%",

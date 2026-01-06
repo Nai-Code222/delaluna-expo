@@ -1,5 +1,4 @@
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import React, { useContext, useEffect, useRef, useState, useCallback } from "react";
 import {
   View,
@@ -22,6 +21,9 @@ import DateSwitcher from "../../src/components/component-utils/date-switcher.com
 import { db } from "../../firebaseConfig";
 import { getDoc, doc } from "firebase/firestore";
 import { useAuth } from "@/backend/auth-context";
+import { Ionicons } from "@expo/vector-icons";
+import { scale } from "@/utils/responsive";
+
 
 export default function HomeScreen() {
   const {
@@ -62,6 +64,7 @@ export default function HomeScreen() {
   const { user: userParam } = useLocalSearchParams();
   const initialUserRecord = userParam ? JSON.parse(userParam as string) : null;
   const HEADER_HEIGHT = Platform.OS === "ios" ? 115 : 85;
+  const iconSize = scale(20);
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
@@ -110,7 +113,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <HeaderNav
         title="Home"
-        
+
         rightIconName="person-circle-outline"
         onRightPress={goToProfile}
       />
@@ -178,52 +181,61 @@ export default function HomeScreen() {
           }
         >
           <View style={styles.content}>
-            {selectedHoroscope?.quote && (
-              <HomeTextBox title="Quote" content={selectedHoroscope.quote} />
-            )}
+            <View style={styles.content}>
+              <HomeTextBox sectionName="quote" title="Quote" content={selectedHoroscope?.quote} />
 
-            {selectedHoroscope?.advice && (
-              <HomeTextBox title="Advice" content={selectedHoroscope.advice} />
-            )}
+              {selectedHoroscope?.advice && (
+                <HomeTextBox sectionName="advice" title="Advice" content={selectedHoroscope.advice} />
+              )}
 
-            {selectedHoroscope?.do && (
-              <HomeTextBox title="Do's" content={selectedHoroscope.do} />
-            )}
+              {selectedHoroscope?.do && (
+                <HomeTextBox sectionName="dos" title="Do's" content={selectedHoroscope.do} />
+              )}
 
-            {selectedHoroscope?.dont && (
-              <HomeTextBox title="Don'ts" content={selectedHoroscope.dont} />
-            )}
+              {selectedHoroscope?.dont && (
+                <HomeTextBox sectionName="donts" title="Don'ts" content={selectedHoroscope.dont} />
+              )}
 
-            {selectedHoroscope?.affirmation && (
-              <HomeTextBox title="Affirmation" content={selectedHoroscope.affirmation} />
-            )}
+              {selectedHoroscope?.affirmation && (
+                <HomeTextBox sectionName="affirmation" title="Affirmation" content={selectedHoroscope.affirmation} />
+              )}
 
-            {selectedCards && selectedCards.length > 0 && selectedHoroscope?.tarot && (
-              <HomeTextBox
-                title="Today's Cards"
-                content={selectedHoroscope.tarot}
-                cards={selectedCards}
-              />
-            )}
+              {selectedCards && selectedCards.length > 0 && selectedHoroscope?.tarot && (
+                <HomeTextBox
+                  sectionName="tarot"
+                  title="Today's Cards"
+                  content={selectedHoroscope.tarot}
+                  cards={selectedCards}
+                />
+              )}
 
-            <HomeTextBox title="Message in a Bottle"/>
+              <HomeTextBox sectionName="message" title="Message in a Bottle" />
 
-            {selectedHoroscope?.moon && (
-              <HomeTextBox title="Moon Phase" content={selectedHoroscope.moon} />
-            )}
-            
-            <HomeTextBox title="Planets in Retrograde" content={" Planets in Retrograde "}/>
+              {selectedHoroscope?.moonPhaseDetails && (
+                <HomeTextBox sectionName="moonPhaseDetails" title="Moon Phase" content={selectedHoroscope.moonPhaseDetails} />
+              )}
 
-            {selectedHoroscope?.newLove && (
-              <HomeTextBox title="New Love" content={selectedHoroscope.newLove} />
-            )}
+              {selectedHoroscope?.moon && (
+                <HomeTextBox sectionName="moon" title="" content={selectedHoroscope?.moon} />
+              )}
 
-            <HomeTextBox title="Returns" content={"These zodiacs have a higher likelihood of seeking you for closure, clarification or continuation."} />
+              {selectedHoroscope?.planetsRetrograde && (
+                <HomeTextBox sectionName="retrograde" title="Planets in Retrograde" content={selectedHoroscope.planetsRetrograde} />
+              )}
 
-            {selectedHoroscope?.luckyNumbers && (
-              <HomeTextBox title="Lucky Numbers" content={selectedHoroscope.luckyNumbers} />
-            )}
+              {selectedHoroscope?.newLove && (
+                <HomeTextBox sectionName="newLove" title="New Love" content={selectedHoroscope.newLove} />
+              )}
 
+              {selectedHoroscope?.returns && (
+                              <HomeTextBox sectionName="returns" title="Returns" content={selectedHoroscope.returns} />
+
+              )}
+
+              {selectedHoroscope?.luckyNumbers && (
+                <HomeTextBox sectionName="luckyNumbers" title="Lucky Numbers" content={selectedHoroscope.luckyNumbers} />
+              )}
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -240,6 +252,9 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     flexDirection: "column",
+  },
+  titleRow: {
+    flexDirection: "row",
   },
   mainContent: {
     flex: 1,
