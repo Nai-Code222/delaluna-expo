@@ -138,7 +138,7 @@ export const finishUserSignup = onCall(async (req) => {
       displayName,
       pronouns: pronouns ?? null,
       email,
-      isEmailVerified: req.auth.token.email_verified ?? false,
+  
 
       birthday,
       birthtime: birthtime ?? null,
@@ -151,12 +151,13 @@ export const finishUserSignup = onCall(async (req) => {
       birthDateTimeUTC: birthDT.toUTC().toISO(),
       tZoneOffset: tzOffset,
 
+      isEmailVerified: true,
+      isPaidMember: false,
       isBirthTimeUnknown: isBirthTimeUnknown ?? false,
       isPlaceOfBirthUnknown: isPlaceOfBirthUnknown ?? false,
+
       astroParams,
-      sunSign,
-      moonSign,
-      risingSign,
+
       natalChart: {
         bigThree: {
           sun: sunSign,
