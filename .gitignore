@@ -195,3 +195,8 @@ seed/firestore_export/firestore_export.overall_export_metadata
 functions/seed/firebase-export-metadata.json
 functions/seed/storage_export/buckets.json
 .env.local
+scripts/generateOracleRegistry.js
+Delaluna_Oracle_Deck_FINAL_v2.xlsx
+oracle_keywords_upright_reversed.csv
+Oracle_Tarot_Deck_Master.xlsx
+scripts/generateUnifiedDeck.ts
