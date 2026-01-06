@@ -1,6 +1,7 @@
 // src/types/horoscope.types.ts
 
 export interface HoroscopeResult {
+
   // Core guidance
   quote?: string;
   advice?: string;
@@ -14,11 +15,14 @@ export interface HoroscopeResult {
 
   // Astrology + tarot
   moon?: string;
+  planetsRetrograde?: string[];
+  moonPhaseDetails?: string[];
   transits?: string;
   tarot?: string;
 
   // Love & luck
   newLove?: string[];        // compatible signs
+  returns?: string[];
   luckyNumbers?: string[];  // comes from Gemini
 
 }

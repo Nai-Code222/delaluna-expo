@@ -112,7 +112,7 @@ export const ChatFlowPayloadSchema = z.object({
 
   birthday: z.string().min(1, "Required"),
 
-  // Option A — always a formatted string or null
+  // a formatted string or null
   birthtime: z.string().nullable(),
 
   birthTimezone: z.string().nullable(),
