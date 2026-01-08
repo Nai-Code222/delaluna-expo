@@ -189,3 +189,50 @@
 
 ---
 
+
+## Commit: changes before app refresh
+**Author:** Nai-Code222 <jeanairoberts@outlook.com>
+**Date:** 01/07/2026, 08:02:39 PM CST
+**Hash:** `a2a14748`
+
+### File Changes:
+**Added:**
+- + CHANGELOG.md
+- + CHANGELOG.md.backup
+- + app/(util)/loading.screen.tsx
+- + package.json
+- + src/components/component-utils/horoscope-svg-gen.componet.tsx
+- + src/components/home/moon-view.component.tsx
+- + src/components/typography/section-title.tsx
+- + src/types/moon-phases.type.ts
+
+**Modified:**
+- * app.config.js
+- * app/(auth)/sign-up.tsx
+- * app/(auth)/welcome.tsx
+- * app/(main)/index.tsx
+- * app/+not-found.tsx
+- * app/_layout.tsx
+- * app/index.tsx
+- * functions/src/prompts/buildHoroscopePrompt.ts
+- * package-lock.json
+- * src/assets/images/moon_phases/moon_first_quarter.png
+- * src/assets/images/moon_phases/moon_full.png
+- * src/assets/images/moon_phases/moon_last_quarter.png
+- * src/assets/images/moon_phases/moon_new.png
+- * src/assets/images/moon_phases/moon_waning_crescent.png
+- * src/assets/images/moon_phases/moon_waning_gibbous.png
+- * src/assets/images/moon_phases/moon_waxing_crescent.png
+- * src/assets/images/moon_phases/moon_waxing_gibbous.png
+- * src/backend/auth-context.tsx
+- * src/components/home/home-text-box.component.tsx
+- * src/schemas/horoscope.schema.ts
+- * src/services/dailyTarot.service.ts
+- * src/types/horoscope.types.ts
+
+### Statistics:
+- Total files changed: 30
+- Added: 8, Modified: 22, Deleted: 0
+
+---
+
