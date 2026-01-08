@@ -12,7 +12,7 @@ export default {
     splash: {
       image: "./src/assets/images/delaluna_app_icon.png",
       resizeMode: "contain",
-      backgroundColor: "#ffffff"
+      backgroundColor: "#1b0634ff"
     },
     assetBundlePatterns: ["**/*"],
     experiments: {
@@ -51,6 +51,10 @@ export default {
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false
       },
+      adaptiveIcon: {
+        foregroundImage: "./src/assets/images/delaluna_app_icon.png",
+        backgroundColor: "#1b0634ff"
+      },
       useFrameworks: "static"
     },
     android: {
@@ -58,7 +62,7 @@ export default {
       package: "com.delaluna.answers",
       adaptiveIcon: {
         foregroundImage: "./src/assets/images/delaluna_app_icon.png",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#1b0634ff"
       },
       softwareKeyboardLayoutMode: "resize"
     },

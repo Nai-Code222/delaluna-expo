@@ -126,7 +126,7 @@ Avoid:
   "do": [],
   "dont": [],
   "warning": "",
-  "moonPhaseDetails": [],
+  "moonPhaseDetails": "",
   "moon": "",
   "planetsRetrograde": [],
   "transits": "",

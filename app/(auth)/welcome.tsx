@@ -8,15 +8,12 @@ import PrimaryButton from '@/components/buttons/primary-button-component';
 import SecondaryButton from '@/components/buttons/secondary-button-component';
 import ButtonText from '@/components/typography/button-text';
 import { scale, verticalScale } from '@/utils/responsive';
-import { useAuth } from '@/backend/auth-context';
+
 
 export default function Welcome() {
   const { width } = useWindowDimensions();
   const logoW = Math.min(width * 0.72, scale(360));
   const logoH = logoW * 0.95; // adjust to your logo aspect
-  const { authUser, initializing } = useAuth();
-
-  
 
   return (
     <View style={styles.container}>

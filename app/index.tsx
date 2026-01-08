@@ -27,6 +27,7 @@ export default function SplashScreen() {
 
     Promise.all([minTimer, authReady]).then(() => {
       router.replace(authUser ? '/(main)' : '/(auth)/welcome');
+      //router.replace('/test-signs' as unknown as any); // TEMP SKIP AUTH FOR TESTING
     });
   }, [authUser, initializing]);
 
@@ -37,12 +38,7 @@ export default function SplashScreen() {
       style={styles.background}
       resizeMode="cover">
       <View style={styles.overlay}>
-        <LottieView
-              source={require('@/assets/animations/splash-loop.json')}
-              autoPlay
-              loop
-              style={styles.animation}  // absolute fill inside top container
-            />
+        
       </View>
       <StatusBar style="light" />
 

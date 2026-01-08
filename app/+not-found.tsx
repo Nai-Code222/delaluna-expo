@@ -5,7 +5,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 
 export default function NotFoundScreen() {
   function goToWelcomeScreen(): void {
-    router.replace('/welcome')
+    router.replace('/(main)')
   }
 
   return (

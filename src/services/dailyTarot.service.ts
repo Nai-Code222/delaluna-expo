@@ -11,9 +11,8 @@ import { DailyCardPackSchema } from "@/schemas/dailyCardPack.schema";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const TOTAL_CARDS = 133;
 const CARD_NUMBER_MAX = 133;
-const CARD_NUMBER_MIN = 54;
+const CARD_NUMBER_MIN = 1;
 
 const DailyTarotSchema = z.object({
   cardNumber: z.number().int().min(CARD_NUMBER_MIN).max(CARD_NUMBER_MAX),
@@ -56,18 +55,6 @@ function getYesterdayTodayTomorrowDates(): {
     tomorrow,
   };
 }
-async function generateDailyCardDraw(userId: string, date: string, count: number) {
-  const ref = doc(db, "users", userId, "cards", date);
-  const snap = await getDoc(ref);
-
-  // If DailyCardPack already exists, return the FULL pack
-  if (snap.exists()) {
-    return DailyCardPackSchema.parse(snap.data());
-  }
-
-
-
-}
 
 function generateDateList() {
   const tz = dayjs.tz.guess();
@@ -93,24 +80,24 @@ export async function getDailyCard(
 
   const data = snap.data();
 
-  // 1️⃣ Determine timezone
+  // 1. Determine timezone
   const tz = dayjs.tz.guess();
   const now = dayjs().tz(tz);
 
-  // 2️⃣ Format today's date in that timezone
+  // 2. Format today's date in that timezone
   const yesterday = now.subtract(1, "day").format("YYYY-MM-DD");
   const today = now.format("YYYY-MM-DD");
   const tomorrow = now.add(1, "day").format("YYYY-MM-DD");
 
 
-  // 3️⃣ Reuse today's card if it already exists
+  // 3️ Reuse today's card if it already exists
   if (data.dailyTarot?.date === today) {
     const parsed = DailyTarotSchema.safeParse(data.dailyTarot);
     if (parsed.success) return parsed.data;
     console.warn("⚠️ Invalid cached daily tarot, regenerating");
   }
 
-  // 4️⃣ Create a new daily card
+  // 4️. Create a new daily card
   const number = randomCard();
   const reversed = isReversed();
 
@@ -124,7 +111,7 @@ export async function getDailyCard(
 
   const validated = DailyTarotSchema.parse(newCard);
 
-  // 5️⃣ Save to Firestore
+  // 5. Save to Firestore
   await updateDoc(ref, { dailyTarot: validated });
 
   return validated;

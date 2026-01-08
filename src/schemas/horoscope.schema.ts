@@ -18,7 +18,7 @@ export const HoroscopeResultSchema = z.object({
   tarot: z.string().optional(),
   moon: z.string().optional(),
   planetsRetrograde: z.array(z.string()).optional(),
-  moonPhaseDetails: z.array(z.string()).optional(),
+  moonPhaseDetails: z.string().optional(),
   transits: z.string().optional(),
 
   newLove: z.array(z.string()).optional(),

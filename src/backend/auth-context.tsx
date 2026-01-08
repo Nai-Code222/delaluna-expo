@@ -1,3 +1,7 @@
+// AuthContext provides authentication state and user-related data throughout the app.
+// It manages Firebase auth status, user profile, birth chart data, horoscopes, daily tarot cards,
+// and readiness flags that indicate when data is loaded and the app is ready for interaction.
+
 import React, {
   createContext,
   useState,
@@ -17,6 +21,12 @@ import { requestBirthChartGeneration } from "@/services/client.birthChart.servic
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
+/**
+ * AuthContextType defines the shape of the authentication-related state and functions
+ * that are exposed to the rest of the app via context.
+ * It includes user auth info, profile data, birth chart status, horoscopes, daily tarot cards,
+ * loading and readiness flags, and functions to trigger birth chart regeneration.
+ */
 type AuthContextType = {
   authUser: User | null;
   profile: SignupUserRecord | null;
@@ -31,9 +41,11 @@ type AuthContextType = {
 
   horoscopes: Record<string, HoroscopeResult>;
   horoscopeLoading: boolean;
+  horoscopeReady: boolean; // ← ADD THIS
 
   dailyCards: Record<string, DailyDrawnTarotCard>;
   cardsLoading: boolean;
+  cardsReady: boolean; // ← ADD THIS
 
   availableDates: string[];
   defaultDate: string | null;
@@ -57,45 +69,99 @@ const AuthContext = createContext<AuthContextType>({
   availableDates: [],
   defaultDate: null,
   isAppReady: false,
+  horoscopeReady: false, // ← ADD THIS
+  cardsReady: false, 
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  // Firebase authenticated user object or null if not logged in
   const [authUser, setAuthUser] = useState<User | null>(null);
+  // User profile data fetched from Firestore (custom user record)
   const [profile, setProfile] = useState<SignupUserRecord | null>(null);
+  // Flag indicating if initial auth/profile loading is in progress
   const [initializing, setInitializing] = useState(true);
+  // User's birth chart data from Firestore
   const [birthChart, setBirthChart] = useState<any | null>(null);
+  // Status string representing birth chart generation state
   const [birthChartStatus, setBirthChartStatus] = useState<string | null>(null);
+  // Error string related to birth chart generation or fetching
   const [birthChartError, setBirthChartError] = useState<string | null>(null);
+  // Loading flag for birth chart generation/fetching
   const [birthChartLoading, setBirthChartLoading] = useState<boolean>(false);
+  // Flag indicating if premium features for birth chart are unlocked
   const [birthChartPremiumUnlocked, setBirthChartPremiumUnlocked] = useState<boolean>(false);
+  // Map of horoscopes keyed by date string
   const [horoscopes, setHoroscopes] =
     useState<Record<string, HoroscopeResult>>({});
+  // Loading flag for horoscopes data
   const [horoscopeLoading, setHoroscopeLoading] = useState(true);
+  // Map of daily tarot cards keyed by date string
   const [dailyCards, setDailyCards] =
     useState<Record<string, DailyDrawnTarotCard>>({});
+
   // --- Safe maps for downstream consumers (never undefined) ---
+  // These ensure consumers always receive an object, simplifying null checks downstream
   const safeHoroscopes = horoscopes ?? {};
   const safeDailyCards = dailyCards ?? {};
 
   // --- Derived available dates and default date ---
+  // Combine dates from horoscopes and daily cards into a sorted unique list
+  // This enables date-based UI components to know which dates have data available
   const availableDates = useMemo(() => {
     const hDates = Object.keys(safeHoroscopes);
     const cDates = Object.keys(safeDailyCards);
     return Array.from(new Set([...hDates, ...cDates])).sort();
   }, [safeHoroscopes, safeDailyCards]);
 
+  // Default date is the most recent date available or null if none
   const defaultDate = availableDates.at(-1) ?? null;
 
   // --- Cards/Horoscope readiness states (must be declared before isAppReady) ---
+  // Flags indicating whether horoscope and daily card data are fully loaded and valid
+  // These are used to gate UI rendering or interactions dependent on this data
   const [horoscopeReady, setHoroscopeReady] = useState(false);
   const [cardsReady, setCardsReady] = useState(false);
+  // Cards loading is inverse of cardsReady
   const cardsLoading = !cardsReady;
 
   // --- Single authoritative readiness flag ---
-  const isAppReady =
-    !initializing &&
-    (authUser === null || !!profile);
+  // This flag indicates if the app has completed initial loading and is ready for user interaction
+  // It requires that auth initialization is done and either user is logged out or profile is loaded
+  const isAppReady = useMemo(() => {
+  // Case 1: User is not logged in
+  // No Firestore data is required to render auth screens
+  if (!authUser) {
+    return !initializing;
+  }
 
+  // Case 2: User is logged in
+  // We must wait for all required Home data
+  return (
+    !initializing &&
+    !!profile &&
+    horoscopeReady &&
+    cardsReady
+  );
+}, [
+  authUser,
+  initializing,
+  profile,
+  horoscopeReady,
+  cardsReady,
+]);
+
+  /**
+   * Auth + Firestore listener orchestration
+   *
+   * This effect sets up Firebase authentication state listener and Firestore listeners for:
+   * - User profile document
+   * - User birth chart document
+   * - User horoscope collection
+   * - User daily tarot cards collection
+   *
+   * It updates corresponding state variables on data changes, handles loading and error states,
+   * and cleans up all listeners on unmount or auth state change.
+   */
   useEffect(() => {
     let unsubscribeProfile: (() => void) | null = null;
     let unsubscribeChart: (() => void) | null = null;
@@ -108,6 +174,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setInitializing(true);
 
       if (!firebaseUser) {
+        // User logged out, clear all user-specific data and flags
         setProfile(null);
         setHoroscopes({});
         setDailyCards({});
@@ -118,6 +185,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
+      // User logged in, subscribe to user profile Firestore document
       const ref = doc(db, "users", firebaseUser.uid);
 
       unsubscribeProfile = onSnapshot(
@@ -131,6 +199,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       );
 
+      // Subscribe to birth chart document for the user
       const chartRef = doc(db, "users", firebaseUser.uid, "birthChart", "default");
       unsubscribeChart = onSnapshot(chartRef, (snap) => {
         if (!snap.exists()) {
@@ -158,6 +227,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setBirthChartPremiumUnlocked(false);
       });
 
+      // Subscribe to horoscopes collection for the user
       const horoscopeCollectionRef = collection(
         db,
         "users",
@@ -178,7 +248,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               hasValidDay = true;
             }
           });
-
           setHoroscopes(next);
           setHoroscopeLoading(!hasValidDay);
           setHoroscopeReady(hasValidDay);
@@ -191,6 +260,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       );
 
+      // Subscribe to daily tarot cards collection for the user
       const cardsCollectionRef = collection(db, "users", firebaseUser.uid, "cards");
 
       unsubscribeCards = onSnapshot(
@@ -222,6 +292,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       );
     });
 
+    // Cleanup all listeners on unmount or auth state change
     return () => {
       unsubscribeAuth();
       if (unsubscribeProfile) unsubscribeProfile();
@@ -231,6 +302,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  /**
+   * Splash screen / readiness handling
+   *
+   * This effect manages the splash screen visibility and the initializing flag based on
+   * authentication and profile loading state.
+   * - When logged out, the app is ready immediately and splash screen is hidden.
+   * - When logged in, the app waits for profile data before hiding splash screen and marking ready.
+   */
   useEffect(() => {
     // Logged out → app ready immediately
     if (!authUser) {
@@ -245,34 +324,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setInitializing(false);
       SplashScreen.hideAsync().catch(() => {});
     }
-  }, [authUser, profile]);
+  }, [authUser, profile, horoscopes, dailyCards]);
 
-  // TODO: TEMP: disable birth chart auto-routing during v1
-  // useEffect(() => {
-  //   if (!birthChartStatus) return;
-  //   if (birthChartStatus === "placements_ready") {
-  //     router.push("/birth-chart");
-  //   }
-  // }, [birthChartStatus]);
-
+  /**
+   * regenerateBirthChart triggers a forced regeneration of the user's birth chart.
+   * It is called when the user explicitly requests a refresh of their birth chart data.
+   * The function sets loading states and handles errors accordingly.
+   */
   const regenerateBirthChart = async () => {
-  if (!authUser) return;
+    if (!authUser) return;
 
-  try {
-    setBirthChartLoading(true);
+    try {
+      setBirthChartLoading(true);
 
-    await requestBirthChartGeneration({
-      force: true,
-    });
+      await requestBirthChartGeneration({
+        force: true,
+      });
 
-    console.log("🔁 Birth chart regeneration requested");
-  } catch (err) {
-    console.error("❌ Failed to regenerate birth chart", err);
-    setBirthChartError("generation_failed");
-    setBirthChartLoading(false);
-  }
-};
+      console.log("🔁 Birth chart regeneration requested");
+    } catch (err) {
+      console.error("❌ Failed to regenerate birth chart", err);
+      setBirthChartError("generation_failed");
+      setBirthChartLoading(false);
+    }
+  };
 
+  /**
+   * contextValue is memoized with useMemo to prevent unnecessary re-renders of context consumers.
+   * It only updates when any of the dependencies change, improving performance.
+   */
   const contextValue = useMemo(() => ({
     authUser,
     profile,
@@ -285,8 +365,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     regenerateBirthChart,
     horoscopes: safeHoroscopes,
     horoscopeLoading,
+    horoscopeReady, // ← ADD THIS
     dailyCards: safeDailyCards,
     cardsLoading,
+    cardsReady, // ← ADD THIS
     availableDates,
     defaultDate,
     isAppReady,
@@ -300,7 +382,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     birthChartLoading,
     birthChartPremiumUnlocked,
     horoscopeLoading,
+    horoscopeReady, // ← ADD THIS
     cardsLoading,
+    cardsReady, // ← ADD THIS
     availableDates,
     defaultDate,
     isAppReady,

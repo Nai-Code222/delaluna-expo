@@ -1,6 +1,6 @@
 import "intl";
 import "intl/locale-data/jsonp/en";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   TouchableOpacity,
@@ -44,7 +44,13 @@ export default function SignUpChatScreen() {
   const [progress, setProgress] = useState(0);
   const [isSigningUp, setIsSigningUp] = useState(false);
 
-  const { authUser, initializing } = useAuth();
+const authContext = useAuth(); // ← Get full context
+  const authContextRef = useRef(authContext); // ← Store in ref
+  const { authUser, initializing } = authContext;
+
+useEffect(() => {
+    authContextRef.current = authContext;
+  }, [authContext]);
 
   const [confirmVisible, setConfirmVisible] = useState(false);
   const { width } = useWindowDimensions();
@@ -56,7 +62,7 @@ export default function SignUpChatScreen() {
     (Constants.manifest as any)?.extra;
 
   if (!extra) {
-    throw new Error("❌ Missing Firebase config in Expo extra");
+    throw new Error("Missing Firebase config in Expo extra");
   }
 
   const USE_EMAIL_VERIFICATION = extra?.USE_EMAIL_VERIFICATION;
@@ -115,151 +121,137 @@ export default function SignUpChatScreen() {
   // -------------------------
 
   const handleComplete = async (answers: FinalSignupPayload) => {
-    setIsSigningUp(true);
-    let userCred: UserCredential | null = null;
-    answers.birthday = normalizeBirthdayToISO(answers.birthday);
-    answers.birthtime = normalizeBirthtimeToHHmm(answers.birthtime);
-    console.log("🚀 Signup answers received:", answers);
+  setIsSigningUp(true);
+  let userCred: UserCredential | null = null;
+  answers.birthday = normalizeBirthdayToISO(answers.birthday);
+  answers.birthtime = normalizeBirthtimeToHHmm(answers.birthtime);
 
-    // Validate and clean signup payload
-    const validation = validateAndCleanSignupPayload(answers);
-    if (!validation.ok) {
-      console.error("⚠️ Signup validation failed:", validation.errors);
-      Alert.alert(
-        "Invalid Information",
-        "Some of your answers need correction before continuing."
-      );
+  // Validate and clean signup payload
+  const validation = validateAndCleanSignupPayload(answers);
+  if (!validation.ok) {
+    console.error("⚠️ Signup validation failed:", validation.errors);
+    Alert.alert(
+      "Invalid Information",
+      "Some of your answers need correction before continuing."
+    );
+    setIsSigningUp(false); // ← ADD THIS
+    return;
+  }
 
+  const cleaned = validation.data;
 
-      return;
-    }
+  try {
+    setIsLoading(true);
 
-    const cleaned = validation.data;
-    console.log("🚀 Signup answers cleaned:", cleaned);
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      placeOfBirth,
+    } = cleaned;
 
+    const birthLat = cleaned.birthLat ?? FALLBACK_LAT;
+    const birthLon = cleaned.birthLon ?? FALLBACK_LON;
+    const safePlaceOfBirth = cleaned.placeOfBirth ?? FALLBACK_PLACE_LABEL;
+    const trimmedEmail = String(email ?? "").trim();
+
+    // STEP 1 — Create Auth User
     try {
-      setIsLoading(true);
-
-      const {
-        firstName,
-        lastName,
-        email,
-        password,
-        placeOfBirth,
-      } = cleaned;
-
-      // Always enforce fallback values AFTER validation
-      const birthLat = cleaned.birthLat ?? FALLBACK_LAT;
-      const birthLon = cleaned.birthLon ?? FALLBACK_LON;
-      const safePlaceOfBirth = cleaned.placeOfBirth ?? FALLBACK_PLACE_LABEL;
-
-      const trimmedEmail = String(email ?? "").trim();
-
-      // STEP 1 — Create Auth User
-      try {
         userCred = await signUp(trimmedEmail, password);
       } catch (signupErr) {
         const error = parseError(signupErr);
-        console.error("❌ Firebase signup failed to Create Auth User:", error);
-
-        Alert.alert("Signup Failed to create Auth User", error.message);
+        console.error("❌ Firebase signup failed:", error);
+        Alert.alert("Signup Failed", error.message);
         setIsLoading(false);
-        return; // stop pipeline — do not continue to steps 2–4
-      }
-      const fbUser = userCred.user;
-      const uid = fbUser.uid;
-
-      // STEP 2 — Update profile (displayName only)
-      const displayName = buildDisplayName(firstName, lastName);
-
-      await updateProfile(fbUser, { displayName });
-      console.log("✅ Firebase Auth profile updated:", uid);
-
-
-      // STEP 4 — Call Cloud Function "finishUserSignup"
-      //  Build the server payload explicitly so TS does not try to force it into FinalSignupPayload
-      const signupPayloadForServer: FinalSignupPayload = {
-        ...cleaned,
-        pronouns: cleaned.pronouns ?? "",
-        birthtime: cleaned.birthtime ?? null,
-        birthTimezone: cleaned.birthTimezone ?? null,
-        currentTimezone: cleaned.currentTimezone ?? null,
-        email: trimmedEmail,
-        birthLat,
-        birthLon,
-        placeOfBirth: safePlaceOfBirth,
-        themeKey: "default",
-      };
-
-      const response = await finishUserSignup({
-        uid,
-        displayName,
-        ...signupPayloadForServer,
-      });
-
-      const cards = await getTarotCardDraw(
-        uid,
-        3,
-      );
-
-      await generateHoroscopes(uid, response.user.risingSign, response.user.sunSign, response.user.moonSign, cards);
-
-      const isEmulator: boolean = extra?.USE_EMULATOR;
-      console.log("Emulator in use: ", isEmulator);
-
-      simulateProgress(() => {
         setIsSigningUp(false);
-        console.log("Simprogress")
-       
+        return;
+      }
+    
+    const fbUser = userCred.user;
+    const uid = fbUser.uid;
+
+    // STEP 2 — Update profile
+    const displayName = buildDisplayName(firstName, lastName);
+    await updateProfile(fbUser, { displayName });
+    console.log("Firebase Auth profile updated:", uid);
+
+    // STEP 3 — Call Cloud Function "finishUserSignup"
+    const signupPayloadForServer: FinalSignupPayload = {
+      ...cleaned,
+      pronouns: cleaned.pronouns ?? "",
+      birthtime: cleaned.birthtime ?? null,
+      birthTimezone: cleaned.birthTimezone ?? null,
+      currentTimezone: cleaned.currentTimezone ?? null,
+      email: trimmedEmail,
+      birthLat,
+      birthLon,
+      placeOfBirth: safePlaceOfBirth,
+      themeKey: "default",
+    };
+
+    const response = await finishUserSignup({
+      uid,
+      displayName,
+      ...signupPayloadForServer,
+    });
+
+    // STEP 4 — Generate cards and horoscope
+    console.log("📝 Generating tarot cards and horoscopes...");
+      const cards = await getTarotCardDraw(uid, 3);
+      await generateHoroscopes(uid, response.user.risingSign, response.user.sunSign, response.user.moonSign, cards);
+      console.log("✅ Generation complete, waiting for data sync...");
+
+
+    const maxWait = 10000; // 10 seconds max
+const startTime = Date.now();
+const checkInterval = 500; // Check every 500ms
+
+await new Promise<void>((resolve, reject) => {
+  const interval = setInterval(() => {
+    // Get fresh auth context data (you'll need to import useAuth hook data)
+    const elapsed = Date.now() - startTime;
+
+    const { horoscopeReady, cardsReady } = authContextRef.current;
+          
+    console.log(`⏳ Polling... horoscopeReady: ${horoscopeReady}, cardsReady: ${cardsReady} (${elapsed}ms)`);
+          
+          if (horoscopeReady && cardsReady) {
+            console.log("✅ Data synced! Ready to navigate.");
+            clearInterval(interval);
+            resolve();
+            return;
+          }
+          
+          if (elapsed > maxWait) {
+            console.warn("⚠️ Timeout waiting for data (15s), navigating anyway...");
+            clearInterval(interval);
+            resolve();
+          }
+        }, checkInterval);
       });
 
-      // const actionCodeSettings = isEmulator
-      //   ? undefined
-      //   : {
-      //     url: "delaluna://email-verification",
-      //     iOS: {
-      //       bundleId: "com.delaluna.answers",
-      //     },
-      //     android: {
-      //       packageName: "com.delaluna.answers",
-      //       installApp: true,
-      //       minimumVersion: "12",
-      //     },
-      //     handleCodeInApp: true,
-      //   };
+    console.log("✅ All signup steps complete, starting navigation...");
 
-      // STEP 4 — Email verification (based on toggle)
-      // if (USE_EMAIL_VERIFICATION === "true") {
-      //   console.log("📧 Email verification enabled — sending email…");
-      //
-      //   if (isEmulator) {
-      //     console.log("⚠️ Auth Emulator detected — skipping sendEmailVerification (deep links unsupported)");
-      //     simulateProgress(() => {
-      //       router.replace("/index");
-      //     });
-      //   }
-      //   else if (!isEmulator && fbUser != null && !fbUser.emailVerified) {
-      //     await sendEmailVerification(fbUser, actionCodeSettings);
-      //     // Go to pending screen instead of main
-      //     simulateProgress(() => {
-      //       router.replace("/verify-email-pending");
-      //     });
-      //   }
-      //
-      // } else {
-      //   console.log("⚠️ Email verification disabled (DEV MODE) — skipping verification");
-      //
-      //   router.replace("/index");
-      // }
+    // STEP 6 — Navigate
+      simulateProgress(() => {
+        console.log("✅ Progress animation complete");
+        setIsSigningUp(false);
+        setIsLoading(false);
+        
+        setTimeout(() => {
+          console.log("🚀 Navigating to /(main)");
+          router.replace('/(main)');
+        }, 100);
+      });
 
     } catch (err) {
       const error = parseError(err);
       console.error("❌ Signup failed:", error);
-
       Alert.alert("Signup Error", error.message);
       setIsLoading(false);
+      setIsSigningUp(false);
     }
-
   };
 
   // fake progress animation for smooth loading UI
