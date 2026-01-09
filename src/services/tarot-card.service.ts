@@ -8,7 +8,9 @@ import { TAROT_CARDS } from "@/data/tarotCards.registry";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import type { DrawnTarotCard } from "@/types/tarot-cards.type";
 import { DailyCardPack, DailyCardPackSchema } from "@/schemas/dailyCardPack.schema";
-import { generateHoroscope } from "./generate-horoscope.service";
+import { DateTime } from "luxon";
+import getTimezone from '@/utils/get-current-timezone.util';
+
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -120,12 +122,28 @@ async function getOrCreateCardsForDate(
 }
 
 export async function getTarotCardDraw(userId: string, cardDrawCount: number = 1) {
-  const tz = dayjs.tz.guess();
-  const now = dayjs().tz(tz);
+   
 
-  const yesterday = now.subtract(1, "day").format("YYYY-MM-DD");
+  const tz = dayjs.tz.guess();
+  
+  // Get current moment in the user's timezone
+  const now = dayjs.tz(undefined, tz);
+
+  const nowUtc = DateTime.utc();
+  const timezone = getTimezone();
+
+  
+
+  console.log("🕐 Current time info:", {
+    lastLoginDate: nowUtc.toFormat('MM/dd/yyyy hh:mm:ss a ZZZZ'),
+  });
+
+  // Clone 'now' for each operation to avoid mutation
+  const yesterday = now.clone().subtract(1, "day").format("YYYY-MM-DD");
   const today = now.format("YYYY-MM-DD");
-  const tomorrow = now.add(1, "day").format("YYYY-MM-DD");
+  const tomorrow = now.clone().add(1, "day").format("YYYY-MM-DD");
+
+  console.log("📅 Generating tarot cards for:", { yesterday, today, tomorrow });
 
   return {
     yesterday: await getOrCreateCardsForDate(userId, yesterday, cardDrawCount),

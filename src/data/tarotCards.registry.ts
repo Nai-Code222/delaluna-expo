@@ -3,17 +3,1076 @@
 
 export const TAROT_CARDS = [
   {
+    "id": 1,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "stand-your-ground",
+    "slug": "stand-your-ground",
+    "keywordsUpright": [
+      "integrity, self-respect, authenticity, conviction, boundaries"
+    ],
+    "keywordsReversed": [
+      "people-pleasing, self-betrayal, conformity, insecurity, pressure"
+    ],
+    "meaningUpright": "Do not conform or adapt your beliefs to fit the other party. Stay true to yourself and personal core values. Don't let anyone overpower and manipulate you. You'll be proud of yourself in the future.",
+    "meaningReversed": "Do not conform or adapt your beliefs to fit the other party. Stay true to yourself and personal core values. Don't let anyone overpower and manipulate you. You'll be proud of yourself in the future.",
+    "imagePath": "1.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 2,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "inevitable",
+    "slug": "inevitable",
+    "keywordsUpright": [
+      "pause, reflection, patience, retreat, healing space"
+    ],
+    "keywordsReversed": [
+      "avoidance, delay, withdrawal, stagnation, emotional shutdown"
+    ],
+    "meaningUpright": "You can't stop something that is destined to happen. You can't waste your time overthinking it. It doesn't matter what actions you take; this will catch up to you because it is meant to be.",
+    "meaningReversed": "You can't stop something that is destined to happen. You can't waste your time overthinking it. It doesn't matter what actions you take; this will catch up to you because it is meant to be.",
+    "imagePath": "2.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 3,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "accept-for-all-it-is-worth",
+    "slug": "accept-for-all-it-is-worth",
+    "keywordsUpright": [
+      "emotional awareness, processing, self-regulation, reflection"
+    ],
+    "keywordsReversed": [
+      "emotional reactivity, impulsiveness, overwhelm, mood swings"
+    ],
+    "meaningUpright": "See it for what it is. Actions speak louder than words. It’s time to accept the best possibility has been reached out of this situation. The best scenario has been attained. This is the maximum. What do you decide knowing this truth?",
+    "meaningReversed": "See it for what it is. Actions speak louder than words. It’s time to accept the best possibility has been reached out of this situation. The best scenario has been attained. This is the maximum. What do you decide knowing this truth?",
+    "imagePath": "3.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 4,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "influence-and-distractions",
+    "slug": "influence-and-distractions",
+    "keywordsUpright": [
+      "recognition, pattern awareness, discernment, observation"
+    ],
+    "keywordsReversed": [
+      "confusion, mixed signals, false hope, instability"
+    ],
+    "meaningUpright": "Other parties or situations are inhibiting the growth of your connection. A positive or negative effect may interfere with the connection’s true essence. It has the power to make a temporary mark or remain long-lived.",
+    "meaningReversed": "Other parties or situations are inhibiting the growth of your connection. A positive or negative effect may interfere with the connection’s true essence. It has the power to make a temporary mark or remain long-lived.",
+    "imagePath": "4.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 5,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "allow-for-time-and-space",
+    "slug": "allow-for-time-and-space",
+    "keywordsUpright": [
+      "discernment, truth revealing, observation, intuition"
+    ],
+    "keywordsReversed": [
+      "deception, manipulation, denial, ignoring red flags"
+    ],
+    "meaningUpright": "Sometimes we need to take a step back for a clear headspace. Not everything is resolved right away. Time and retreat need their process to make an effect.",
+    "meaningReversed": "Sometimes we need to take a step back for a clear headspace. Not everything is resolved right away. Time and retreat need their process to make an effect.",
+    "imagePath": "5.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 6,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "someone-is-unhappy",
+    "slug": "someone-is-unhappy",
+    "keywordsUpright": [
+      "self-worth, boundaries, empowerment, standards"
+    ],
+    "keywordsReversed": [
+      "self-doubt, boundary collapse, undervaluing self"
+    ],
+    "meaningUpright": "Someone is making sacrifices in hopes of sustaining peace and stability. This can either create settling in a relationship or a reason to leave.",
+    "meaningReversed": "Someone is making sacrifices in hopes of sustaining peace and stability. This can either create settling in a relationship or a reason to leave.",
+    "imagePath": "6.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 7,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "it-is-for-the-higher-good",
+    "slug": "it-is-for-the-higher-good",
+    "keywordsUpright": [
+      "clarification, honesty, dialogue, transparency"
+    ],
+    "keywordsReversed": [
+      "misunderstanding, avoidance, secrecy, misinterpretation"
+    ],
+    "meaningUpright": "You won’t lose out on this. There is something to gain from all of this.",
+    "meaningReversed": "You won’t lose out on this. There is something to gain from all of this.",
+    "imagePath": "7.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 8,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "sacrifices-must-be-made",
+    "slug": "sacrifices-must-be-made",
+    "keywordsUpright": [
+      "adjustment, alignment, flexibility, evolution"
+    ],
+    "keywordsReversed": [
+      "resistance, rigidity, fear of change, stagnation"
+    ],
+    "meaningUpright": "Sacrifices are not easy, often requiring us to let go of attachments and desires that hinder our progress in meaningful relationships. By releasing old patterns and beliefs that no longer serve us, we can make way for transformation and renewal in the connection.",
+    "meaningReversed": "Sacrifices are not easy, often requiring us to let go of attachments and desires that hinder our progress in meaningful relationships. By releasing old patterns and beliefs that no longer serve us, we can make way for transformation and renewal in the connection.",
+    "imagePath": "8.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 9,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "detour",
+    "slug": "detour",
+    "keywordsUpright": [
+      "acceptance, realism, patience, awareness"
+    ],
+    "keywordsReversed": [
+      "forcing outcomes, denial, emotional impatience"
+    ],
+    "meaningUpright": "Someone is caught in a misleading process. The end goal may be in your favor. It just seems that trial and errors are molding character development for the higher good. Someone is taking a shortcut.",
+    "meaningReversed": "Someone is caught in a misleading process. The end goal may be in your favor. It just seems that trial and errors are molding character development for the higher good. Someone is taking a shortcut.",
+    "imagePath": "9.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 10,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "wrong-time-and-place",
+    "slug": "wrong-time-and-place",
+    "keywordsUpright": [
+      "healing, compassion, emotional awareness, rest"
+    ],
+    "keywordsReversed": [
+      "emotional suppression, lingering pain, avoidance"
+    ],
+    "meaningUpright": "Maybe if things were different, it would all work out. Should we run away from here together? Should we just wait and try at another time?",
+    "meaningReversed": "Maybe if things were different, it would all work out. Should we run away from here together? Should we just wait and try at another time?",
+    "imagePath": "10.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 11,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "unlocked-potentials",
+    "slug": "unlocked-potentials",
+    "keywordsUpright": [
+      "awareness, emotional insight, self-regulation"
+    ],
+    "keywordsReversed": [
+      "projection, reactivity, emotional spirals"
+    ],
+    "meaningUpright": "Approached and handled correctly, there are great possibilities that can be manifested. Try amplifying the small details and practicing gratitude.",
+    "meaningReversed": "Approached and handled correctly, there are great possibilities that can be manifested. Try amplifying the small details and practicing gratitude.",
+    "imagePath": "11.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 12,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "unresolved-issues",
+    "slug": "unresolved-issues",
+    "keywordsUpright": [
+      "faith, surrender, patience, divine trust"
+    ],
+    "keywordsReversed": [
+      "doubt, fear, loss of faith, control issues"
+    ],
+    "meaningUpright": "Sweeping things under the carpet won’t help this connection. Ignoring problems can only create a snowball of effects. There have been disappointments inflicted on this connection. Perhaps, someone has flaws they do not want to acknowledge. Regardless, the issue creates tension somehow, whether you want to see it or not.",
+    "meaningReversed": "Sweeping things under the carpet won’t help this connection. Ignoring problems can only create a snowball of effects. There have been disappointments inflicted on this connection. Perhaps, someone has flaws they do not want to acknowledge. Regardless, the issue creates tension somehow, whether you want to see it or not.",
+    "imagePath": "12.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 13,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "lessons-are-being-taught",
+    "slug": "lessons-are-being-taught",
+    "keywordsUpright": [
+      "commitment, devotion, reliability, care"
+    ],
+    "keywordsReversed": [
+      "inconsistency, neglect, performative affection"
+    ],
+    "meaningUpright": "Someone is learning in order to gain a sense of maturity. The universe will keep teaching until the lesson is mastered.",
+    "meaningReversed": "Someone is learning in order to gain a sense of maturity. The universe will keep teaching until the lesson is mastered.",
+    "imagePath": "13.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 14,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "closure",
+    "slug": "closure",
+    "keywordsUpright": [
+      "growth, evolution, acceptance, maturity"
+    ],
+    "keywordsReversed": [
+      "resistance to change, clinging, fear of loss"
+    ],
+    "meaningUpright": "There is a push for an ending where one will feel justified. We have to make sense of everything to feel better. Will a discussion take place, or did the actions validate it for you?",
+    "meaningReversed": "There is a push for an ending where one will feel justified. We have to make sense of everything to feel better. Will a discussion take place, or did the actions validate it for you?",
+    "imagePath": "14.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 15,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "never-again",
+    "slug": "never-again",
+    "keywordsUpright": [
+      "clarity, truth, grounded decision-making"
+    ],
+    "keywordsReversed": [
+      "denial, illusion, wishful thinking"
+    ],
+    "meaningUpright": "Someone needs to put the brakes on this connection. Will you take the initiative, or is the other person already doing so with their actions? For whatever reason, a connection looks to be coming to an end.",
+    "meaningReversed": "Someone needs to put the brakes on this connection. Will you take the initiative, or is the other person already doing so with their actions? For whatever reason, a connection looks to be coming to an end.",
+    "imagePath": "15.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 16,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "i-am-their-light",
+    "slug": "i-am-their-light",
+    "keywordsUpright": [
+      "humility, communication, reconciliation"
+    ],
+    "keywordsReversed": [
+      "pride, silence, emotional avoidance"
+    ],
+    "meaningUpright": "You are the higher frequency. You possess the rightful qualities and values that are needed for success. Always do right by God and you will be rewarded.",
+    "meaningReversed": "You are the higher frequency. You possess the rightful qualities and values that are needed for success. Always do right by God and you will be rewarded.",
+    "imagePath": "16.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 17,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "the-feelings-are-mutual",
+    "slug": "the-feelings-are-mutual",
+    "keywordsUpright": [
+      "release, transformation, renewal"
+    ],
+    "keywordsReversed": [
+      "martyrdom, unhealthy attachment, resentment"
+    ],
+    "meaningUpright": "You both are feeling the same way. Don’t doubt it, even if you can’t see it.",
+    "meaningReversed": "You both are feeling the same way. Don’t doubt it, even if you can’t see it.",
+    "imagePath": "17.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 18,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "there-are-regrets",
+    "slug": "there-are-regrets",
+    "keywordsUpright": [
+      "elevation, new perspective, growth influence"
+    ],
+    "keywordsReversed": [
+      "comparison, insecurity, external pressure"
+    ],
+    "meaningUpright": "The decisions or actions that took place were under hesitation and doubt, perhaps under haste or influence. There is uncertainty moving forward.",
+    "meaningReversed": "The decisions or actions that took place were under hesitation and doubt, perhaps under haste or influence. There is uncertainty moving forward.",
+    "imagePath": "18.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 19,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "someone-better",
+    "slug": "someone-better",
+    "keywordsUpright": [
+      "nostalgia, emotional bonds, remembrance"
+    ],
+    "keywordsReversed": [
+      "emotional fixation, inability to move on"
+    ],
+    "meaningUpright": "Are you the light in their life? Could there be someone else of a higher frequency who will interfere? There is an encroaching party, and they influence someone for the better.",
+    "meaningReversed": "Are you the light in their life? Could there be someone else of a higher frequency who will interfere? There is an encroaching party, and they influence someone for the better.",
+    "imagePath": "19.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 20,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "it's-never-over",
+    "slug": "it's-never-over",
+    "keywordsUpright": [
+      "awareness, discernment, truth-seeking"
+    ],
+    "keywordsReversed": [
+      "deception, manipulation, self-deception"
+    ],
+    "meaningUpright": "This connection has the incapacity to reach some sense of finalization spiritually. There is a constant pull to reconnect and find resolutions in order to thrive together.",
+    "meaningReversed": "This connection has the incapacity to reach some sense of finalization spiritually. There is a constant pull to reconnect and find resolutions in order to thrive together.",
+    "imagePath": "20.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 21,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "miscommunication",
+    "slug": "miscommunication",
+    "keywordsUpright": [
+      "freedom, peace, emotional closure"
+    ],
+    "keywordsReversed": [
+      "attachment, resistance, emotional holding"
+    ],
+    "meaningUpright": "There seems to be a misunderstanding. Could one person be ignoring the facts, or are we just not being transparent in communication? After all, communication and comprehension go hand in hand.",
+    "meaningReversed": "There seems to be a misunderstanding. Could one person be ignoring the facts, or are we just not being transparent in communication? After all, communication and comprehension go hand in hand.",
+    "imagePath": "21.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 22,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "underlying-motives",
+    "slug": "underlying-motives",
+    "keywordsUpright": [
+      "opportunity, openness, fresh energy"
+    ],
+    "keywordsReversed": [
+      "fear of vulnerability, emotional baggage"
+    ],
+    "meaningUpright": "Not everyone shows their character, especially in the beginning. Allow time, actions, and slip-ups to reveal their true intentions.",
+    "meaningReversed": "Not everyone shows their character, especially in the beginning. Allow time, actions, and slip-ups to reveal their true intentions.",
+    "imagePath": "22.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 23,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "learning-to-forgive",
+    "slug": "learning-to-forgive",
+    "keywordsUpright": [
+      "awareness of influence, boundaries"
+    ],
+    "keywordsReversed": [
+      "external control, gossip, distraction"
+    ],
+    "meaningUpright": "In order to move forward, we need to stop harboring resentment, trauma, and guilt. Carrying this negative baggage won’t do any good moving forward. We have to contribute positivity to flourish in the future.",
+    "meaningReversed": "In order to move forward, we need to stop harboring resentment, trauma, and guilt. Carrying this negative baggage won’t do any good moving forward. We have to contribute positivity to flourish in the future.",
+    "imagePath": "23.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 24,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "commitment",
+    "slug": "commitment",
+    "keywordsUpright": [
+      "understanding, emotional resolution, peace"
+    ],
+    "keywordsReversed": [
+      "unfinished business, rumination"
+    ],
+    "meaningUpright": "This connection will ultimately reap some kind of dedication, loyalty, and consistency.",
+    "meaningReversed": "This connection will ultimately reap some kind of dedication, loyalty, and consistency.",
+    "imagePath": "24.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 25,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "trust-the-universe",
+    "slug": "trust-the-universe",
+    "keywordsUpright": [
+      "discernment, observation, clarity seeking"
+    ],
+    "keywordsReversed": [
+      "confusion, false hope, emotional misreading"
+    ],
+    "meaningUpright": "We need to just trust the process. Tame the anxiety. It can be hard to see through the storm. However, we need to have faith it will all work out in the long run.",
+    "meaningReversed": "We need to just trust the process. Tame the anxiety. It can be hard to see through the storm. However, we need to have faith it will all work out in the long run.",
+    "imagePath": "25.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 26,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "triggers",
+    "slug": "triggers",
+    "keywordsUpright": [
+      "choice, accountability, action"
+    ],
+    "keywordsReversed": [
+      "indecision, avoidance, fear of outcome"
+    ],
+    "meaningUpright": "There is something that is causing a reaction because someone is sensitive. It can be a trauma response, insecurities, or even a twin flame mirror effect. It is something that needs to be corrected to reduce the reaction. Awareness of this sensitivity can lead to a better understanding of oneself.",
+    "meaningReversed": "There is something that is causing a reaction because someone is sensitive. It can be a trauma response, insecurities, or even a twin flame mirror effect. It is something that needs to be corrected to reduce the reaction. Awareness of this sensitivity can lead to a better understanding of oneself.",
+    "imagePath": "26.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 27,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "second-option",
+    "slug": "second-option",
+    "keywordsUpright": [
+      "emotional awareness, honesty, acknowledgment"
+    ],
+    "keywordsReversed": [
+      "isolation, victim mindset, withdrawal"
+    ],
+    "meaningUpright": "At any point, someone has the opportunity to switch their direction and take up a different option. There may be someone or something that is enabling this.",
+    "meaningReversed": "At any point, someone has the opportunity to switch their direction and take up a different option. There may be someone or something that is enabling this.",
+    "imagePath": "27.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 28,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "there-are-other-priorities",
+    "slug": "there-are-other-priorities",
+    "keywordsUpright": [
+      "transition, emotional shift, self-protection"
+    ],
+    "keywordsReversed": [
+      "numbness, emotional shutdown, avoidance"
+    ],
+    "meaningUpright": "Where do you come into play in this scenario? Are you first in line or taking second place? Can you reason with this position? Nevertheless, it seems like there are other factors that are coming into play. One will have to settle or challenge these factors. What are your priorities?",
+    "meaningReversed": "Where do you come into play in this scenario? Are you first in line or taking second place? Can you reason with this position? Nevertheless, it seems like there are other factors that are coming into play. One will have to settle or challenge these factors. What are your priorities?",
+    "imagePath": "28.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 29,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "it-is-worth-it.",
+    "slug": "it-is-worth-it.",
+    "keywordsUpright": [
+      "introspection, self-awareness, growth"
+    ],
+    "keywordsReversed": [
+      "projection, blame, lack of insight"
+    ],
+    "meaningUpright": "Some things are worth fighting for. Do not doubt what is for the better. Someone has to put forth effort for the gain. Will it be you?",
+    "meaningReversed": "Some things are worth fighting for. Do not doubt what is for the better. Someone has to put forth effort for the gain. Will it be you?",
+    "imagePath": "29.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 30,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "inconsistencies",
+    "slug": "inconsistencies",
+    "keywordsUpright": [
+      "realization, awareness, understanding"
+    ],
+    "keywordsReversed": [
+      "confusion, misinterpretation, doubt"
+    ],
+    "meaningUpright": "There is no routine or consistency on someone’s part. The gaps are creating issues and misunderstandings. Is the absence making the heart grow fonder or teaching you to live without them?",
+    "meaningReversed": "There is no routine or consistency on someone’s part. The gaps are creating issues and misunderstandings. Is the absence making the heart grow fonder or teaching you to live without them?",
+    "imagePath": "30.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 31,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "destined-soul-ties",
+    "slug": "destined-soul-ties",
+    "keywordsUpright": [
+      "resilience, endurance, courage"
+    ],
+    "keywordsReversed": [
+      "burnout, exhaustion, self-doubt"
+    ],
+    "meaningUpright": "This meeting is bound to happen. What can we both gain from this connection? Let’s both contribute and move forward together.",
+    "meaningReversed": "This meeting is bound to happen. What can we both gain from this connection? Let’s both contribute and move forward together.",
+    "imagePath": "31.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 32,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "you-didn't-mean-it",
+    "slug": "you-didn't-mean-it",
+    "keywordsUpright": [
+      "acknowledgment, reflection, closure seeking"
+    ],
+    "keywordsReversed": [
+      "avoidance, emotional baggage"
+    ],
+    "meaningUpright": "People make mistakes. It’s life. Don’t put much thought into the error. Let’s learn from this and do better next time. There’s no use in entertaining negative and meaningless thoughts.",
+    "meaningReversed": "People make mistakes. It’s life. Don’t put much thought into the error. Let’s learn from this and do better next time. There’s no use in entertaining negative and meaningless thoughts.",
+    "imagePath": "32.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 33,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "someone-has-unmet-needs",
+    "slug": "someone-has-unmet-needs",
+    "keywordsUpright": [
+      "recognition, honesty, awareness"
+    ],
+    "keywordsReversed": [
+      "emotional withdrawal, coldness"
+    ],
+    "meaningUpright": "One person is lacking in their self-fulfillment. This may be killing their enthusiasm toward the connection. No drive equals no passion.",
+    "meaningReversed": "One person is lacking in their self-fulfillment. This may be killing their enthusiasm toward the connection. No drive equals no passion.",
+    "imagePath": "33.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 34,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "you-love-me",
+    "slug": "you-love-me",
+    "keywordsUpright": [
+      "self-protection, caution, boundaries"
+    ],
+    "keywordsReversed": [
+      "fear of intimacy, emotional walls"
+    ],
+    "meaningUpright": "There are sacrifices and responsibilities taking place to fulfill this connection. After all, real love is shown when a person is consistent and mindful in their efforts. This is something that needs to be appreciated.",
+    "meaningReversed": "There are sacrifices and responsibilities taking place to fulfill this connection. After all, real love is shown when a person is consistent and mindful in their efforts. This is something that needs to be appreciated.",
+    "imagePath": "34.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 35,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "you-don't-love-me",
+    "slug": "you-don't-love-me",
+    "keywordsUpright": [
+      "potential, near alignment, opportunity"
+    ],
+    "keywordsReversed": [
+      "missed chances, frustration, misalignment"
+    ],
+    "meaningUpright": "It is what it is. Whether you are incapable of loving someone in general or you just don’t feel the chemistry, there is a void.",
+    "meaningReversed": "It is what it is. Whether you are incapable of loving someone in general or you just don’t feel the chemistry, there is a void.",
+    "imagePath": "35.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 36,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "options-are-kept-open",
+    "slug": "options-are-kept-open",
+    "keywordsUpright": [
+      "awareness, courage building"
+    ],
+    "keywordsReversed": [
+      "paralysis, anxiety, self-sabotage"
+    ],
+    "meaningUpright": "Retreat is a possibility. There are too many viable choices to just concentrate on one person.",
+    "meaningReversed": "Retreat is a possibility. There are too many viable choices to just concentrate on one person.",
+    "imagePath": "36.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 37,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "it's-all-an-act",
+    "slug": "it's-all-an-act",
+    "keywordsUpright": [
+      "closure, finality, acceptance"
+    ],
+    "keywordsReversed": [
+      "refusal to let go, lingering attachment"
+    ],
+    "meaningUpright": "Unfortunately, some people have hidden motives. What you may be experiencing is not in its true essence. Are you gaslighting yourself? Pretending everything is peachy masks the real issues.",
+    "meaningReversed": "Unfortunately, some people have hidden motives. What you may be experiencing is not in its true essence. Are you gaslighting yourself? Pretending everything is peachy masks the real issues.",
+    "imagePath": "37.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 38,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "pride-keeps-us-apart",
+    "slug": "pride-keeps-us-apart",
+    "keywordsUpright": [
+      "progress, independence, growth"
+    ],
+    "keywordsReversed": [
+      "stagnation, fear of change"
+    ],
+    "meaningUpright": "Our struggle for power, stubbornness, and ego is the only thing in the way. If only one person could lift that issue for the two of us.",
+    "meaningReversed": "Our struggle for power, stubbornness, and ego is the only thing in the way. If only one person could lift that issue for the two of us.",
+    "imagePath": "38.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 39,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "overstepped-boundaries",
+    "slug": "overstepped-boundaries",
+    "keywordsUpright": [
+      "reciprocity, shared emotion, connection"
+    ],
+    "keywordsReversed": [
+      "imbalance, unspoken feelings"
+    ],
+    "meaningUpright": "There are values that are being challenged and suppressed, creating an uncomfortable situation. This is calling attention to your sense of worth, principles, and standards. Relationships require compromise from both sides to remain healthy.",
+    "meaningReversed": "There are values that are being challenged and suppressed, creating an uncomfortable situation. This is calling attention to your sense of worth, principles, and standards. Relationships require compromise from both sides to remain healthy.",
+    "imagePath": "39.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 40,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "ignoring-the-pain",
+    "slug": "ignoring-the-pain",
+    "keywordsUpright": [
+      "honesty, transparency, awakening"
+    ],
+    "keywordsReversed": [
+      "secrecy, delayed truth"
+    ],
+    "meaningUpright": "Disappointments are being ignored, distracted, or suppressed. A coping strategy where the pain is transmuted in a different sense.",
+    "meaningReversed": "Disappointments are being ignored, distracted, or suppressed. A coping strategy where the pain is transmuted in a different sense.",
+    "imagePath": "40.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 41,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "i-need-to-reach-out",
+    "slug": "i-need-to-reach-out",
+    "keywordsUpright": [
+      "balance, calm, emotional stability"
+    ],
+    "keywordsReversed": [
+      "inner conflict, emotional unrest"
+    ],
+    "meaningUpright": "Someone has to be the bigger person and maybe set their ego aside. Adopting this approach will release a blockage.",
+    "meaningReversed": "Someone has to be the bigger person and maybe set their ego aside. Adopting this approach will release a blockage.",
+    "imagePath": "41.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 42,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "karmic",
+    "slug": "karmic",
+    "keywordsUpright": [
+      "optimism, faith, emotional light"
+    ],
+    "keywordsReversed": [
+      "pessimism, discouragement"
+    ],
+    "meaningUpright": "There is energy from a past life. Whether good or bad, there is unfinished business that needs to be explored before anyone can move forward.",
+    "meaningReversed": "There is energy from a past life. Whether good or bad, there is unfinished business that needs to be explored before anyone can move forward.",
+    "imagePath": "42.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 43,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "changes-will-be-made",
+    "slug": "changes-will-be-made",
+    "keywordsUpright": [
+      "awareness of effort, recalibration"
+    ],
+    "keywordsReversed": [
+      "resentment, overgiving, depletion"
+    ],
+    "meaningUpright": "Adaptations need to take place so that there can be an alignment. The same routine becomes tiring and prompts for change. On the contrary, perhaps things are too calm, and the energies need to be stirred.",
+    "meaningReversed": "Adaptations need to take place so that there can be an alignment. The same routine becomes tiring and prompts for change. On the contrary, perhaps things are too calm, and the energies need to be stirred.",
+    "imagePath": "43.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 44,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "we-will-covercome-this",
+    "slug": "we-will-covercome-this",
+    "keywordsUpright": [
+      "trust, alignment, surrender"
+    ],
+    "keywordsReversed": [
+      "impatience, frustration, forcing outcomes"
+    ],
+    "meaningUpright": "Relationships go through their seasons. There are great times and bad times. There is strength and motivation to overcome the lows. Better days will come.",
+    "meaningReversed": "Relationships go through their seasons. There are great times and bad times. There is strength and motivation to overcome the lows. Better days will come.",
+    "imagePath": "44.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 45,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "i-was-disillusioned",
+    "slug": "i-was-disillusioned",
+    "keywordsUpright": [
+      "clarity, awakening, truth"
+    ],
+    "keywordsReversed": [
+      "denial, distortion"
+    ],
+    "meaningUpright": "Stop projecting your own values and morals onto someone else. Not everyone vibrates at your frequency. Focus on the realities and logistics. Stop being misled by your emotions and creating a fake perception of someone. You are chasing false potential.",
+    "meaningReversed": "Stop projecting your own values and morals onto someone else. Not everyone vibrates at your frequency. Focus on the realities and logistics. Stop being misled by your emotions and creating a fake perception of someone. You are chasing false potential.",
+    "imagePath": "45.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 46,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "lies-and-partial-truths",
+    "slug": "lies-and-partial-truths",
+    "keywordsUpright": [
+      "compromise, negotiation, awareness"
+    ],
+    "keywordsReversed": [
+      "stubbornness, deadlock"
+    ],
+    "meaningUpright": "There are issues in attaining clarity or an understanding. Information is being misconstrued, altered, or just not being revealed to its full extent. This is an obscurity.",
+    "meaningReversed": "There are issues in attaining clarity or an understanding. Information is being misconstrued, altered, or just not being revealed to its full extent. This is an obscurity.",
+    "imagePath": "46.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 47,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "we-outgrew-eachother",
+    "slug": "we-outgrew-eachother",
+    "keywordsUpright": [
+      "caution, mindfulness, care"
+    ],
+    "keywordsReversed": [
+      "recklessness, emotional volatility"
+    ],
+    "meaningUpright": "At some point, people have to evolve and transition to the next chapter of their lives. Not everyone is here to stay. Some people are just an experience and lesson in time. Just because it worked out at one time doesn’t mean it will work out again. People who were once compatible change in their ways. The pieces of the puzzle just don’t fit anymore.",
+    "meaningReversed": "At some point, people have to evolve and transition to the next chapter of their lives. Not everyone is here to stay. Some people are just an experience and lesson in time. Just because it worked out at one time doesn’t mean it will work out again. People who were once compatible change in their ways. The pieces of the puzzle just don’t fit anymore.",
+    "imagePath": "47.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 48,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "you-don't-think-of-me",
+    "slug": "you-don't-think-of-me",
+    "keywordsUpright": [
+      "resilience, perseverance, hope"
+    ],
+    "keywordsReversed": [
+      "discouragement, defeatism"
+    ],
+    "meaningUpright": "You have to take the distance at face value. They are not missing you. They are busy living life! Just because you are thinking of them does not mean they are thinking of you. The energy is not reciprocated.",
+    "meaningReversed": "You have to take the distance at face value. They are not missing you. They are busy living life! Just because you are thinking of them does not mean they are thinking of you. The energy is not reciprocated.",
+    "imagePath": "48.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 49,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "you-still-miss-me",
+    "slug": "you-still-miss-me",
+    "keywordsUpright": [
+      "recovery, restoration, gentleness"
+    ],
+    "keywordsReversed": [
+      "stagnation, reopening wounds"
+    ],
+    "meaningUpright": "They may not be showing it, but you are surely thought of. It may be a good idea to expect them to eventually seek you. How can they torment themselves for so long, reliving memories and what-ifs?!",
+    "meaningReversed": "They may not be showing it, but you are surely thought of. It may be a good idea to expect them to eventually seek you. How can they torment themselves for so long, reliving memories and what-ifs?!",
+    "imagePath": "49.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 50,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "some-people-never-change",
+    "slug": "some-people-never-change",
+    "keywordsUpright": [
+      "insight, revelation, understanding"
+    ],
+    "keywordsReversed": [
+      "confusion, ignored signs"
+    ],
+    "meaningUpright": "Someone is fixated and can’t see past their flaws or ideologies. They’re stuck in a certain frequency. There’s no use trying to change their perspective. People understand only to the level they have met themselves.",
+    "meaningReversed": "Someone is fixated and can’t see past their flaws or ideologies. They’re stuck in a certain frequency. There’s no use trying to change their perspective. People understand only to the level they have met themselves.",
+    "imagePath": "50.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 51,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "it-still-hurts",
+    "slug": "it-still-hurts",
+    "keywordsUpright": [
+      "harmony, shared goals, cooperation"
+    ],
+    "keywordsReversed": [
+      "misalignment, divergence"
+    ],
+    "meaningUpright": "The healing process tends to warp our actions and thought patterns. You may be vulnerable to urges and misled by your emotions. What you may think is a good choice now may make you feel stupid later. Consider allowing more time to make sense of things. Remember, not all emotions require an action. Allow feelings to just pass through.",
+    "meaningReversed": "The healing process tends to warp our actions and thought patterns. You may be vulnerable to urges and misled by your emotions. What you may think is a good choice now may make you feel stupid later. Consider allowing more time to make sense of things. Remember, not all emotions require an action. Allow feelings to just pass through.",
+    "imagePath": "51.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 52,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "there-will-be-a-return",
+    "slug": "there-will-be-a-return",
+    "keywordsUpright": [
+      "release, liberation, growth"
+    ],
+    "keywordsReversed": [
+      "clinging, nostalgia"
+    ],
+    "meaningUpright": "This connection is not over, as someone will be making contact again. Should you shift the energy dynamics in your favor and be the one to initiate contact first? Regardless, the energies between the two parties are lingering.",
+    "meaningReversed": "This connection is not over, as someone will be making contact again. Should you shift the energy dynamics in your favor and be the one to initiate contact first? Regardless, the energies between the two parties are lingering.",
+    "imagePath": "52.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 53,
+    "arcana": "Oracle",
+    "suit": "Oracle",
+    "name": "you-moved-on",
+    "slug": "you-moved-on",
+    "keywordsUpright": [
+      "renewal, fresh start, optimism"
+    ],
+    "keywordsReversed": [
+      "fear of change, hesitation"
+    ],
+    "meaningUpright": "The goals someone once had have taken a new direction. The mutual desire that may have existed at some point has been broken.",
+    "meaningReversed": "The goals someone once had have taken a new direction. The mutual desire that may have existed at some point has been broken.",
+    "imagePath": "53.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
     "id": 54,
     "arcana": "Major",
     "suit": "Major",
-    "number": 0,
-    "name": "The Fool",
+    "name": "the-fool",
     "slug": "the-fool",
     "keywordsUpright": [
       "new beginnings,leap of faith,innocence"
     ],
     "keywordsReversed": [
-      "recklessness,naivety,fear of change"
+      "A fresh start and trusting the journey."
     ],
     "meaningUpright": "A fresh start and trusting the journey.",
     "meaningReversed": "Avoiding growth or acting without awareness.",
@@ -27,14 +1086,13 @@ export const TAROT_CARDS = [
     "id": 55,
     "arcana": "Major",
     "suit": "Major",
-    "number": "I",
-    "name": "The Magician",
+    "name": "the-magician",
     "slug": "the-magician",
     "keywordsUpright": [
       "manifestation,power,skill"
     ],
     "keywordsReversed": [
-      "manipulation,untapped potential,deception"
+      "You have the tools to make things happen."
     ],
     "meaningUpright": "You have the tools to make things happen.",
     "meaningReversed": "Self-doubt or misuse of power.",
@@ -48,14 +1106,13 @@ export const TAROT_CARDS = [
     "id": 56,
     "arcana": "Major",
     "suit": "Major",
-    "number": "II",
-    "name": "The High Priestess",
+    "name": "the-high-priestess",
     "slug": "the-high-priestess",
     "keywordsUpright": [
       "intuition,inner voice,mystery"
     ],
     "keywordsReversed": [
-      "blocked intuition,secrets,disconnection"
+      "Trust your intuition and inner knowing."
     ],
     "meaningUpright": "Trust your intuition and inner knowing.",
     "meaningReversed": "Ignoring inner guidance.",
@@ -69,14 +1126,13 @@ export const TAROT_CARDS = [
     "id": 57,
     "arcana": "Major",
     "suit": "Major",
-    "number": "III",
-    "name": "The Empress",
+    "name": "the-empress",
     "slug": "the-empress",
     "keywordsUpright": [
       "abundance,nurturing,creativity"
     ],
     "keywordsReversed": [
-      "neglect,creative block,dependency"
+      "Growth, care, and emotional fulfillment."
     ],
     "meaningUpright": "Growth, care, and emotional fulfillment.",
     "meaningReversed": "Lack of self-care or imbalance.",
@@ -90,14 +1146,13 @@ export const TAROT_CARDS = [
     "id": 58,
     "arcana": "Major",
     "suit": "Major",
-    "number": "IV",
-    "name": "The Emperor",
+    "name": "the-emperor",
     "slug": "the-emperor",
     "keywordsUpright": [
       "structure,authority,stability"
     ],
     "keywordsReversed": [
-      "control issues,rigidity"
+      "Leadership and solid foundations."
     ],
     "meaningUpright": "Leadership and solid foundations.",
     "meaningReversed": "Power struggles or inflexibility.",
@@ -111,14 +1166,13 @@ export const TAROT_CARDS = [
     "id": 59,
     "arcana": "Major",
     "suit": "Major",
-    "number": "V",
-    "name": "The Hierophant",
+    "name": "the-hierophant",
     "slug": "the-hierophant",
     "keywordsUpright": [
       "tradition,guidance,beliefs"
     ],
     "keywordsReversed": [
-      "rebellion,questioning norms"
+      "Seek wisdom from tradition or mentors."
     ],
     "meaningUpright": "Seek wisdom from tradition or mentors.",
     "meaningReversed": "Breaking away from outdated systems.",
@@ -132,14 +1186,13 @@ export const TAROT_CARDS = [
     "id": 60,
     "arcana": "Major",
     "suit": "Major",
-    "number": "VI",
-    "name": "The Lovers",
+    "name": "the-lovers",
     "slug": "the-lovers",
     "keywordsUpright": [
       "love,alignment,choice"
     ],
     "keywordsReversed": [
-      "disharmony,misalignment"
+      "Deep connection and aligned values."
     ],
     "meaningUpright": "Deep connection and aligned values.",
     "meaningReversed": "Conflict between heart and values.",
@@ -153,14 +1206,13 @@ export const TAROT_CARDS = [
     "id": 61,
     "arcana": "Major",
     "suit": "Major",
-    "number": "VII",
-    "name": "The Chariot",
+    "name": "the-chariot",
     "slug": "the-chariot",
     "keywordsUpright": [
       "determination,victory,control"
     ],
     "keywordsReversed": [
-      "lack of direction,forcefulness"
+      "Move forward with confidence."
     ],
     "meaningUpright": "Move forward with confidence.",
     "meaningReversed": "Scattered energy or loss of focus.",
@@ -174,14 +1226,13 @@ export const TAROT_CARDS = [
     "id": 62,
     "arcana": "Major",
     "suit": "Major",
-    "number": "VIII",
-    "name": "Strength",
+    "name": "strength",
     "slug": "strength",
     "keywordsUpright": [
       "inner strength,compassion,courage"
     ],
     "keywordsReversed": [
-      "self-doubt,insecurity"
+      "Gentle strength and resilience."
     ],
     "meaningUpright": "Gentle strength and resilience.",
     "meaningReversed": "Low confidence or suppressed emotion.",
@@ -195,14 +1246,13 @@ export const TAROT_CARDS = [
     "id": 63,
     "arcana": "Major",
     "suit": "Major",
-    "number": "IX",
-    "name": "The Hermit",
+    "name": "the-hermit",
     "slug": "the-hermit",
     "keywordsUpright": [
       "introspection,solitude,wisdom"
     ],
     "keywordsReversed": [
-      "isolation,avoidance"
+      "Seek clarity within."
     ],
     "meaningUpright": "Seek clarity within.",
     "meaningReversed": "Avoiding self-reflection.",
@@ -216,14 +1266,13 @@ export const TAROT_CARDS = [
     "id": 64,
     "arcana": "Major",
     "suit": "Major",
-    "number": "X",
-    "name": "Wheel of Fortune",
+    "name": "wheel-of-fortune",
     "slug": "wheel-of-fortune",
     "keywordsUpright": [
       "change,cycles,fate"
     ],
     "keywordsReversed": [
-      "resistance,delays"
+      "Life is shifting — go with it."
     ],
     "meaningUpright": "Life is shifting — go with it.",
     "meaningReversed": "Trying to control the uncontrollable.",
@@ -237,14 +1286,13 @@ export const TAROT_CARDS = [
     "id": 65,
     "arcana": "Major",
     "suit": "Major",
-    "number": "XI",
-    "name": "Justice",
+    "name": "justice",
     "slug": "justice",
     "keywordsUpright": [
       "truth,fairness,accountability"
     ],
     "keywordsReversed": [
-      "dishonesty,avoidance"
+      "Truth and balance prevail."
     ],
     "meaningUpright": "Truth and balance prevail.",
     "meaningReversed": "Avoiding responsibility.",
@@ -258,14 +1306,13 @@ export const TAROT_CARDS = [
     "id": 66,
     "arcana": "Major",
     "suit": "Major",
-    "number": "XII",
-    "name": "The Hanged Man",
+    "name": "the-hanged-man",
     "slug": "the-hanged-man",
     "keywordsUpright": [
       "surrender,perspective,pause"
     ],
     "keywordsReversed": [
-      "resistance,stagnation"
+      "Let go to gain insight."
     ],
     "meaningUpright": "Let go to gain insight.",
     "meaningReversed": "Refusing to see differently.",
@@ -279,14 +1326,13 @@ export const TAROT_CARDS = [
     "id": 67,
     "arcana": "Major",
     "suit": "Major",
-    "number": "XIII",
-    "name": "Death",
+    "name": "death",
     "slug": "death",
     "keywordsUpright": [
       "endings,transformation,rebirth"
     ],
     "keywordsReversed": [
-      "fear of change,stagnation"
+      "Endings clear space for rebirth."
     ],
     "meaningUpright": "Endings clear space for rebirth.",
     "meaningReversed": "Clinging to what must end.",
@@ -300,14 +1346,13 @@ export const TAROT_CARDS = [
     "id": 68,
     "arcana": "Major",
     "suit": "Major",
-    "number": "XIV",
-    "name": "Temperance",
+    "name": "temperance",
     "slug": "temperance",
     "keywordsUpright": [
       "balance,moderation,harmony"
     ],
     "keywordsReversed": [
-      "imbalance,excess"
+      "Find balance and flow."
     ],
     "meaningUpright": "Find balance and flow.",
     "meaningReversed": "Extremes or lack of harmony.",
@@ -321,14 +1366,13 @@ export const TAROT_CARDS = [
     "id": 69,
     "arcana": "Major",
     "suit": "Major",
-    "number": "XV",
-    "name": "The Devil",
+    "name": "the-devil",
     "slug": "the-devil",
     "keywordsUpright": [
       "attachment,temptation,shadow"
     ],
     "keywordsReversed": [
-      "release,freedom"
+      "Confront unhealthy attachments."
     ],
     "meaningUpright": "Confront unhealthy attachments.",
     "meaningReversed": "Breaking free from patterns.",
@@ -342,14 +1386,13 @@ export const TAROT_CARDS = [
     "id": 70,
     "arcana": "Major",
     "suit": "Major",
-    "number": "XVI",
-    "name": "The Tower",
+    "name": "the-tower",
     "slug": "the-tower",
     "keywordsUpright": [
       "sudden change,revelation"
     ],
     "keywordsReversed": [
-      "avoidance,fear of change"
+      "Truth shakes foundations."
     ],
     "meaningUpright": "Truth shakes foundations.",
     "meaningReversed": "Avoiding necessary disruption.",
@@ -363,14 +1406,13 @@ export const TAROT_CARDS = [
     "id": 71,
     "arcana": "Major",
     "suit": "Major",
-    "number": "XVII",
-    "name": "The Star",
+    "name": "the-star",
     "slug": "the-star",
     "keywordsUpright": [
       "hope,healing,renewal"
     ],
     "keywordsReversed": [
-      "doubt,discouragement"
+      "Renewed faith and healing."
     ],
     "meaningUpright": "Renewed faith and healing.",
     "meaningReversed": "Loss of hope.",
@@ -384,14 +1426,13 @@ export const TAROT_CARDS = [
     "id": 72,
     "arcana": "Major",
     "suit": "Major",
-    "number": "XVIII",
-    "name": "The Moon",
+    "name": "the-moon",
     "slug": "the-moon",
     "keywordsUpright": [
       "intuition,illusion,uncertainty"
     ],
     "keywordsReversed": [
-      "clarity,truth revealed"
+      "Navigate uncertainty intuitively."
     ],
     "meaningUpright": "Navigate uncertainty intuitively.",
     "meaningReversed": "Fear dissolves.",
@@ -405,14 +1446,13 @@ export const TAROT_CARDS = [
     "id": 73,
     "arcana": "Major",
     "suit": "Major",
-    "number": "XIX",
-    "name": "The Sun",
+    "name": "the-sun",
     "slug": "the-sun",
     "keywordsUpright": [
       "joy,success,vitality"
     ],
     "keywordsReversed": [
-      "delays,low energy"
+      "Joy and clarity."
     ],
     "meaningUpright": "Joy and clarity.",
     "meaningReversed": "Temporary setbacks.",
@@ -426,14 +1466,13 @@ export const TAROT_CARDS = [
     "id": 74,
     "arcana": "Major",
     "suit": "Major",
-    "number": "XX",
-    "name": "Judgement",
+    "name": "judgement",
     "slug": "judgement",
     "keywordsUpright": [
       "awakening,renewal"
     ],
     "keywordsReversed": [
-      "self-doubt,delay"
+      "Step into your calling."
     ],
     "meaningUpright": "Step into your calling.",
     "meaningReversed": "Ignoring inner truth.",
@@ -447,14 +1486,13 @@ export const TAROT_CARDS = [
     "id": 75,
     "arcana": "Major",
     "suit": "Major",
-    "number": "XXI",
-    "name": "The World",
+    "name": "the-world",
     "slug": "the-world",
     "keywordsUpright": [
       "completion,fulfillment"
     ],
     "keywordsReversed": [
-      "unfinished business"
+      "A cycle completes."
     ],
     "meaningUpright": "A cycle completes.",
     "meaningReversed": "Loose ends remain.",
@@ -468,14 +1506,13 @@ export const TAROT_CARDS = [
     "id": 76,
     "arcana": "Minor",
     "suit": "Cups",
-    "number": "Ace",
-    "name": "Ace of Cups",
+    "name": "ace-of-cups",
     "slug": "ace-of-cups",
     "keywordsUpright": [
       "new emotions,love,openness"
     ],
     "keywordsReversed": [
-      "blocked feelings,emotional loss"
+      "A new emotional beginning."
     ],
     "meaningUpright": "A new emotional beginning.",
     "meaningReversed": "Emotions are blocked or unexpressed.",
@@ -489,14 +1526,13 @@ export const TAROT_CARDS = [
     "id": 77,
     "arcana": "Minor",
     "suit": "Cups",
-    "number": "Two",
-    "name": "Two of Cups",
+    "name": "two-of-cups",
     "slug": "two-of-cups",
     "keywordsUpright": [
       "mutual attraction,partnership"
     ],
     "keywordsReversed": [
-      "imbalance,miscommunication"
+      "Balanced emotional connection."
     ],
     "meaningUpright": "Balanced emotional connection.",
     "meaningReversed": "Misalignment in relationships.",
@@ -510,14 +1546,13 @@ export const TAROT_CARDS = [
     "id": 78,
     "arcana": "Minor",
     "suit": "Cups",
-    "number": "Three",
-    "name": "Three of Cups",
+    "name": "three-of-cups",
     "slug": "three-of-cups",
     "keywordsUpright": [
       "celebration,friendship"
     ],
     "keywordsReversed": [
-      "overindulgence,gossip"
+      "Joy shared with others."
     ],
     "meaningUpright": "Joy shared with others.",
     "meaningReversed": "Social tension or excess.",
@@ -531,14 +1566,13 @@ export const TAROT_CARDS = [
     "id": 79,
     "arcana": "Minor",
     "suit": "Cups",
-    "number": "Four",
-    "name": "Four of Cups",
+    "name": "four-of-cups",
     "slug": "four-of-cups",
     "keywordsUpright": [
       "apathy,contemplation"
     ],
     "keywordsReversed": [
-      "renewed interest,clarity"
+      "Feeling emotionally disconnected."
     ],
     "meaningUpright": "Feeling emotionally disconnected.",
     "meaningReversed": "Reawakening emotionally.",
@@ -552,14 +1586,13 @@ export const TAROT_CARDS = [
     "id": 80,
     "arcana": "Minor",
     "suit": "Cups",
-    "number": "Five",
-    "name": "Five of Cups",
+    "name": "five-of-cups",
     "slug": "five-of-cups",
     "keywordsUpright": [
       "loss,regret"
     ],
     "keywordsReversed": [
-      "acceptance,healing"
+      "Focusing on loss."
     ],
     "meaningUpright": "Focusing on loss.",
     "meaningReversed": "Emotional recovery.",
@@ -573,14 +1606,13 @@ export const TAROT_CARDS = [
     "id": 81,
     "arcana": "Minor",
     "suit": "Cups",
-    "number": "Six",
-    "name": "Six of Cups",
+    "name": "six-of-cups",
     "slug": "six-of-cups",
     "keywordsUpright": [
       "nostalgia,memories"
     ],
     "keywordsReversed": [
-      "living in the past"
+      "Past connections resurface."
     ],
     "meaningUpright": "Past connections resurface.",
     "meaningReversed": "Difficulty moving forward.",
@@ -594,14 +1626,13 @@ export const TAROT_CARDS = [
     "id": 82,
     "arcana": "Minor",
     "suit": "Cups",
-    "number": "Seven",
-    "name": "Seven of Cups",
+    "name": "seven-of-cups",
     "slug": "seven-of-cups",
     "keywordsUpright": [
       "choices,illusion"
     ],
     "keywordsReversed": [
-      "clarity,decision"
+      "Too many options."
     ],
     "meaningUpright": "Too many options.",
     "meaningReversed": "Seeing clearly.",
@@ -615,14 +1646,13 @@ export const TAROT_CARDS = [
     "id": 83,
     "arcana": "Minor",
     "suit": "Cups",
-    "number": "Eight",
-    "name": "Eight of Cups",
+    "name": "eight-of-cups",
     "slug": "eight-of-cups",
     "keywordsUpright": [
       "walking away,growth"
     ],
     "keywordsReversed": [
-      "avoidance,stagnation"
+      "Leaving behind what no longer serves."
     ],
     "meaningUpright": "Leaving behind what no longer serves.",
     "meaningReversed": "Fear of change.",
@@ -636,14 +1666,13 @@ export const TAROT_CARDS = [
     "id": 84,
     "arcana": "Minor",
     "suit": "Cups",
-    "number": "Nine",
-    "name": "Nine of Cups",
+    "name": "nine-of-cups",
     "slug": "nine-of-cups",
     "keywordsUpright": [
       "contentment,wishes"
     ],
     "keywordsReversed": [
-      "overindulgence,emptiness"
+      "Emotional satisfaction."
     ],
     "meaningUpright": "Emotional satisfaction.",
     "meaningReversed": "Desires unfulfilled.",
@@ -657,14 +1686,13 @@ export const TAROT_CARDS = [
     "id": 85,
     "arcana": "Minor",
     "suit": "Cups",
-    "number": "Ten",
-    "name": "Ten of Cups",
+    "name": "ten-of-cups",
     "slug": "ten-of-cups",
     "keywordsUpright": [
       "harmony,fulfillment"
     ],
     "keywordsReversed": [
-      "disharmony,tension"
+      "Emotional happiness."
     ],
     "meaningUpright": "Emotional happiness.",
     "meaningReversed": "Relationship strain.",
@@ -678,14 +1706,13 @@ export const TAROT_CARDS = [
     "id": 86,
     "arcana": "Minor",
     "suit": "Cups",
-    "number": "Page",
-    "name": "Page of Cups",
+    "name": "page-of-cups",
     "slug": "page-of-cups",
     "keywordsUpright": [
       "emotional curiosity,messages"
     ],
     "keywordsReversed": [
-      "immaturity,avoidance"
+      "A gentle emotional message."
     ],
     "meaningUpright": "A gentle emotional message.",
     "meaningReversed": "Blocked expression.",
@@ -698,78 +1725,14 @@ export const TAROT_CARDS = [
   {
     "id": 87,
     "arcana": "Minor",
-    "suit": "Cups",
-    "number": "Knight",
-    "name": "Knight of Cups",
-    "slug": "knight-of-cups",
-    "keywordsUpright": [
-      "romance,idealism"
-    ],
-    "keywordsReversed": [
-      "moodiness,illusion"
-    ],
-    "meaningUpright": "Romantic action.",
-    "meaningReversed": "Escapism.",
-    "imagePath": "tarot/87.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
-    "id": 88,
-    "arcana": "Minor",
-    "suit": "Cups",
-    "number": "Queen",
-    "name": "Queen of Cups",
-    "slug": "queen-of-cups",
-    "keywordsUpright": [
-      "empathy,intuition"
-    ],
-    "keywordsReversed": [
-      "emotional overload"
-    ],
-    "meaningUpright": "Deep emotional wisdom.",
-    "meaningReversed": "Boundary issues.",
-    "imagePath": "tarot/88.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
-    "id": 89,
-    "arcana": "Minor",
-    "suit": "Cups",
-    "number": "King",
-    "name": "King of Cups",
-    "slug": "king-of-cups",
-    "keywordsUpright": [
-      "emotional balance,calm"
-    ],
-    "keywordsReversed": [
-      "manipulation,suppression"
-    ],
-    "meaningUpright": "Mastery of emotions.",
-    "meaningReversed": "Emotional control issues.",
-    "imagePath": "tarot/89.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
-    "id": 90,
-    "arcana": "Minor",
     "suit": "Pentacles",
-    "number": "Ace",
-    "name": "Ace of Pentacles",
+    "name": "ace-of-pentacles",
     "slug": "ace-of-pentacles",
     "keywordsUpright": [
       "opportunity,prosperity"
     ],
     "keywordsReversed": [
-      "missed chance,delay"
+      "A tangible new beginning."
     ],
     "meaningUpright": "A tangible new beginning.",
     "meaningReversed": "Opportunity delayed.",
@@ -780,185 +1743,16 @@ export const TAROT_CARDS = [
     ]
   },
   {
-    "id": 91,
+    "id": 88,
     "arcana": "Minor",
     "suit": "Pentacles",
-    "number": "Two",
-    "name": "Two of Pentacles",
-    "slug": "two-of-pentacles",
-    "keywordsUpright": [
-      "balance,adaptability"
-    ],
-    "keywordsReversed": [
-      "overwhelm"
-    ],
-    "meaningUpright": "Managing priorities.",
-    "meaningReversed": "Too much at once.",
-    "imagePath": "tarot/91.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
-    "id": 92,
-    "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Three",
-    "name": "Three of Pentacles",
-    "slug": "three-of-pentacles",
-    "keywordsUpright": [
-      "teamwork,skill"
-    ],
-    "keywordsReversed": [
-      "misalignment"
-    ],
-    "meaningUpright": "Collaboration succeeds.",
-    "meaningReversed": "Poor teamwork.",
-    "imagePath": "tarot/92.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
-    "id": 93,
-    "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Four",
-    "name": "Four of Pentacles",
-    "slug": "four-of-pentacles",
-    "keywordsUpright": [
-      "security,control"
-    ],
-    "keywordsReversed": [
-      "letting go"
-    ],
-    "meaningUpright": "Holding tightly.",
-    "meaningReversed": "Releasing control.",
-    "imagePath": "tarot/93.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
-    "id": 94,
-    "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Five",
-    "name": "Five of Pentacles",
-    "slug": "five-of-pentacles",
-    "keywordsUpright": [
-      "hardship,loss"
-    ],
-    "keywordsReversed": [
-      "recovery,support"
-    ],
-    "meaningUpright": "Material struggle.",
-    "meaningReversed": "Help is available.",
-    "imagePath": "tarot/94.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
-    "id": 95,
-    "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Six",
-    "name": "Six of Pentacles",
-    "slug": "six-of-pentacles",
-    "keywordsUpright": [
-      "generosity,balance"
-    ],
-    "keywordsReversed": [
-      "power imbalance"
-    ],
-    "meaningUpright": "Fair exchange.",
-    "meaningReversed": "Strings attached.",
-    "imagePath": "tarot/95.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
-    "id": 96,
-    "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Seven",
-    "name": "Seven of Pentacles",
-    "slug": "seven-of-pentacles",
-    "keywordsUpright": [
-      "patience,growth"
-    ],
-    "keywordsReversed": [
-      "impatience"
-    ],
-    "meaningUpright": "Waiting for results.",
-    "meaningReversed": "Frustration.",
-    "imagePath": "tarot/96.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
-    "id": 97,
-    "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Eight",
-    "name": "Eight of Pentacles",
-    "slug": "eight-of-pentacles",
-    "keywordsUpright": [
-      "skill-building,focus"
-    ],
-    "keywordsReversed": [
-      "burnout"
-    ],
-    "meaningUpright": "Hard work pays off.",
-    "meaningReversed": "Lack of focus.",
-    "imagePath": "tarot/97.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
-    "id": 98,
-    "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Nine",
-    "name": "Nine of Pentacles",
-    "slug": "nine-of-pentacles",
-    "keywordsUpright": [
-      "independence,abundance"
-    ],
-    "keywordsReversed": [
-      "insecurity"
-    ],
-    "meaningUpright": "Self-sufficiency.",
-    "meaningReversed": "Dependence.",
-    "imagePath": "tarot/98.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
-    "id": 99,
-    "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Ten",
-    "name": "Ten of Pentacles",
+    "name": "ten-of-pentacles",
     "slug": "ten-of-pentacles",
     "keywordsUpright": [
       "legacy,stability"
     ],
     "keywordsReversed": [
-      "instability"
+      "Long-term security."
     ],
     "meaningUpright": "Long-term security.",
     "meaningReversed": "Short-term focus.",
@@ -969,80 +1763,158 @@ export const TAROT_CARDS = [
     ]
   },
   {
-    "id": 100,
-    "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Page",
-    "name": "Page of Pentacles",
-    "slug": "page-of-pentacles",
+    "id": 89,
+    "arcana": "Major",
+    "suit": "Major",
+    "name": "the-hierophant",
+    "slug": "the-hierophant",
     "keywordsUpright": [
-      "learning,curiosity"
+      "tradition,guidance,beliefs"
     ],
     "keywordsReversed": [
-      "lack of follow-through"
+      "Seek wisdom from tradition or mentors."
     ],
-    "meaningUpright": "New practical path.",
-    "meaningReversed": "Missed opportunity.",
-    "imagePath": "tarot/100.png",
+    "meaningUpright": "Seek wisdom from tradition or mentors.",
+    "meaningReversed": "Breaking away from outdated systems.",
+    "imagePath": "tarot/59.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
     ]
   },
   {
-    "id": 101,
+    "id": 90,
     "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Knight",
-    "name": "Knight of Pentacles",
-    "slug": "knight-of-pentacles",
+    "suit": "Wands",
+    "name": "queen-of-wands",
+    "slug": "queen-of-wands",
     "keywordsUpright": [
-      "consistency,effort"
+      "confidence,magnetism"
     ],
     "keywordsReversed": [
-      "stagnation"
+      "Bold confidence."
     ],
-    "meaningUpright": "Steady progress.",
-    "meaningReversed": "Resistance to change.",
-    "imagePath": "tarot/101.png",
+    "meaningUpright": "Bold confidence.",
+    "meaningReversed": "Self-doubt.",
+    "imagePath": "tarot/116.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
     ]
   },
   {
-    "id": 102,
+    "id": 91,
     "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Queen",
-    "name": "Queen of Pentacles",
-    "slug": "queen-of-pentacles",
+    "suit": "Wands",
+    "name": "king-of-wands",
+    "slug": "king-of-wands",
     "keywordsUpright": [
-      "nurturing,security"
+      "vision,leadership"
     ],
     "keywordsReversed": [
-      "imbalance"
+      "Inspirational leader."
     ],
-    "meaningUpright": "Grounded care.",
-    "meaningReversed": "Overextension.",
-    "imagePath": "tarot/102.png",
+    "meaningUpright": "Inspirational leader.",
+    "meaningReversed": "Scattered focus.",
+    "imagePath": "tarot/117.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
     ]
   },
   {
-    "id": 103,
+    "id": 92,
+    "arcana": "Minor",
+    "suit": "Wands",
+    "name": "knight-of-wands",
+    "slug": "knight-of-wands",
+    "keywordsUpright": [
+      "bold action,adventure"
+    ],
+    "keywordsReversed": [
+      "Take action."
+    ],
+    "meaningUpright": "Take action.",
+    "meaningReversed": "Impulsiveness.",
+    "imagePath": "tarot/115.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 93,
+    "arcana": "Minor",
+    "suit": "Swords",
+    "name": "king-of-swords",
+    "slug": "king-of-swords",
+    "keywordsUpright": [
+      "logic",
+      "authority"
+    ],
+    "keywordsReversed": [
+      "Intellectual leadership."
+    ],
+    "meaningUpright": "Intellectual leadership.",
+    "meaningReversed": "Abuse of power.",
+    "imagePath": "tarot/131.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 94,
+    "arcana": "Minor",
+    "suit": "Swords",
+    "name": "queen-of-swords",
+    "slug": "queen-of-swords",
+    "keywordsUpright": [
+      "clarity",
+      "honesty"
+    ],
+    "keywordsReversed": [
+      "Clear communication."
+    ],
+    "meaningUpright": "Clear communication.",
+    "meaningReversed": "Emotional distance.",
+    "imagePath": "tarot/130.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 95,
+    "arcana": "Minor",
+    "suit": "Swords",
+    "name": "knight-of-swords",
+    "slug": "knight-of-swords",
+    "keywordsUpright": [
+      "decisive action"
+    ],
+    "keywordsReversed": [
+      "Bold mental action."
+    ],
+    "meaningUpright": "Bold mental action.",
+    "meaningReversed": "Rushing blindly.",
+    "imagePath": "tarot/129.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 96,
     "arcana": "Minor",
     "suit": "Pentacles",
-    "number": "King",
-    "name": "King of Pentacles",
+    "name": "king-of-pentacles",
     "slug": "king-of-pentacles",
     "keywordsUpright": [
       "success,leadership"
     ],
     "keywordsReversed": [
-      "greed"
+      "Material mastery."
     ],
     "meaningUpright": "Material mastery.",
     "meaningReversed": "Overfocus on wealth.",
@@ -1053,42 +1925,140 @@ export const TAROT_CARDS = [
     ]
   },
   {
-    "id": 132,
-    "arcana": "Minor",
-    "suit": "Pentacles",
-    "number": "Three",
-    "name": "Three of Pentacles",
-    "slug": "three-of-pentacles-alt",
+    "id": 97,
+    "arcana": "Major",
+    "suit": "Major",
+    "name": "the-hierophant",
+    "slug": "the-hierophant",
     "keywordsUpright": [
-      "teamwork,collaboration"
+      "tradition,guidance,beliefs"
     ],
     "keywordsReversed": [
-      "lack of coordination"
+      "Seek wisdom from tradition or mentors."
     ],
-    "meaningUpright": "Skill recognized.",
-    "meaningReversed": "Poor alignment.",
-    "imagePath": "tarot/132.png",
+    "meaningUpright": "Seek wisdom from tradition or mentors.",
+    "meaningReversed": "Breaking away from outdated systems.",
+    "imagePath": "tarot/59.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
     ]
   },
   {
-    "id": 133,
+    "id": 98,
     "arcana": "Minor",
     "suit": "Pentacles",
-    "number": "Two",
-    "name": "Two of Pentacles",
-    "slug": "two-of-pentacles-alt",
+    "name": "knight-of-pentacles",
+    "slug": "knight-of-pentacles",
     "keywordsUpright": [
-      "balance,juggling"
+      "consistency,effort"
     ],
     "keywordsReversed": [
-      "overwhelm"
+      "Steady progress."
     ],
-    "meaningUpright": "Managing many tasks.",
-    "meaningReversed": "Too many demands.",
-    "imagePath": "tarot/133.png",
+    "meaningUpright": "Steady progress.",
+    "meaningReversed": "Resistance to change.",
+    "imagePath": "tarot/101.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 99,
+    "arcana": "Minor",
+    "suit": "Cups",
+    "name": "king-of-cups",
+    "slug": "king-of-cups",
+    "keywordsUpright": [
+      "emotional balance,calm"
+    ],
+    "keywordsReversed": [
+      "Mastery of emotions."
+    ],
+    "meaningUpright": "Mastery of emotions.",
+    "meaningReversed": "Emotional control issues.",
+    "imagePath": "tarot/89.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 100,
+    "arcana": "Minor",
+    "suit": "Pentacles",
+    "name": "seven-of-pentacles",
+    "slug": "seven-of-pentacles",
+    "keywordsUpright": [
+      "patience,growth"
+    ],
+    "keywordsReversed": [
+      "Waiting for results."
+    ],
+    "meaningUpright": "Waiting for results.",
+    "meaningReversed": "Frustration.",
+    "imagePath": "tarot/96.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 101,
+    "arcana": "Minor",
+    "suit": "Wands",
+    "name": "page-of-wands",
+    "slug": "page-of-wands",
+    "keywordsUpright": [
+      "enthusiasm,curiosity"
+    ],
+    "keywordsReversed": [
+      "Creative message."
+    ],
+    "meaningUpright": "Creative message.",
+    "meaningReversed": "Scattered energy.",
+    "imagePath": "tarot/114.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 102,
+    "arcana": "Minor",
+    "suit": "Wands",
+    "name": "knight-of-wands",
+    "slug": "knight-of-wands",
+    "keywordsUpright": [
+      "bold action,adventure"
+    ],
+    "keywordsReversed": [
+      "Take action."
+    ],
+    "meaningUpright": "Take action.",
+    "meaningReversed": "Impulsiveness.",
+    "imagePath": "tarot/115.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 103,
+    "arcana": "Minor",
+    "suit": "Wands",
+    "name": "nine-of-wands",
+    "slug": "nine-of-wands",
+    "keywordsUpright": [
+      "resilience,persistence"
+    ],
+    "keywordsReversed": [
+      "Almost there."
+    ],
+    "meaningUpright": "Almost there.",
+    "meaningReversed": "Exhaustion.",
+    "imagePath": "tarot/112.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1098,18 +2068,17 @@ export const TAROT_CARDS = [
     "id": 104,
     "arcana": "Minor",
     "suit": "Wands",
-    "number": "Ace",
-    "name": "Ace of Wands",
-    "slug": "ace-of-wands",
+    "name": "eight-of-wands",
+    "slug": "eight-of-wands",
     "keywordsUpright": [
-      "inspiration,spark"
+      "momentum,speed"
     ],
     "keywordsReversed": [
-      "delays"
+      "Fast movement."
     ],
-    "meaningUpright": "Creative energy ignites.",
-    "meaningReversed": "Blocked momentum.",
-    "imagePath": "tarot/104.png",
+    "meaningUpright": "Fast movement.",
+    "meaningReversed": "Miscommunication.",
+    "imagePath": "tarot/111.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1118,15 +2087,35 @@ export const TAROT_CARDS = [
   {
     "id": 105,
     "arcana": "Minor",
+    "suit": "Swords",
+    "name": "nine-of-swords",
+    "slug": "nine-of-swords",
+    "keywordsUpright": [
+      "anxiety",
+      "fear"
+    ],
+    "keywordsReversed": [
+      "Mental stress."
+    ],
+    "meaningUpright": "Mental stress.",
+    "meaningReversed": "Relief arrives.",
+    "imagePath": "tarot/126.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 106,
+    "arcana": "Minor",
     "suit": "Wands",
-    "number": "Two",
-    "name": "Two of Wands",
+    "name": "two-of-wands",
     "slug": "two-of-wands",
     "keywordsUpright": [
       "planning,vision"
     ],
     "keywordsReversed": [
-      "indecision"
+      "Future planning."
     ],
     "meaningUpright": "Future planning.",
     "meaningReversed": "Hesitation.",
@@ -1137,42 +2126,21 @@ export const TAROT_CARDS = [
     ]
   },
   {
-    "id": 106,
-    "arcana": "Minor",
-    "suit": "Wands",
-    "number": "Three",
-    "name": "Three of Wands",
-    "slug": "three-of-wands",
-    "keywordsUpright": [
-      "expansion,foresight"
-    ],
-    "keywordsReversed": [
-      "setbacks"
-    ],
-    "meaningUpright": "Progress ahead.",
-    "meaningReversed": "Delays.",
-    "imagePath": "tarot/106.png",
-    "reversalProbability": 0.35,
-    "allowedSpreads": [
-      ""
-    ]
-  },
-  {
     "id": 107,
     "arcana": "Minor",
-    "suit": "Wands",
-    "number": "Four",
-    "name": "Four of Wands",
-    "slug": "four-of-wands",
+    "suit": "Swords",
+    "name": "seven-of-swords",
+    "slug": "seven-of-swords",
     "keywordsUpright": [
-      "celebration,stability"
+      "deception",
+      "strategy"
     ],
     "keywordsReversed": [
-      "tension"
+      "Hidden motives."
     ],
-    "meaningUpright": "Milestone reached.",
-    "meaningReversed": "Disruption.",
-    "imagePath": "tarot/107.png",
+    "meaningUpright": "Hidden motives.",
+    "meaningReversed": "Exposure.",
+    "imagePath": "tarot/124.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1182,14 +2150,13 @@ export const TAROT_CARDS = [
     "id": 108,
     "arcana": "Minor",
     "suit": "Wands",
-    "number": "Five",
-    "name": "Five of Wands",
+    "name": "five-of-wands",
     "slug": "five-of-wands",
     "keywordsUpright": [
       "competition,conflict"
     ],
     "keywordsReversed": [
-      "resolution"
+      "Clashing energies."
     ],
     "meaningUpright": "Clashing energies.",
     "meaningReversed": "Avoided conflict.",
@@ -1202,19 +2169,19 @@ export const TAROT_CARDS = [
   {
     "id": 109,
     "arcana": "Minor",
-    "suit": "Wands",
-    "number": "Six",
-    "name": "Six of Wands",
-    "slug": "six-of-wands",
+    "suit": "Swords",
+    "name": "five-of-swords",
+    "slug": "five-of-swords",
     "keywordsUpright": [
-      "victory,recognition"
+      "conflict",
+      "loss"
     ],
     "keywordsReversed": [
-      "ego"
+      "No real winners."
     ],
-    "meaningUpright": "Success recognized.",
-    "meaningReversed": "Delayed praise.",
-    "imagePath": "tarot/109.png",
+    "meaningUpright": "No real winners.",
+    "meaningReversed": "Letting go.",
+    "imagePath": "tarot/122.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1224,18 +2191,17 @@ export const TAROT_CARDS = [
     "id": 110,
     "arcana": "Minor",
     "suit": "Wands",
-    "number": "Seven",
-    "name": "Seven of Wands",
-    "slug": "seven-of-wands",
+    "name": "three-of-wands",
+    "slug": "three-of-wands",
     "keywordsUpright": [
-      "defense,courage"
+      "expansion,foresight"
     ],
     "keywordsReversed": [
-      "overwhelm"
+      "Progress ahead."
     ],
-    "meaningUpright": "Stand your ground.",
-    "meaningReversed": "Giving up.",
-    "imagePath": "tarot/110.png",
+    "meaningUpright": "Progress ahead.",
+    "meaningReversed": "Delays.",
+    "imagePath": "tarot/106.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1245,18 +2211,17 @@ export const TAROT_CARDS = [
     "id": 111,
     "arcana": "Minor",
     "suit": "Wands",
-    "number": "Eight",
-    "name": "Eight of Wands",
-    "slug": "eight-of-wands",
+    "name": "two-of-wands",
+    "slug": "two-of-wands",
     "keywordsUpright": [
-      "momentum,speed"
+      "planning,vision"
     ],
     "keywordsReversed": [
-      "delays"
+      "Future planning."
     ],
-    "meaningUpright": "Fast movement.",
-    "meaningReversed": "Miscommunication.",
-    "imagePath": "tarot/111.png",
+    "meaningUpright": "Future planning.",
+    "meaningReversed": "Hesitation.",
+    "imagePath": "tarot/105.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1266,18 +2231,17 @@ export const TAROT_CARDS = [
     "id": 112,
     "arcana": "Minor",
     "suit": "Wands",
-    "number": "Nine",
-    "name": "Nine of Wands",
-    "slug": "nine-of-wands",
+    "name": "ace-of-wands",
+    "slug": "ace-of-wands",
     "keywordsUpright": [
-      "resilience,persistence"
+      "inspiration,spark"
     ],
     "keywordsReversed": [
-      "burnout"
+      "Creative energy ignites."
     ],
-    "meaningUpright": "Almost there.",
-    "meaningReversed": "Exhaustion.",
-    "imagePath": "tarot/112.png",
+    "meaningUpright": "Creative energy ignites.",
+    "meaningReversed": "Blocked momentum.",
+    "imagePath": "tarot/104.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1286,19 +2250,19 @@ export const TAROT_CARDS = [
   {
     "id": 113,
     "arcana": "Minor",
-    "suit": "Wands",
-    "number": "Ten",
-    "name": "Ten of Wands",
-    "slug": "ten-of-wands",
+    "suit": "Swords",
+    "name": "page-of-swords",
+    "slug": "page-of-swords",
     "keywordsUpright": [
-      "burden,overload"
+      "curiosity",
+      "truth-seeking"
     ],
     "keywordsReversed": [
-      "release"
+      "New idea or message."
     ],
-    "meaningUpright": "Too much responsibility.",
-    "meaningReversed": "Letting go.",
-    "imagePath": "tarot/113.png",
+    "meaningUpright": "New idea or message.",
+    "meaningReversed": "Misinformation.",
+    "imagePath": "tarot/128.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1307,19 +2271,19 @@ export const TAROT_CARDS = [
   {
     "id": 114,
     "arcana": "Minor",
-    "suit": "Wands",
-    "number": "Page",
-    "name": "Page of Wands",
-    "slug": "page-of-wands",
+    "suit": "Swords",
+    "name": "ten-of-swords",
+    "slug": "ten-of-swords",
     "keywordsUpright": [
-      "enthusiasm,curiosity"
+      "betrayal",
+      "ending"
     ],
     "keywordsReversed": [
-      "lack of direction"
+      "Painful ending."
     ],
-    "meaningUpright": "Creative message.",
-    "meaningReversed": "Scattered energy.",
-    "imagePath": "tarot/114.png",
+    "meaningUpright": "Painful ending.",
+    "meaningReversed": "Recovery begins.",
+    "imagePath": "tarot/127.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1328,19 +2292,19 @@ export const TAROT_CARDS = [
   {
     "id": 115,
     "arcana": "Minor",
-    "suit": "Wands",
-    "number": "Knight",
-    "name": "Knight of Wands",
-    "slug": "knight-of-wands",
+    "suit": "Swords",
+    "name": "nine-of-swords",
+    "slug": "nine-of-swords",
     "keywordsUpright": [
-      "bold action,adventure"
+      "anxiety",
+      "fear"
     ],
     "keywordsReversed": [
-      "recklessness"
+      "Mental stress."
     ],
-    "meaningUpright": "Take action.",
-    "meaningReversed": "Impulsiveness.",
-    "imagePath": "tarot/115.png",
+    "meaningUpright": "Mental stress.",
+    "meaningReversed": "Relief arrives.",
+    "imagePath": "tarot/126.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1349,19 +2313,19 @@ export const TAROT_CARDS = [
   {
     "id": 116,
     "arcana": "Minor",
-    "suit": "Wands",
-    "number": "Queen",
-    "name": "Queen of Wands",
-    "slug": "queen-of-wands",
+    "suit": "Swords",
+    "name": "eight-of-swords",
+    "slug": "eight-of-swords",
     "keywordsUpright": [
-      "confidence,magnetism"
+      "restriction",
+      "doubt"
     ],
     "keywordsReversed": [
-      "insecurity"
+      "Feeling trapped."
     ],
-    "meaningUpright": "Bold confidence.",
-    "meaningReversed": "Self-doubt.",
-    "imagePath": "tarot/116.png",
+    "meaningUpright": "Feeling trapped.",
+    "meaningReversed": "Breaking free.",
+    "imagePath": "tarot/125.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1370,19 +2334,19 @@ export const TAROT_CARDS = [
   {
     "id": 117,
     "arcana": "Minor",
-    "suit": "Wands",
-    "number": "King",
-    "name": "King of Wands",
-    "slug": "king-of-wands",
+    "suit": "Swords",
+    "name": "seven-of-swords",
+    "slug": "seven-of-swords",
     "keywordsUpright": [
-      "vision,leadership"
+      "deception",
+      "strategy"
     ],
     "keywordsReversed": [
-      "impulsiveness"
+      "Hidden motives."
     ],
-    "meaningUpright": "Inspirational leader.",
-    "meaningReversed": "Scattered focus.",
-    "imagePath": "tarot/117.png",
+    "meaningUpright": "Hidden motives.",
+    "meaningReversed": "Exposure.",
+    "imagePath": "tarot/124.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1392,19 +2356,18 @@ export const TAROT_CARDS = [
     "id": 118,
     "arcana": "Minor",
     "suit": "Swords",
-    "number": "Ace",
-    "name": "Ace of Swords",
-    "slug": "ace-of-swords",
+    "name": "six-of-swords",
+    "slug": "six-of-swords",
     "keywordsUpright": [
-      "clarity",
-      "truth"
+      "transition",
+      "moving on"
     ],
     "keywordsReversed": [
-      "confusion"
+      "Leaving turbulence."
     ],
-    "meaningUpright": "Mental clarity.",
-    "meaningReversed": "Clouded thinking.",
-    "imagePath": "tarot/118.png",
+    "meaningUpright": "Leaving turbulence.",
+    "meaningReversed": "Difficulty moving on.",
+    "imagePath": "tarot/123.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1414,19 +2377,18 @@ export const TAROT_CARDS = [
     "id": 119,
     "arcana": "Minor",
     "suit": "Swords",
-    "number": "Two",
-    "name": "Two of Swords",
-    "slug": "two-of-swords",
+    "name": "four-of-swords",
+    "slug": "four-of-swords",
     "keywordsUpright": [
-      "indecision",
-      "stalemate"
+      "rest",
+      "recovery"
     ],
     "keywordsReversed": [
-      "decision"
+      "Rest and restore."
     ],
-    "meaningUpright": "Avoiding choice.",
-    "meaningReversed": "Decision time.",
-    "imagePath": "tarot/119.png",
+    "meaningUpright": "Rest and restore.",
+    "meaningReversed": "Ignoring rest.",
+    "imagePath": "tarot/121.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1436,15 +2398,14 @@ export const TAROT_CARDS = [
     "id": 120,
     "arcana": "Minor",
     "suit": "Swords",
-    "number": "Three",
-    "name": "Three of Swords",
+    "name": "three-of-swords",
     "slug": "three-of-swords",
     "keywordsUpright": [
       "heartbreak",
       "pain"
     ],
     "keywordsReversed": [
-      "healing"
+      "Emotional pain."
     ],
     "meaningUpright": "Emotional pain.",
     "meaningReversed": "Healing begins.",
@@ -1458,19 +2419,18 @@ export const TAROT_CARDS = [
     "id": 121,
     "arcana": "Minor",
     "suit": "Swords",
-    "number": "Four",
-    "name": "Four of Swords",
-    "slug": "four-of-swords",
+    "name": "three-of-swords",
+    "slug": "three-of-swords",
     "keywordsUpright": [
-      "rest",
-      "recovery"
+      "heartbreak",
+      "pain"
     ],
     "keywordsReversed": [
-      "burnout"
+      "Emotional pain."
     ],
-    "meaningUpright": "Rest and restore.",
-    "meaningReversed": "Ignoring rest.",
-    "imagePath": "tarot/121.png",
+    "meaningUpright": "Emotional pain.",
+    "meaningReversed": "Healing begins.",
+    "imagePath": "tarot/120.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1480,19 +2440,18 @@ export const TAROT_CARDS = [
     "id": 122,
     "arcana": "Minor",
     "suit": "Swords",
-    "number": "Five",
-    "name": "Five of Swords",
-    "slug": "five-of-swords",
+    "name": "two-of-swords",
+    "slug": "two-of-swords",
     "keywordsUpright": [
-      "conflict",
-      "loss"
+      "indecision",
+      "stalemate"
     ],
     "keywordsReversed": [
-      "resolution"
+      "Avoiding choice."
     ],
-    "meaningUpright": "No real winners.",
-    "meaningReversed": "Letting go.",
-    "imagePath": "tarot/122.png",
+    "meaningUpright": "Avoiding choice.",
+    "meaningReversed": "Decision time.",
+    "imagePath": "tarot/119.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1501,20 +2460,18 @@ export const TAROT_CARDS = [
   {
     "id": 123,
     "arcana": "Minor",
-    "suit": "Swords",
-    "number": "Six",
-    "name": "Six of Swords",
-    "slug": "six-of-swords",
+    "suit": "Pentacles",
+    "name": "ace-of-pentacles",
+    "slug": "ace-of-pentacles",
     "keywordsUpright": [
-      "transition",
-      "moving on"
+      "opportunity,prosperity"
     ],
     "keywordsReversed": [
-      "resistance"
+      "A tangible new beginning."
     ],
-    "meaningUpright": "Leaving turbulence.",
-    "meaningReversed": "Difficulty moving on.",
-    "imagePath": "tarot/123.png",
+    "meaningUpright": "A tangible new beginning.",
+    "meaningReversed": "Opportunity delayed.",
+    "imagePath": "tarot/90.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1523,20 +2480,18 @@ export const TAROT_CARDS = [
   {
     "id": 124,
     "arcana": "Minor",
-    "suit": "Swords",
-    "number": "Seven",
-    "name": "Seven of Swords",
-    "slug": "seven-of-swords",
+    "suit": "Pentacles",
+    "name": "two-of-pentacles-alt",
+    "slug": "two-of-pentacles-alt",
     "keywordsUpright": [
-      "deception",
-      "strategy"
+      "balance,juggling"
     ],
     "keywordsReversed": [
-      "truth revealed"
+      "Managing many tasks."
     ],
-    "meaningUpright": "Hidden motives.",
-    "meaningReversed": "Exposure.",
-    "imagePath": "tarot/124.png",
+    "meaningUpright": "Managing many tasks.",
+    "meaningReversed": "Too many demands.",
+    "imagePath": "tarot/133.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1545,20 +2500,18 @@ export const TAROT_CARDS = [
   {
     "id": 125,
     "arcana": "Minor",
-    "suit": "Swords",
-    "number": "Eight",
-    "name": "Eight of Swords",
-    "slug": "eight-of-swords",
+    "suit": "Pentacles",
+    "name": "ten-of-pentacles",
+    "slug": "ten-of-pentacles",
     "keywordsUpright": [
-      "restriction",
-      "doubt"
+      "legacy,stability"
     ],
     "keywordsReversed": [
-      "freedom"
+      "Long-term security."
     ],
-    "meaningUpright": "Feeling trapped.",
-    "meaningReversed": "Breaking free.",
-    "imagePath": "tarot/125.png",
+    "meaningUpright": "Long-term security.",
+    "meaningReversed": "Short-term focus.",
+    "imagePath": "tarot/99.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1567,20 +2520,18 @@ export const TAROT_CARDS = [
   {
     "id": 126,
     "arcana": "Minor",
-    "suit": "Swords",
-    "number": "Nine",
-    "name": "Nine of Swords",
-    "slug": "nine-of-swords",
+    "suit": "Pentacles",
+    "name": "queen-of-pentacles",
+    "slug": "queen-of-pentacles",
     "keywordsUpright": [
-      "anxiety",
-      "fear"
+      "nurturing,security"
     ],
     "keywordsReversed": [
-      "relief"
+      "Grounded care."
     ],
-    "meaningUpright": "Mental stress.",
-    "meaningReversed": "Relief arrives.",
-    "imagePath": "tarot/126.png",
+    "meaningUpright": "Grounded care.",
+    "meaningReversed": "Overextension.",
+    "imagePath": "tarot/102.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1589,20 +2540,18 @@ export const TAROT_CARDS = [
   {
     "id": 127,
     "arcana": "Minor",
-    "suit": "Swords",
-    "number": "Ten",
-    "name": "Ten of Swords",
-    "slug": "ten-of-swords",
+    "suit": "Pentacles",
+    "name": "seven-of-pentacles",
+    "slug": "seven-of-pentacles",
     "keywordsUpright": [
-      "betrayal",
-      "ending"
+      "patience,growth"
     ],
     "keywordsReversed": [
-      "recovery"
+      "Waiting for results."
     ],
-    "meaningUpright": "Painful ending.",
-    "meaningReversed": "Recovery begins.",
-    "imagePath": "tarot/127.png",
+    "meaningUpright": "Waiting for results.",
+    "meaningReversed": "Frustration.",
+    "imagePath": "tarot/96.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1611,20 +2560,18 @@ export const TAROT_CARDS = [
   {
     "id": 128,
     "arcana": "Minor",
-    "suit": "Swords",
-    "number": "Page",
-    "name": "Page of Swords",
-    "slug": "page-of-swords",
+    "suit": "Pentacles",
+    "name": "eight-of-pentacles",
+    "slug": "eight-of-pentacles",
     "keywordsUpright": [
-      "curiosity",
-      "truth-seeking"
+      "skill-building,focus"
     ],
     "keywordsReversed": [
-      "gossip"
+      "Hard work pays off."
     ],
-    "meaningUpright": "New idea or message.",
-    "meaningReversed": "Misinformation.",
-    "imagePath": "tarot/128.png",
+    "meaningUpright": "Hard work pays off.",
+    "meaningReversed": "Lack of focus.",
+    "imagePath": "tarot/97.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1633,19 +2580,18 @@ export const TAROT_CARDS = [
   {
     "id": 129,
     "arcana": "Minor",
-    "suit": "Swords",
-    "number": "Knight",
-    "name": "Knight of Swords",
-    "slug": "knight-of-swords",
+    "suit": "Pentacles",
+    "name": "six-of-pentacles",
+    "slug": "six-of-pentacles",
     "keywordsUpright": [
-      "decisive action"
+      "generosity,balance"
     ],
     "keywordsReversed": [
-      "recklessness"
+      "Fair exchange."
     ],
-    "meaningUpright": "Bold mental action.",
-    "meaningReversed": "Rushing blindly.",
-    "imagePath": "tarot/129.png",
+    "meaningUpright": "Fair exchange.",
+    "meaningReversed": "Strings attached.",
+    "imagePath": "tarot/95.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1654,20 +2600,18 @@ export const TAROT_CARDS = [
   {
     "id": 130,
     "arcana": "Minor",
-    "suit": "Swords",
-    "number": "Queen",
-    "name": "Queen of Swords",
-    "slug": "queen-of-swords",
+    "suit": "Pentacles",
+    "name": "five-of-pentacles",
+    "slug": "five-of-pentacles",
     "keywordsUpright": [
-      "clarity",
-      "honesty"
+      "hardship,loss"
     ],
     "keywordsReversed": [
-      "coldness"
+      "Material struggle."
     ],
-    "meaningUpright": "Clear communication.",
-    "meaningReversed": "Emotional distance.",
-    "imagePath": "tarot/130.png",
+    "meaningUpright": "Material struggle.",
+    "meaningReversed": "Help is available.",
+    "imagePath": "tarot/94.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
@@ -1676,20 +2620,58 @@ export const TAROT_CARDS = [
   {
     "id": 131,
     "arcana": "Minor",
-    "suit": "Swords",
-    "number": "King",
-    "name": "King of Swords",
-    "slug": "king-of-swords",
+    "suit": "Pentacles",
+    "name": "four-of-pentacles",
+    "slug": "four-of-pentacles",
     "keywordsUpright": [
-      "logic",
-      "authority"
+      "security,control"
     ],
     "keywordsReversed": [
-      "manipulation"
+      "Holding tightly."
     ],
-    "meaningUpright": "Intellectual leadership.",
-    "meaningReversed": "Abuse of power.",
-    "imagePath": "tarot/131.png",
+    "meaningUpright": "Holding tightly.",
+    "meaningReversed": "Releasing control.",
+    "imagePath": "tarot/93.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 132,
+    "arcana": "Minor",
+    "suit": "Pentacles",
+    "name": "page-of-pentacles",
+    "slug": "page-of-pentacles",
+    "keywordsUpright": [
+      "learning,curiosity"
+    ],
+    "keywordsReversed": [
+      "New practical path."
+    ],
+    "meaningUpright": "New practical path.",
+    "meaningReversed": "Missed opportunity.",
+    "imagePath": "tarot/100.png",
+    "reversalProbability": 0.35,
+    "allowedSpreads": [
+      ""
+    ]
+  },
+  {
+    "id": 133,
+    "arcana": "Minor",
+    "suit": "Pentacles",
+    "name": "two-of-pentacles-alt",
+    "slug": "two-of-pentacles-alt",
+    "keywordsUpright": [
+      "balance,juggling"
+    ],
+    "keywordsReversed": [
+      "Managing many tasks."
+    ],
+    "meaningUpright": "Managing many tasks.",
+    "meaningReversed": "Too many demands.",
+    "imagePath": "tarot/133.png",
     "reversalProbability": 0.35,
     "allowedSpreads": [
       ""
