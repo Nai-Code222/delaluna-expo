@@ -1,5 +1,7 @@
 // src/types/horoscope.types.ts
 
+import { MoonPhaseDetails } from "./moon-phases.type";
+
 export interface HoroscopeResult {
 
   // Core guidance
@@ -16,7 +18,7 @@ export interface HoroscopeResult {
   // Astrology + tarot
   moon?: string;
   planetsRetrograde?: string[];
-  moonPhaseDetails?: string[];
+  moonPhaseDetails?: string;
   transits?: string;
   tarot?: string;
 
