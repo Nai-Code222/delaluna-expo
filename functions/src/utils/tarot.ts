@@ -1,5 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 
+// TODO: Remove file: Unused
+
 const TAROT_DECK = [
   {
     id: "the_fool",
