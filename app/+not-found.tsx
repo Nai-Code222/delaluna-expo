@@ -1,11 +1,12 @@
-import { Link, router, Stack } from 'expo-router';
 import React from 'react';
+
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 
+import { Link, router, Stack } from 'expo-router';
 
 export default function NotFoundScreen() {
   function goToWelcomeScreen(): void {
-    router.replace('/welcome')
+    router.replace('/(main)')
   }
 
   return (

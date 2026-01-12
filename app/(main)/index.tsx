@@ -1,5 +1,5 @@
-import dayjs from "dayjs";
 import React, { useContext, useEffect, useRef, useState, useCallback } from "react";
+
 import {
   View,
   Text,
@@ -10,20 +10,26 @@ import {
   RefreshControl,
   ScrollView,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { router, useLocalSearchParams } from "expo-router";
+
+import dayjs, { tz } from "dayjs";
+import { DateTime } from "luxon";
+import { getDoc, doc } from "firebase/firestore";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import MoonView from "@/components/home/moon-view.component";
+import SectionTitle from "@/components/typography/section-title";
+import useRenderBackground from "@/hooks/useRenderBackground";
+import { scale } from "@/utils/responsive";
+import { useAuth } from "@/backend/auth-context";
+
+import DateSwitcher from "../../src/components/component-utils/date-switcher.component";
 import HeaderNav from "../../src/components/component-utils/header-nav";
-import { ThemeContext } from "../theme-context";
 import HomeSignsDisplay from "../../src/components/home/home-signs-display.component";
 import HomeTextBox from "../../src/components/home/home-text-box.component";
-import useRenderBackground from "@/hooks/useRenderBackground";
-import DateSwitcher from "../../src/components/component-utils/date-switcher.component";
+import { ThemeContext } from "../theme-context";
 import { db } from "../../firebaseConfig";
-import { getDoc, doc } from "firebase/firestore";
-import { useAuth } from "@/backend/auth-context";
-import { Ionicons } from "@expo/vector-icons";
-import { scale } from "@/utils/responsive";
-
 
 export default function HomeScreen() {
   const {
@@ -74,7 +80,7 @@ export default function HomeScreen() {
     setRefreshing(true);
 
     try {
-      // 🔮 Trigger birth chart generation on pull-to-refresh
+      // Trigger birth chart regeneration if needed
       if (birthChartStatus !== "processing") {
         regenerateBirthChart();
       }
@@ -82,25 +88,26 @@ export default function HomeScreen() {
       // Optional: re-fetch user doc
       const snap = await getDoc(doc(db, "users", authUser.uid));
       if (snap.exists()) {
-        console.log("Manually refreshed user data:", snap.data());
+        console.log("✅ Manually refreshed user data");
       }
     } catch (e) {
-      console.warn("Refresh failed:", e);
+      console.warn("⚠️ Refresh failed:", e);
     } finally {
       setRefreshing(false);
     }
   }, [authUser?.uid, birthChartStatus, regenerateBirthChart]);
 
-
   // Auth guard
   useEffect(() => {
-    if (isAppReady === false && !authUser) console.log("/(auth)/welcome");
+    if (isAppReady === false && !authUser) {
+      console.log("Redirecting to /(auth)/welcome");
+    }
   }, [isAppReady, authUser]);
 
   // Background renderer
   const renderBackground = useRenderBackground();
 
-  // ⏳ While auth/profile loading
+  // Loading state
   if (!isAppReady) {
     return renderBackground(
       <View style={styles.loader}>
@@ -113,27 +120,23 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <HeaderNav
         title="Home"
-
         rightIconName="person-circle-outline"
         onRightPress={goToProfile}
       />
 
-      {/* Wrap main content with top offset */}
       <View style={[styles.mainContent, { marginTop: HEADER_HEIGHT }]}>
-        <View style={[{ width: '100%' }]}>
-          {profile && (
+        <View style={{ width: '100%' }}>
+          {profile?.natalChart?.bigThree && (
             <HomeSignsDisplay
-              sun={profile.sunSign}
-              moon={profile.moonSign}
-              rising={profile.risingSign}
+              sun={profile.natalChart.bigThree.sun}
+              moon={profile.natalChart.bigThree.moon}
+              rising={profile.natalChart.bigThree.rising}
             />
           )}
         </View>
 
-        {/* 🌌 Birth Chart Section */}
+        {/* Birth Chart Section */}
         <View style={{ width: "100%", marginBottom: 16 }}>
-          <Text style={styles.sectionTitle}>Birth Chart</Text>
-
           {birthChartLoading && (
             <Text style={styles.subtleText}>
               Generating your birth chart…
@@ -142,7 +145,7 @@ export default function HomeScreen() {
 
           {!birthChartLoading && !birthChart && (
             <Text style={styles.subtleText}>
-              Your birth chart isn’t ready yet.
+              Your birth chart isn't ready yet.
             </Text>
           )}
 
@@ -163,6 +166,7 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
+
         {availableDates?.length > 0 && selectedDate && (
           <DateSwitcher
             value={selectedDate}
@@ -170,6 +174,7 @@ export default function HomeScreen() {
             dates={availableDates}
           />
         )}
+
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           refreshControl={
@@ -181,67 +186,91 @@ export default function HomeScreen() {
           }
         >
           <View style={styles.content}>
-            <View style={styles.content}>
-              <HomeTextBox sectionName="quote" title="Quote" content={selectedHoroscope?.quote} />
+            <SectionTitle sectionName="quote" title="Quote" />
+            <HomeTextBox sectionName="quote" content={selectedHoroscope?.quote} />
 
-              {selectedHoroscope?.advice && (
-                <HomeTextBox sectionName="advice" title="Advice" content={selectedHoroscope.advice} />
-              )}
+            {selectedHoroscope?.advice && (
+              <>
+                <SectionTitle sectionName="advice" title="Advice" />
+                <HomeTextBox sectionName="advice" content={selectedHoroscope.advice} />
+              </>
+            )}
 
-              {selectedHoroscope?.do && (
-                <HomeTextBox sectionName="dos" title="Do's" content={selectedHoroscope.do} />
-              )}
+            {selectedHoroscope?.do && (
+              <>
+                <SectionTitle sectionName="dos" title="Do's" />
+                <HomeTextBox sectionName="dos" content={selectedHoroscope.do} />
+              </>
+            )}
 
-              {selectedHoroscope?.dont && (
-                <HomeTextBox sectionName="donts" title="Don'ts" content={selectedHoroscope.dont} />
-              )}
+            {selectedHoroscope?.dont && (
+              <>
+                <SectionTitle sectionName="donts" title="Don'ts" />
+                <HomeTextBox sectionName="donts" content={selectedHoroscope.dont} />
+              </>
+            )}
 
-              {selectedHoroscope?.affirmation && (
-                <HomeTextBox sectionName="affirmation" title="Affirmation" content={selectedHoroscope.affirmation} />
-              )}
+            {selectedHoroscope?.affirmation && (
+              <>
+                <SectionTitle sectionName="affirmation" title="Affirmation" />
+                <HomeTextBox sectionName="affirmation" content={selectedHoroscope.affirmation} />
+              </>
+            )}
 
-              {selectedCards && selectedCards.length > 0 && selectedHoroscope?.tarot && (
+            {selectedCards && selectedCards.length > 0 && selectedHoroscope?.tarot && (
+              <>
+                <SectionTitle sectionName="tarot" title="Today's Cards" />
                 <HomeTextBox
                   sectionName="tarot"
-                  title="Today's Cards"
                   content={selectedHoroscope.tarot}
                   cards={selectedCards}
                 />
-              )}
+              </>
+            )}
 
-              <HomeTextBox sectionName="message" title="Message in a Bottle" />
+            <>
+              <SectionTitle sectionName="message" title="Message in a Bottle" />
+              <HomeTextBox sectionName="message" />
+            </>
 
-              {selectedHoroscope?.moonPhaseDetails && (
-                <HomeTextBox sectionName="moonPhaseDetails" title="Moon Phase" content={selectedHoroscope.moonPhaseDetails} />
-              )}
+            <SectionTitle sectionName="moon" title="Moon Phase" />
+            <MoonView
+              moon={selectedHoroscope?.moon}
+              moonPhaseDetails={selectedHoroscope?.moonPhaseDetails}
+            />
 
-              {selectedHoroscope?.moon && (
-                <HomeTextBox sectionName="moon" title="" content={selectedHoroscope?.moon} />
-              )}
+            {selectedHoroscope?.planetsRetrograde && (
+              <>
+                <SectionTitle sectionName="retrograde" title="Planets in Retrograde" />
+                <HomeTextBox sectionName="retrograde" content={selectedHoroscope.planetsRetrograde} />
+              </>
+            )}
 
-              {selectedHoroscope?.planetsRetrograde && (
-                <HomeTextBox sectionName="retrograde" title="Planets in Retrograde" content={selectedHoroscope.planetsRetrograde} />
-              )}
+            {selectedHoroscope?.newLove && (
+              <>
+                <SectionTitle sectionName="newLove" title="New Love" />
+                <HomeTextBox sectionName="newLove" content={selectedHoroscope.newLove} />
+              </>
+            )}
 
-              {selectedHoroscope?.newLove && (
-                <HomeTextBox sectionName="newLove" title="New Love" content={selectedHoroscope.newLove} />
-              )}
+            {selectedHoroscope?.returns && (
+              <>
+                <SectionTitle sectionName="returns" title="Returns" />
+                <HomeTextBox sectionName="returns" content={selectedHoroscope.returns} />
+              </>
+            )}
 
-              {selectedHoroscope?.returns && (
-                              <HomeTextBox sectionName="returns" title="Returns" content={selectedHoroscope.returns} />
-
-              )}
-
-              {selectedHoroscope?.luckyNumbers && (
-                <HomeTextBox sectionName="luckyNumbers" title="Lucky Numbers" content={selectedHoroscope.luckyNumbers} />
-              )}
-            </View>
+            {selectedHoroscope?.luckyNumbers && (
+              <>
+                <SectionTitle sectionName="luckyNumbers" title="Lucky Numbers" />
+                <HomeTextBox sectionName="luckyNumbers" content={selectedHoroscope.luckyNumbers} />
+              </>
+            )}
           </View>
         </ScrollView>
       </View>
     </View>
   );
-
 }
 
 const styles = StyleSheet.create({

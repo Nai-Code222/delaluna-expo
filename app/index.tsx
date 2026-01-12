@@ -1,12 +1,20 @@
 import React, { useEffect, useRef } from 'react';
+
 import { View, StyleSheet, ImageBackground } from 'react-native';
-import LottieView from 'lottie-react-native';
+
 import { router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useAuth } from '../src/backend/auth-context';
+
+import LottieView from 'lottie-react-native';
 import { Buffer } from "buffer";
+import { StatusBar } from 'expo-status-bar';
+
 import { scale } from '@/utils/responsive';
+
+import { useAuth } from '../src/backend/auth-context';
+
 global.Buffer = Buffer;
+
+//TODO: Add Animation back in
 
 export default function SplashScreen() {
   const animationRef = useRef<LottieView>(null);
@@ -27,6 +35,7 @@ export default function SplashScreen() {
 
     Promise.all([minTimer, authReady]).then(() => {
       router.replace(authUser ? '/(main)' : '/(auth)/welcome');
+      //router.replace('/test-signs' as unknown as any); // TEMP SKIP AUTH FOR TESTING
     });
   }, [authUser, initializing]);
 
@@ -37,12 +46,12 @@ export default function SplashScreen() {
       style={styles.background}
       resizeMode="cover">
       <View style={styles.overlay}>
-        <LottieView
+        {/* <LottieView
               source={require('@/assets/animations/splash-loop.json')}
               autoPlay
               loop
               style={styles.animation}  // absolute fill inside top container
-            />
+            /> */}
       </View>
       <StatusBar style="light" />
 

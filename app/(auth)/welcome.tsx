@@ -8,15 +8,12 @@ import PrimaryButton from '@/components/buttons/primary-button-component';
 import SecondaryButton from '@/components/buttons/secondary-button-component';
 import ButtonText from '@/components/typography/button-text';
 import { scale, verticalScale } from '@/utils/responsive';
-import { useAuth } from '@/backend/auth-context';
+
 
 export default function Welcome() {
   const { width } = useWindowDimensions();
   const logoW = Math.min(width * 0.72, scale(360));
   const logoH = logoW * 0.95; // adjust to your logo aspect
-  const { authUser, initializing } = useAuth();
-
-  
 
   return (
     <View style={styles.container}>
@@ -32,22 +29,21 @@ export default function Welcome() {
 
       {/* TOP: animation fills, logo centered on top */}
       <View pointerEvents="none" style={styles.topContainer}>
-        <LottieView
+        {/* <LottieView
           source={require('@/assets/animations/galaxy.json')}
           autoPlay
           loop
           style={styles.topAnimation}  // absolute fill inside top container
-        />
-
+        /> */}
         {/* centered logo (over the animation) */}
         <View pointerEvents="none" style={styles.logoWrap}>
-          <LottieView 
-            source={require('@/assets/animations/logo.json')}
-            autoPlay
-            loop={false}
-            style={{ width: '100%', aspectRatio: 1 / 0.95 /* W/H */, height: undefined }}
-            
-          />
+          
+          {/* <LottieView
+          source={require('@/assets/animations/logo.json')}
+          autoPlay
+          loop={false}
+          style={{ width: '100%', aspectRatio: 1 / 0.95 , height: undefined }}
+        /> */}
         </View>
       </View>
 
