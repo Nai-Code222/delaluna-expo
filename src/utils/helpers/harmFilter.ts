@@ -24,6 +24,9 @@ export function checkForHarm(text: string): HarmCheckResult {
     "hurt myself",
     "cut myself",
     "i don't want to live",
+    "feel like dying",
+    "want to die",
+    "take my own life",
   ];
 
   if (selfHarmPatterns.some((phrase) => value.includes(phrase))) {
@@ -32,6 +35,7 @@ export function checkForHarm(text: string): HarmCheckResult {
 
   // Harm to others / violence
   const violencePatterns = [
+    "kill",
     "kill him",
     "kill her",
     "kill them",
@@ -44,6 +48,14 @@ export function checkForHarm(text: string): HarmCheckResult {
     "stab him",
     "stab her",
     "stab them",
+    "beat him",
+    "beat her",
+    "beat them",
+    "bomb",
+    "bombing",
+    "blow up",
+    "assassinate",
+    "assassination",
   ];
 
   if (violencePatterns.some((phrase) => value.includes(phrase))) {
@@ -52,6 +64,7 @@ export function checkForHarm(text: string): HarmCheckResult {
 
   // Crimes / planned illegal activity (keep this broad, not a how-to)
   const crimePatterns = [
+    "kill",
     "rob a",
     "robbery",
     "burn his house",
@@ -60,6 +73,27 @@ export function checkForHarm(text: string): HarmCheckResult {
     "vandalize",
     "break in",
     "breaking in",
+    "drug deal",
+    "drug dealer",
+    "hijack",
+    "hijacking",
+    "smuggle",
+    "smuggling",
+    "fraud",
+    "scam",
+    "scamming",
+    "steal",
+    "theft",
+    "shoplift",
+    "burglary",
+    "assault",
+    "mugging",
+    "extort",
+    "extortion",
+    "cyber attack",
+    "cyberattack",
+    "terrorism",
+    "terrorist",
   ];
 
   if (crimePatterns.some((phrase) => value.includes(phrase))) {
