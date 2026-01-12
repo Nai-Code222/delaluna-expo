@@ -22,7 +22,7 @@ import type { DailyCardPack } from "@/model/daily-cards.model";
 export interface AnswerRecord {
   firstName: string;
   lastName: string;
-  pronouns: string;          // required, never null in UI
+  pronouns: string;
 
   birthday: Date | null;
   birthtime: Date | null;
