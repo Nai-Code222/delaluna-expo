@@ -43,7 +43,6 @@ const SECTION_ICONS: Record<SectionName, { name: keyof typeof Ionicons.glyphMap;
 
 interface HomeTextBoxProps {
   sectionName: SectionName;
-  title: string;
   content?: string | string[];
   style?: ViewStyle;
   cards?: DrawnTarotCard[];
@@ -52,7 +51,6 @@ interface HomeTextBoxProps {
 
 export default function HomeTextBox({
   sectionName,
-  title,
   content = "",
   style,
   cards,
@@ -62,7 +60,7 @@ export default function HomeTextBox({
   const isTarotSection = sectionName === "tarot";
   const isMoonPhase = sectionName === "moonPhaseDetails";
   const isListStyleSection = Array.isArray(content);
-  const isHoriListSection = sectionName === "newLove" || sectionName === "luckyNumbers" || sectionName === "returns";
+  const isHoriListSection = sectionName === "newLove" || sectionName === "luckyNumbers" || sectionName === "returns" || sectionName == "retrograde";
   const iconSize = scale(20);
 
   // Get icon config for this section
@@ -80,15 +78,6 @@ export default function HomeTextBox({
 
   return (
     <View style={[styles.container, style]}>
-      <View style={styles.titleContainer}>
-        <Ionicons
-          name={iconConfig.name}
-          size={iconSize}
-          color={"#ffffffff"}
-        />
-        <Text style={styles.title}>{title}</Text>
-      </View>
-
       {isTarotSection ? (
         <>
           {/* TAROT IMAGE */}
@@ -138,18 +127,6 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 8,
     marginBottom: 25,
-  },
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "center",
-    gap: 6,
-    marginBottom: 6,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#5BC0BE",
   },
   box: {
     width: "100%",
