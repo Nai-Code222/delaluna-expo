@@ -4,7 +4,7 @@ import { CompatibilityScores } from "./models/connection.model";
 import { calculateOverallCompatibility } from "./utils/calculateOverallCompatibility";
 import { db } from "./initAdmin";
 import * as logger from "firebase-functions/logger";
-import { calculateSignsInternal } from "./utils/calcSigns";
+import { calculateSignsInternal } from "./utils/calculateSigns";
 
 /**
  * onGeminiCompatibility

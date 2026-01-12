@@ -3,7 +3,7 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import * as logger from "firebase-functions/logger";
 import { z } from "zod";
 import { buildCompatibilityPrompt } from "../prompts/buildCompatibilityPrompt";
-import { calculateSignsInternal } from "../utils/calcSigns";
+import { calculateSignsInternal } from "../utils/calculateSigns";
 
 const db = getFirestore();
 
