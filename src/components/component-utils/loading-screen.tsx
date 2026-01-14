@@ -26,11 +26,11 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ progress }) => {
             <StatusBar barStyle="light-content" backgroundColor="#1C2541" />
             <View style={styles.centerContent}>
                 <View style={styles.overlay}></View>
-                <LottieView
+                {/* <LottieView
                     source={splashAnimation}
                     autoPlay
                     style={{ width: 500, height: 500 }}
-                />
+                /> */}
                 {progress < 1 && (
                     <BodyText>{`Loading...`}</BodyText>
                 )}
