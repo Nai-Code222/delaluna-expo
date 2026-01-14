@@ -5,9 +5,11 @@ import * as logger from "firebase-functions/logger";
 import { FieldValue } from "firebase-admin/firestore";
 import { DateTime } from "luxon";
 import { z } from "zod";
+
 import { db } from "./initAdmin";
-import { calculateSignsInternal } from "./utils/calcSigns";
-import type { NatalChartResult } from "./utils/calcSigns";
+import { calculateSignsInternal, NatalChartResult } from "./utils/calculateSigns";
+
+
 
 /**
  * Zod schema for the FLATTENED request payload.
@@ -54,6 +56,23 @@ function buildBirthDateTime(birthday: string, birthtime: string | null, tz: stri
   return DateTime.fromISO(`${birthday}T12:00:00`, { zone });
 }
 
+/**
+ * Remove NaN/Infinity values before returning to client
+ */
+function sanitizeForJSON(obj: any): any {
+  return JSON.parse(JSON.stringify(obj, (key, value) => {
+    if (typeof value === 'number' && isNaN(value)) {
+      logger.warn(`NaN detected in field: ${key}, replacing with 0`);
+      return 0;
+    }
+    if (value === Infinity || value === -Infinity) {
+      logger.warn(`Infinity detected in field: ${key}, replacing with 0`);
+      return 0;
+    }
+    return value;
+  }));
+}
+
 export const finishUserSignup = onCall(async (req) => {
   if (!req.auth) {
     throw new HttpsError("unauthenticated", "User must be signed in.");
@@ -87,6 +106,15 @@ export const finishUserSignup = onCall(async (req) => {
     currentTimezone,
   } = parsed.data;
 
+  logger.info("Received signup data:", {
+    uid,
+    birthday,
+    birthtime,
+    birthTimezone,
+    birthLat,
+    birthLon
+  });
+
   const userRef = db.collection("users").doc(uid);
 
   await userRef.set(
@@ -102,9 +130,31 @@ export const finishUserSignup = onCall(async (req) => {
     // 2. Build birth datetime
     // ---------------------------
     const birthDT = buildBirthDateTime(birthday, birthtime ?? null, birthTimezone ?? null);
-    if (!birthDT.isValid) throw new Error("Invalid birth date or time");
+    
+    if (!birthDT.isValid) {
+      logger.error("Invalid birth datetime:", {
+        birthday,
+        birthtime,
+        birthTimezone,
+        reason: birthDT.invalidReason,
+        explanation: birthDT.invalidExplanation
+      });
+      throw new Error(`Invalid birth date or time: ${birthDT.invalidReason}`);
+    }
 
-    const tzOffset = birthDT.offset / 60;
+    // ✅ Add safety check for timezone offset
+    const rawOffset = birthDT.offset;
+    const tzOffset = typeof rawOffset === 'number' && !isNaN(rawOffset) 
+      ? rawOffset / 60 
+      : 0;
+
+    logger.info("Timezone calculation:", { 
+      rawOffset, 
+      tzOffset,
+      timezone: birthTimezone,
+      zone: birthDT.zoneName,
+      isValid: birthDT.isValid 
+    });
 
     const astroParams = {
       day: birthDT.day,
@@ -138,7 +188,6 @@ export const finishUserSignup = onCall(async (req) => {
       displayName,
       pronouns: pronouns ?? null,
       email,
-  
 
       birthday,
       birthtime: birthtime ?? null,
@@ -180,7 +229,20 @@ export const finishUserSignup = onCall(async (req) => {
 
     await userRef.set(updateDoc, { merge: true });
 
-    return { user: updateDoc };
+    // ✅ Create response object WITHOUT FieldValue.serverTimestamp()
+    // These are Firestore sentinel values that can't be serialized to JSON
+    const responseDoc = {
+      ...updateDoc,
+      updatedAt: new Date().toISOString(),
+      lastLoginDate: new Date().toISOString(),
+    };
+
+    // ✅ Sanitize before returning to prevent NaN in JSON
+    const safeResponse = sanitizeForJSON({ user: responseDoc });
+    
+    logger.info("✅ Signup completed successfully for uid:", uid);
+    
+    return safeResponse;
 
   } catch (err: any) {
     logger.error(`finishUserSignup error for uid=${uid}:`, err);
