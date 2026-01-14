@@ -126,13 +126,7 @@ export default function HomeScreen() {
 
       <View style={[styles.mainContent, { marginTop: HEADER_HEIGHT }]}>
         <View style={{ width: '100%' }}>
-          {profile?.natalChart?.bigThree && (
-            <HomeSignsDisplay
-              sun={profile.natalChart.bigThree.sun}
-              moon={profile.natalChart.bigThree.moon}
-              rising={profile.natalChart.bigThree.rising}
-            />
-          )}
+          
         </View>
 
         {/* Birth Chart Section */}
